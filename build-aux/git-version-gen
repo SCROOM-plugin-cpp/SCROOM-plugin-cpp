@@ -1,0 +1,19 @@
+#!/bin/sh
+
+PROJECT_VERSION_FILE=.project-version
+
+if SHORT=$(git describe --tags --abbrev=0)
+then
+    # It is hard to be debian compliant
+    VER=$(git describe --tags | sed -e "s/${SHORT}/$(echo ${SHORT} | tr '-' '~')/")
+    echo "Git claims this is version $VER" 1>&2
+    echo $VER > ${PROJECT_VERSION_FILE}
+elif VER=$(cat ${PROJECT_VERSION_FILE})
+then
+    echo "According to ${PROJECT_VERSION_FILE}, this is version $VER" 1>&2
+else
+    echo "PANIC: Can't determine Scroom version. Assuming 'Unknown'"  1>&2
+    VER="Unknown"
+fi
+
+echo "[$VER]"

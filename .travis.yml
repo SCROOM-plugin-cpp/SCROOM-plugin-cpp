@@ -1,0 +1,45 @@
+language: cpp
+script:
+- cat /etc/lsb-release &&
+  echo TRAVIS_BUILD_NUMBER=${TRAVIS_BUILD_NUMBER} &&
+  echo TRAVIS_JOB_NUMBER=${TRAVIS_JOB_NUMBER} &&
+  echo TRAVIS_BRANCH=${TRAVIS_BRANCH} &&
+  echo TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST} &&
+  echo SHELL=$SHELL
+- pushd /tmp
+- git clone --depth 200 https://github.com/kees-jan/scroom.git
+- ( cd scroom && autoreconf -i )
+- ( mkdir scroom-build && cd scroom-build && ../scroom/configure --prefix /tmp/scroom-installed && make -k -j2 install )
+- popd
+- autoreconf -i
+- mkdir cpp-plugins-build
+- cd cpp-plugins-build
+- ../configure CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"
+- make -k -j2 check
+- make -k -j2 distcheck DISTCHECK_CONFIGURE_FLAGS='CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"'
+os: linux
+dist: bionic
+compiler:
+- gcc
+addons:
+  apt:
+    packages:
+    - libboost-test-dev
+    - libboost-dev
+    - libboost-filesystem-dev
+    - libboost-program-options-dev
+    - libboost-system-dev
+    - libboost-thread-dev
+    - libgtest-dev
+    - google-mock
+    - libcairo2-dev
+    - libglade2-dev
+    - libglib2.0-dev
+    - libgtk2.0-dev
+    - libtiff5-dev
+    - pkg-config
+    - doxygen
+    - graphviz
+git:
+  depth: 200
+  
