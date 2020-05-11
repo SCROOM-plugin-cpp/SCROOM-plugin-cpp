@@ -65,6 +65,7 @@ DX_INIT_DOXYGEN([$PACKAGE_NAME], [doxyfile], [doc])
   
 # Checks for packages.
 PKG_CHECK_MODULES([EXAMPLEPLUGIN], [gtk+-2.0 >= 2.0.0, cairo])
+PKG_CHECK_MODULES([PIPETTEPLUGIN], [gtk+-2.0 >= 2.0.0, cairo])
 
 # Checks for libraries.
 have_tiled_bitmap=no
