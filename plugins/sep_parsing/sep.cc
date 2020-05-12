@@ -1,4 +1,4 @@
-#include "sepparser.hh"
+#include "sep.hh"
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -6,27 +6,27 @@
 
 #include "scroom/transformpresentation.hh"
 
-#include "sepparserpresentation.hh"
+#include "seppresentation.hh"
 
 ////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////
 
-SepParser::SepParser(){
+Sep::Sep(){
 }
 
-SepParser::~SepParser(){
+Sep::~Sep(){
 }
 
 Sep::Ptr Sep::create(){
   return Ptr(new Sep());
 }
 
-std::string SepParser::getPluginName(){
+std::string Sep::getPluginName(){
   return "SEP";
 }
 
-std::string SepParser::getPluginVersion(){
+std::string Sep::getPluginVersion(){
   return "0.0";
 }
 
@@ -34,7 +34,7 @@ std::string SepParser::getPluginVersion(){
 // PluginInformationInterface
 ////////////////////////////////////////////////////////////////////////
 
-void SepParser::registerCapabilities(ScroomPluginInterface::Ptr host){
+void Sep::registerCapabilities(ScroomPluginInterface::Ptr host){
 	host->registerOpenPresentationInterface("SEP viewer", shared_from_this<Sep>());
 }
 
