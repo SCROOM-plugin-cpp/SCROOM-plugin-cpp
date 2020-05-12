@@ -6,8 +6,7 @@
 #include <scroom/presentationinterface.hh>
 #include <scroom/utilities.hh>
 
-class Pipette : public PluginInformationInterface, virtual public  Scroom::Utils::Base
-{
+class Pipette : public PluginInformationInterface, public ViewObserver, virtual public  Scroom::Utils::Base{
 public:
   typedef boost::shared_ptr<Pipette> Ptr;
 
@@ -21,6 +20,8 @@ public:
   virtual std::string getPluginName();
   virtual std::string getPluginVersion();
   virtual void registerCapabilities(ScroomPluginInterface::Ptr host);
+
+  virtual Scroom::Bookkeeping::Token viewAdded(ViewInterface::Ptr v);
 
   virtual ~Pipette();
 };
