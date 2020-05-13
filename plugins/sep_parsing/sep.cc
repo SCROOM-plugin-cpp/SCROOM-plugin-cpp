@@ -1,7 +1,7 @@
 #include "sep.hh"
 
 #ifdef HAVE_CONFIG_H
-# include <config.h>
+#include <config.h>
 #endif
 
 #include "scroom/transformpresentation.hh"
@@ -12,29 +12,35 @@
 
 ////////////////////////////////////////////////////////////////////////
 
-Sep::Sep(){
+Sep::Sep()
+{
 }
 
-Sep::~Sep(){
+Sep::~Sep()
+{
 }
 
-Sep::Ptr Sep::create(){
-  return Ptr(new Sep());
+Sep::Ptr Sep::create()
+{
+	return Ptr(new Sep());
 }
 
-std::string Sep::getPluginName(){
-  return "SEP";
+std::string Sep::getPluginName()
+{
+	return "SEP";
 }
 
-std::string Sep::getPluginVersion(){
-  return "0.0";
+std::string Sep::getPluginVersion()
+{
+	return "0.0";
 }
 
 ////////////////////////////////////////////////////////////////////////
 // PluginInformationInterface
 ////////////////////////////////////////////////////////////////////////
 
-void Sep::registerCapabilities(ScroomPluginInterface::Ptr host){
+void Sep::registerCapabilities(ScroomPluginInterface::Ptr host)
+{
 	host->registerOpenPresentationInterface("SEP viewer", shared_from_this<Sep>());
 }
 
@@ -42,33 +48,35 @@ void Sep::registerCapabilities(ScroomPluginInterface::Ptr host){
 // OpenPresentationInterface
 ////////////////////////////////////////////////////////////////////////
 
-std::list<GtkFileFilter*> Sep::getFilters()
+std::list<GtkFileFilter *> Sep::getFilters()
 {
-  std::list<GtkFileFilter*> result;
+	std::list<GtkFileFilter *> result;
 
-  GtkFileFilter* filter = gtk_file_filter_new();
-  gtk_file_filter_set_name(filter, "SEP files");
-  gtk_file_filter_add_mime_type(filter, "image/sep");
-  result.push_back(filter);
+	GtkFileFilter *filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, "SEP files");
+	gtk_file_filter_add_mime_type(filter, "text/sep"); // i think this has to be text/plain but not sure if that would cause any problems
+	gtk_file_filter_add_pattern(filter, "*.sep");	   // maybe this one is better?
+	result.push_back(filter);
 
-  return result;
+	return result;
 }
 
-PresentationInterface::Ptr Sep::open(const std::string& fileName)
+PresentationInterface::Ptr Sep::open(const std::string &fileName)
 {
-  SepPresentationWrapper::Ptr wrapper = SepPresentationWrapper::create();
-  if(!wrapper->load(fileName))
-  {
-    wrapper.reset();
-  }
-  PresentationInterface::Ptr result = wrapper;
-  if(result)
-  {
-    TransformationData::Ptr data = wrapper->getTransformationData();
-    if(data)
-    {
-      result = TransformPresentation::create(result, data);
-    }
-  }
-  return result;
+	printf("%s", fileName);
+	// SepPresentationWrapper::Ptr wrapper = SepPresentationWrapper::create();
+	// if(!wrapper->load(fileName))
+	// {
+	//   wrapper.reset();
+	// }
+	// PresentationInterface::Ptr result = wrapper;
+	// if(result)
+	// {
+	//   TransformationData::Ptr data = wrapper->getTransformationData();
+	//   if(data)
+	//   {
+	//     result = TransformPresentation::create(result, data);
+	//   }
+	// }
+	// return result;
 }
