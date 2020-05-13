@@ -34,3 +34,6 @@
 /compile
 .project
 plugin-build
+.autotools
+.cproject
+.settings
