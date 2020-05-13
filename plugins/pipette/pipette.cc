@@ -30,7 +30,28 @@ void Pipette::registerCapabilities(ScroomPluginInterface::Ptr host){
 }
 
 Scroom::Bookkeeping::Token Pipette::viewAdded(ViewInterface::Ptr v){
-	printf("View added 1-2-3-4-5-6-7-8-9\n");
+	printf("View added\n");
+
+	gdk_threads_enter();
+
+
+	std::stringstream s;
+	s << "_p";
+
+	GtkToolItem* button = gtk_tool_item_new();
+	GtkWidget* toggleButton = gtk_toggle_button_new_with_mnemonic(s.str().c_str());
+	gtk_widget_set_visible(toggleButton, true);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggleButton), true);
+
+	gtk_container_add(GTK_CONTAINER(button), toggleButton);
+	//g_signal_connect(static_cast<gpointer>(toggleButton), "toggled", G_CALLBACK(on_toggled), this);
+
+
+	v->addToToolbar(button);
+
+
+
+	gdk_threads_leave();
 
 	return Scroom::Bookkeeping::Token();
 	//return dunno what a token is or is supposed to do
@@ -38,6 +59,8 @@ Scroom::Bookkeeping::Token Pipette::viewAdded(ViewInterface::Ptr v){
 
 void Pipette::presentationAdded(PresentationInterface::Ptr p){
 	printf("Added cookie\n");
+
+
 }
 
 void Pipette::presentationDeleted(){
