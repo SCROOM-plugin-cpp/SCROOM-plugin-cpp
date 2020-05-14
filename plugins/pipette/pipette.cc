@@ -31,7 +31,11 @@ void Pipette::registerCapabilities(ScroomPluginInterface::Ptr host){
 
 static void on_toggled(GtkToggleButton* button, gpointer data){
 	ViewInterface* view = static_cast<ViewInterface*>(data);
-	view->unsetPanning();
+	if(gtk_toggle_button_get_active(button)){
+		view->setPanning();
+	}else{
+		view->unsetPanning();
+	}
 }
 
 Scroom::Bookkeeping::Token Pipette::viewAdded(ViewInterface::Ptr view){
