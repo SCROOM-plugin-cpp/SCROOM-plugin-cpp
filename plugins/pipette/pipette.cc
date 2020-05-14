@@ -30,11 +30,8 @@ void Pipette::registerCapabilities(ScroomPluginInterface::Ptr host){
 }
 
 static void on_toggled(GtkToggleButton* button, gpointer data){
-	//ViewInterface::Ptr &view = *static_cast<ViewInterface::Ptr*>(data);
-	//ViewInterface::Ptr &view = data;
-	printf("Cookies were clicked\n");
-	//data->unsetPanning();
-	//printf("%s", data);
+	ViewInterface* view = reinterpret_cast<ViewInterface*>(data);
+	view->unsetPanning();
 }
 
 Scroom::Bookkeeping::Token Pipette::viewAdded(ViewInterface::Ptr view){
@@ -51,8 +48,10 @@ Scroom::Bookkeeping::Token Pipette::viewAdded(ViewInterface::Ptr view){
 	gtk_widget_set_visible(toggleButton, true);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(toggleButton), true);
 
+	//Copy constructor to prevent view from being freed before it is used in the button handler
+	ViewInterface::Ptr callback_ptr(view);
 	gtk_container_add(GTK_CONTAINER(button), toggleButton);
-	g_signal_connect(static_cast<gpointer>(toggleButton), "toggled", G_CALLBACK(on_toggled), &view);
+	g_signal_connect(static_cast<gpointer>(toggleButton), "toggled", G_CALLBACK(on_toggled), callback_ptr.get());
 
 
 	view->addToToolbar(button);
