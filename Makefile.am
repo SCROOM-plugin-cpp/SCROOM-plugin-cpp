@@ -7,7 +7,7 @@ ACLOCAL_AMFLAGS = -I m4
 ########################################################################
 
 example_plugin_libs = \
-	plugins/example/src/libspexample.la
+	plugins/example/src/libspexample.la 
 
 plugins_example_src_libspexample_la_CPPFLAGS = @EXAMPLEPLUGIN_CFLAGS@
 
@@ -16,17 +16,37 @@ plugins_example_src_libspexample_la_SOURCES = \
 	plugins/example/example.hh \
 	plugins/example/examplepresentation.cc \
 	plugins/example/examplepresentation.hh \
-	plugins/example/main.cc
+	plugins/example/main.cc \
 
 
 plugins_example_src_libspexample_la_LIBADD = @EXAMPLEPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@
+
+plugins_example_src_sep_parser_la_LIBADD = @EXAMPLEPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@
+
+
+sep_plugin_libs = \
+	plugins/sep_parsing/src/sep_parsing.la
+
+plugins_sep_src_libssep_la_CPPFLAGS = @SEPPLUGIN_CFLAGS@
+
+plugins_sep_src_libssep_la_SOURCES = \
+	plugins/sep_parsing/sep.cc \
+	plugins/sep_parsing/sep.hh \
+	plugins/sep_parsing/seppresentation.cc \
+	plugins/sep_parsing/seppresentation.hh \
+	plugins/sep_parsing/main.cc
+
+
+plugins_sep_src_libssep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@
+
+
 
 ########################################################################
 ### Wrapping up
 ########################################################################
 
 ### Plugins
-plugin_LTLIBRARIES = $(example_plugin_libs)
+plugin_LTLIBRARIES = $(example_plugin_libs) $(pipette_plugin_libs)
 
 ########################################################################
 ### Root
