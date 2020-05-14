@@ -26,19 +26,19 @@ plugins_example_src_libspexample_la_LIBADD = @EXAMPLEPLUGIN_LIBS@ @BOOSTTHREADLI
 ########################################################################
 
 sep_plugin_libs = \
-	plugins/sep_parsing/src/sep_parsing.la
+	plugins/sep/src/libspsep.la
 
-plugins_sep_src_libssep_la_CPPFLAGS = @SEPPLUGIN_CFLAGS@
+plugins_sep_src_libspsep_la_CPPFLAGS = @SEPPLUGIN_CFLAGS@
 
-plugins_sep_src_libssep_la_SOURCES = \
-	plugins/sep_parsing/sep.cc \
-	plugins/sep_parsing/sep.hh \
-	plugins/sep_parsing/seppresentation.cc \
+plugins_sep_src_libspsep_la_SOURCES = \
+	plugins/sep/sep.cc \
+	plugins/sep/sep.hh \
+	plugins/sep/seppresentation.cc \
 	plugins/sep_parsing/seppresentation.hh \
-	plugins/sep_parsing/main.cc
+	plugins/sep/main.cc
 
 
-plugins_sep_src_libssep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@
+plugins_sep_src_libspsep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@
 
 
 
@@ -47,7 +47,7 @@ plugins_sep_src_libssep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITM
 ########################################################################
 
 ### Plugins
-plugin_LTLIBRARIES = $(example_plugin_libs) $(pipette_plugin_libs)
+plugin_LTLIBRARIES = $(example_plugin_libs) $(sep_plugin_libs)
 
 ########################################################################
 ### Root

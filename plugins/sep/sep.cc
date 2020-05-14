@@ -54,7 +54,7 @@ std::list<GtkFileFilter *> Sep::getFilters()
 
 	GtkFileFilter *filter = gtk_file_filter_new();
 	gtk_file_filter_set_name(filter, "SEP files");
-	gtk_file_filter_add_mime_type(filter, "text/sep"); // i think this has to be text/plain but not sure if that would cause any problems
+	// gtk_file_filter_add_mime_type(filter, "text/plain"); // i think this has to be text/plain but not sure if that would cause any problems
 	gtk_file_filter_add_pattern(filter, "*.sep");	   // maybe this one is better?
 	result.push_back(filter);
 
@@ -63,7 +63,8 @@ std::list<GtkFileFilter *> Sep::getFilters()
 
 PresentationInterface::Ptr Sep::open(const std::string &fileName)
 {
-	printf("%s", fileName);
+	printf("%s\n", fileName);
+	// printf("\nhey!");
 	// SepPresentationWrapper::Ptr wrapper = SepPresentationWrapper::create();
 	// if(!wrapper->load(fileName))
 	// {
@@ -78,5 +79,5 @@ PresentationInterface::Ptr Sep::open(const std::string &fileName)
 	//     result = TransformPresentation::create(result, data);
 	//   }
 	// }
-	// return result;
+	return nullptr;
 }

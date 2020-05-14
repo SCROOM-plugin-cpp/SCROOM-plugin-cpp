@@ -17,5 +17,3 @@ public:
 	seppresentation();
 	virtual ~seppresentation();
 };
-
-#endif /* SCROOM_PLUGIN_CPP_PLUGINS_SEP_PARSING_SEPPRESENTATION_HH_ */
