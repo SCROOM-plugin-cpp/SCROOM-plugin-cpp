@@ -7,7 +7,7 @@ ACLOCAL_AMFLAGS = -I m4
 ########################################################################
 
 example_plugin_libs = \
-	plugins/example/src/libspexample.la 
+	plugins/example/src/libspexample.la
 
 plugins_example_src_libspexample_la_CPPFLAGS = @EXAMPLEPLUGIN_CFLAGS@
 
@@ -16,13 +16,14 @@ plugins_example_src_libspexample_la_SOURCES = \
 	plugins/example/example.hh \
 	plugins/example/examplepresentation.cc \
 	plugins/example/examplepresentation.hh \
-	plugins/example/main.cc \
+	plugins/example/main.cc
 
 
 plugins_example_src_libspexample_la_LIBADD = @EXAMPLEPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@
 
-plugins_example_src_sep_parser_la_LIBADD = @EXAMPLEPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@
-
+########################################################################
+### plugins/sep
+########################################################################
 
 sep_plugin_libs = \
 	plugins/sep_parsing/src/sep_parsing.la
