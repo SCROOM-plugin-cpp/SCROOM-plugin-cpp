@@ -30,7 +30,7 @@ void Pipette::registerCapabilities(ScroomPluginInterface::Ptr host){
 }
 
 static void on_toggled(GtkToggleButton* button, gpointer data){
-	ViewInterface* view = reinterpret_cast<ViewInterface*>(data);
+	ViewInterface* view = static_cast<ViewInterface*>(data);
 	view->unsetPanning();
 }
 
