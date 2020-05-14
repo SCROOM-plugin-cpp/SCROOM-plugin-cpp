@@ -3,7 +3,9 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-
+#include <fstream>
+#include <string>
+#include <iostream>
 #include "scroom/transformpresentation.hh"
 
 #include "seppresentation.hh"
@@ -55,7 +57,7 @@ std::list<GtkFileFilter *> Sep::getFilters()
 	GtkFileFilter *filter = gtk_file_filter_new();
 	gtk_file_filter_set_name(filter, "SEP files");
 	// gtk_file_filter_add_mime_type(filter, "text/plain"); // i think this has to be text/plain but not sure if that would cause any problems
-	gtk_file_filter_add_pattern(filter, "*.sep");	   // maybe this one is better?
+	gtk_file_filter_add_pattern(filter, "*.sep"); // maybe this one is better?
 	result.push_back(filter);
 
 	return result;
@@ -63,7 +65,13 @@ std::list<GtkFileFilter *> Sep::getFilters()
 
 PresentationInterface::Ptr Sep::open(const std::string &fileName)
 {
-	printf("%s\n", fileName);
+	std::ifstream file(fileName);
+	std::string str;
+	while (std::getline(file, str))
+	{
+		std::cout << str << "\n";
+	}
+
 	// printf("\nhey!");
 	// SepPresentationWrapper::Ptr wrapper = SepPresentationWrapper::create();
 	// if(!wrapper->load(fileName))
