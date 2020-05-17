@@ -4,11 +4,36 @@ AC_INIT([Scroom Plugins for Canon Production Printing],
         [],
         [scroom-cpp-plugins],
         [])
+
+# Detect the target system
+AC_CANONICAL_HOST
+case "${host_os}" in
+    linux*)
+        build_linux=yes
+        AC_MSG_NOTICE([detected linux environment])
+        ;;
+    cygwin*|mingw*|msys*)
+        build_windows=yes
+        AC_MSG_NOTICE([detected windows environment])
+        ;;
+    *)
+        AC_MSG_ERROR(["OS $host_os is not supported."])
+        ;;
+esac
+AM_CONDITIONAL([LINUX], [test "$build_linux" = "yes"])
+AM_CONDITIONAL([WINDOWS], [test "$build_windows" = "yes"])
+
+# Make sure the configure script finds the compiler    
+AM_COND_IF([WINDOWS], 
+    [export PATH=$PATH:/c/msys64/mingw64/bin]) 
+
 AM_INIT_AUTOMAKE([-Wall -Werror foreign silent-rules subdir-objects])
 AM_SILENT_RULES([yes])
 AM_PROG_AR
 LT_PREREQ([2.2])
-LT_INIT([dlopen])
+
+# Properly create shared libraries on both Linux and Windows
+LT_INIT([dlopen win32-dll])
 
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([plugins/example/example.hh])
@@ -42,6 +67,16 @@ SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wnon-virtual-dtor])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Woverloaded-virtual])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wsign-promo])
 SCROOM_TEST_ISYSTEM
+    
+# The .pc files are at a weird place so make sure pkg-config finds them
+AM_COND_IF([WINDOWS], 
+    [export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/mingw64/lib/pkgconfig])    
+    
+# This flag is used in Makefile.am and needed for properly generating DLLs on Windows
+loadflag=""
+AM_COND_IF([WINDOWS], 
+    [loadflag="-no-undefined"])
+AC_SUBST([loadflag])
 
 # Configurable features
 AC_ARG_ENABLE([doxygen-all-code],
