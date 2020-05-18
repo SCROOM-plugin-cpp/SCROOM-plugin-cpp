@@ -5,6 +5,23 @@
 #include <scroom/plugininformationinterface.hh>
 #include <scroom/presentationinterface.hh>
 #include <scroom/utilities.hh>
+#include <scroom/viewinterface.hh>
+
+class Listener : public MeasurementListener, virtual public  Scroom::Utils::Base{
+public:
+	Listener();
+
+public:
+	typedef boost::shared_ptr<Listener> Ptr;
+
+public:
+	static Ptr create();
+
+public:
+	virtual ~Listener();
+
+	virtual void onMeasurement(Measurement* measurement);
+};
 
 class Pipette : public PluginInformationInterface, public ViewObserver, public PresentationObserver, virtual public  Scroom::Utils::Base{
 public:

@@ -3,7 +3,7 @@
 #include <gdk/gdk.h>
 
 ////////////////////////////////////////////////////////////////////////
-
+// Pipette
 ////////////////////////////////////////////////////////////////////////
 
 Pipette::Pipette(){
@@ -32,6 +32,7 @@ void Pipette::registerCapabilities(ScroomPluginInterface::Ptr host){
 static void on_toggled(GtkToggleButton* button, gpointer data){
 	ViewInterface* view = static_cast<ViewInterface*>(data);
 	if(gtk_toggle_button_get_active(button)){
+		//TODO: start handling area selection events
 		view->setPanning();
 	}else{
 		view->unsetPanning();
@@ -43,6 +44,7 @@ Scroom::Bookkeeping::Token Pipette::viewAdded(ViewInterface::Ptr view){
 
 	gdk_threads_enter();
 
+	view->registerSelectionListener(Listener::Ptr(new Listener()));
 
 	std::stringstream s;
 	s << "_p";
@@ -77,4 +79,26 @@ void Pipette::presentationAdded(PresentationInterface::Ptr p){
 void Pipette::presentationDeleted(){
 	printf("Deleted cookie\n");
 }
+
+////////////////////////////////////////////////////////////////////////
+// Listener
+////////////////////////////////////////////////////////////////////////
+
+Listener::Listener(){
+}
+
+Listener::~Listener(){
+}
+
+Listener::Ptr Listener::create(){
+	return Ptr(new Listener());
+}
+
+void Listener::onMeasurement(Measurement* measurement){
+	printf("Cookies received %d %d %d %d\n", measurement->start.x, measurement->end.x, measurement->start.y, measurement->end.y);
+}
+
+
+
+
 
