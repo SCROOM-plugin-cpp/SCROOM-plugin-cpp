@@ -38,10 +38,9 @@ plugins_sep_src_libspsep_la_SOURCES = \
 	plugins/sep_parsing/seppresentation.hh \
 	plugins/sep/main.cc
 
-
 plugins_sep_src_libspsep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@
 
-
+plugins_sep_src_libspsep_la_LDFLAGS = $(loadflag)
 
 ########################################################################
 ### Wrapping up
