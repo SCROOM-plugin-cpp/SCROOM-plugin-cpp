@@ -44,7 +44,7 @@ Scroom::Bookkeeping::Token Pipette::viewAdded(ViewInterface::Ptr view){
 
 	gdk_threads_enter();
 
-	view->registerSelectionListener(Listener::Ptr(new Listener()));
+	view->registerSelectionListener(Listener::create());
 
 	std::stringstream s;
 	s << "_p";
