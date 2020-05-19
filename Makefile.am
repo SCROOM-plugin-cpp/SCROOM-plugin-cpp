@@ -39,6 +39,8 @@ plugins_pipette_src_libsppipette_la_SOURCES = \
 
 plugins_pipette_src_libsppipette_la_LIBADD = @PIPETTEPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@
 
+plugins_pipette_src_libsppipette_la_LDFLAGS = $(loadflag)
+
 ########################################################################
 ### Wrapping up
 ########################################################################
