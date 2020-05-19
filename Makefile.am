@@ -18,8 +18,9 @@ plugins_example_src_libspexample_la_SOURCES = \
 	plugins/example/examplepresentation.hh \
 	plugins/example/main.cc
 
-
 plugins_example_src_libspexample_la_LIBADD = @EXAMPLEPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@
+
+plugins_example_src_libspexample_la_LDFLAGS = $(loadflag)
 
 ########################################################################
 ### plugins/pipette
