@@ -17,7 +17,7 @@ build-windows:
     - cd C:\
     - if (Test-Path '.\scroom_build') { Remove-Item '.\scroom_build' -Recurse -Force; }
     - curl -o scroom.zip "https://gitlab.com/api/v4/projects/18421652/jobs/artifacts/$SCROOM/download?job=windows-dev"
-    - unzip scroom.zip
+    - Expand-Archive C:\scroom.zip -DestinationPath C:\scroom_build
     - if (Test-Path '.\plugin-build') { Remove-Item '.\plugin-build' -Recurse -Force; }
     - C:/msys64/usr/bin/bash -c "git clone https://gitlab.com/sep-group-2/scroom-plugin-cpp"
     - cd scroom-plugin-cpp
