@@ -3,9 +3,10 @@ stages:
 
 build-windows:
   # Due to windows docker issues, we can't configure/build in the volume mount.
-  # As a workaround, we clone the repo to C:\scroom manually
+  # As a workaround, we clone the repo to C:\ manually
   variables:
     GIT_STRATEGY: none
+    # Scroom branch to build against
     SCROOM: ci-targets
   stage: build
   # This is a windows server core docker image with an msys2 install.
@@ -14,13 +15,16 @@ build-windows:
   tags:
     - Windows
   script:
+    # Download the latest Scroom artifact
     - cd C:\
     - if (Test-Path '.\scroom') { Remove-Item '.\scroom' -Recurse -Force; }
     - $ProgressPreference = 'SilentlyContinue'
     - Invoke-WebRequest "https://gitlab.com/api/v4/projects/18421652/jobs/artifacts/$SCROOM/download?job=windows-dev" -OutFile scroom.zip
     - Expand-Archive C:\scroom.zip -DestinationPath C:\scroom
+    # Copy to build to match the Scroom CI pipeline
     - if (Test-Path '.\build') { Remove-Item '.\build' -Recurse -Force; }
     - cp -r "C:/scroom/scroom_build/" "C:/build"
+    # Build the plugin
     - if (Test-Path '.\plugin-build') { Remove-Item '.\plugin-build' -Recurse -Force; }
     - C:/msys64/usr/bin/bash -c "git clone https://gitlab.com/sep-group-2/scroom-plugin-cpp"
     - cd scroom-plugin-cpp
@@ -34,5 +38,6 @@ build-windows:
     max: 2
     when: runner_system_failure
   artifacts:
+    name: "Scroom Plugins"
     paths:
       - plugins/
