@@ -19,12 +19,14 @@ build-windows:
     - $ProgressPreference = 'SilentlyContinue'
     - Invoke-WebRequest "https://gitlab.com/api/v4/projects/18421652/jobs/artifacts/$SCROOM/download?job=windows-dev" -OutFile scroom.zip
     - Expand-Archive C:\scroom.zip -DestinationPath C:\scroom
+    - if (Test-Path '.\build') { Remove-Item '.\build' -Recurse -Force; }
+    - cp -r "C:/scroom/scroom_build/" "C:/build"
     - if (Test-Path '.\plugin-build') { Remove-Item '.\plugin-build' -Recurse -Force; }
     - C:/msys64/usr/bin/bash -c "git clone https://gitlab.com/sep-group-2/scroom-plugin-cpp"
     - cd scroom-plugin-cpp
     - C:/msys64/usr/bin/bash -c "git checkout $CI_COMMIT_SHA"
     - C:/msys64/usr/bin/bash -c "autoreconf -i"
-    - C:/msys64/usr/bin/bash -c "./configure --prefix='C:/plugin-build' CPPFLAGS=-I/c/scroom/scroom_build/include/ LDFLAGS='-L/c/scroom/scroom_build/lib'"
+    - C:/msys64/usr/bin/bash -c "./configure --prefix='C:/plugin-build' CPPFLAGS=-I/c/build/include/ LDFLAGS='-L/c/build/lib'"
     - C:/msys64/usr/bin/bash -c "make install"
     # Finally, we copy the build into the shared volume, so gitlab can upload it
     - cp -r "C:/plugin-build/lib/bin" "C:/builds/$CI_PROJECT_PATH/plugins"
