@@ -32,11 +32,11 @@ build-windows:
     - cd scroom-plugin-cpp
     - C:/msys64/usr/bin/bash -c "git checkout $CI_COMMIT_SHA"
     - C:/msys64/usr/bin/bash -c "autoreconf -i"
-    - C:/msys64/usr/bin/bash -c "./configure --prefix='C:/plugin-build' CPPFLAGS=-I/c/build/include/ LDFLAGS='-L/c/build/lib'"
+    - C:/msys64/usr/bin/bash -c "./configure --prefix='C:/plugin-build' CPPFLAGS=-I/c/build/include/ LDFLAGS='-L/c/build/lib -Wl,-z,defs'"
     - C:/msys64/usr/bin/bash -c "make install"
     # Finally, we copy the build into the shared volume, so gitlab can upload it
-    - if (Test-Path 'C:/builds/$CI_PROJECT_PATH/plugins') { Remove-Item 'C:/builds/$CI_PROJECT_PATH/plugins' -Recurse -Force; Remove-Item 'C:/builds/$CI_PROJECT_PATH/plugins' -Recurse -Force; }
-    - cp -r "C:/plugin-build/lib/bin" "C:/builds/$CI_PROJECT_PATH/plugins"
+    - if (Test-Path 'C:/builds/$CI_PROJECT_PATH/plugins') { Remove-Item 'C:/builds/$CI_PROJECT_PATH/plugins' -Recurse -Force; }
+    - Copy-Item -Force -Recurse -Verbose "C:/plugin-build/lib/bin" -Destination "C:/builds/$CI_PROJECT_PATH/plugins"
   retry:
     max: 2
     when: runner_system_failure
@@ -56,11 +56,9 @@ build-linux:
     - autoreconf -i
     - path=$(pwd)/scroom-install
     - mkdir plugin-build
-    - mkdir plugin-libs
-    - cd plugin-build
-    - ../configure --prefix=$(pwd)/plugin-build CPPFLAGS=-I$path/include/ LDFLAGS='-L$path/lib -Wl,-z,defs'
+    - ./configure --prefix='$(pwd)/plugin-build' CPPFLAGS=-I$path/include/ LDFLAGS='-L$path/lib -Wl,-z,defs'
     - make install
   artifacts:
     name: "Scroom Plugins Linux"
     paths:
-      - plugin-libs
+      - plugin-build
