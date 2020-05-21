@@ -48,7 +48,9 @@ build-linux:
   stage: build
   image: registry.gitlab.com/sep-group-2/scroom-ci:latest
   script:
-    - curl -o scroom.zip "https://gitlab.com/api/v4/projects/18421652/jobs/artifacts/$SCROOM/download?job=windows-dev"
+    - curl -o scroom.zip "https://gitlab.com/api/v4/projects/18421652/jobs/artifacts/$SCROOM/download?job=linux-portable"
+    - ls -l
+    - file scroom.zip
     - unzip scroom.zip
     - ls -l
     - autoreconf -i
