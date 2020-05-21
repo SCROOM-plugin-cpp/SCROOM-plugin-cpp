@@ -53,7 +53,7 @@ build-linux:
     - unzip scroom.zip
     - ls -l
     - autoreconf -i
-    - $path=$(pwd)/scroom-install
+    - path=$(pwd)/scroom-install
     - mkdir plugin-build
     - ./configure --prefix=$(pwd)/plugin-build CPPFLAGS=-I$path/include/ LDFLAGS='-L$path/lib'
     - make install
