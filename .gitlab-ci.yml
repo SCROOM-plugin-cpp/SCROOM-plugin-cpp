@@ -58,7 +58,7 @@ build-linux:
     - ls -l
     - ls -l scroom-install
     - path=$(pwd)/scroom-install
-    - cd ../$CI_PROJECT_PATH
+    - cd ../scroom-plugin-cpp
     - autoreconf -i
     - mkdir plugin-build
     - ./configure --prefix='$(pwd)/plugin-build' CPPFLAGS=-I$path/include/ LDFLAGS='-L$path/lib -Wl,-z,defs'
