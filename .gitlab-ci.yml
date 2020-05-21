@@ -49,7 +49,7 @@ build-linux:
   stage: build
   image: registry.gitlab.com/sep-group-2/scroom-ci:latest
   script:
-    - curl --data-binary -o scroom.zip "https://gitlab.com/api/v4/projects/18421652/jobs/artifacts/$SCROOM/download?job=linux-portable"
+    - curl -o scroom.zip --data-binary "https://gitlab.com/api/v4/projects/18421652/jobs/artifacts/$SCROOM/download?job=linux-portable"
     - ls -l
     - file scroom.zip
     - unzip scroom.zip
