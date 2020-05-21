@@ -32,7 +32,7 @@ build-windows:
     - cd scroom-plugin-cpp
     - C:/msys64/usr/bin/bash -c "git checkout $CI_COMMIT_SHA"
     - C:/msys64/usr/bin/bash -c "autoreconf -i"
-    - C:/msys64/usr/bin/bash -c "./configure --prefix='C:/plugin-build' CPPFLAGS=-I/c/build/include/ LDFLAGS='-L/c/build/lib -Wl,-z,defs'"
+    - C:/msys64/usr/bin/bash -c "./configure --prefix='C:/plugin-build' CPPFLAGS=-I/c/build/include/ LDFLAGS='-L/c/build/lib'"
     - C:/msys64/usr/bin/bash -c "make install"
     # Finally, we copy the build into the shared volume, so gitlab can upload it
     - if (Test-Path 'C:/builds/$CI_PROJECT_PATH/plugins') { Remove-Item 'C:/builds/$CI_PROJECT_PATH/plugins' -Recurse -Force; }
