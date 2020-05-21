@@ -1,3 +1,7 @@
+variables:
+  # Scroom branch to build against
+  SCROOM: ci-targets
+
 stages:
   - build
 
@@ -6,8 +10,6 @@ build-windows:
   # As a workaround, we clone the repo to C:\ manually
   variables:
     GIT_STRATEGY: none
-    # Scroom branch to build against
-    SCROOM: ci-targets
   stage: build
   # This is a windows server core docker image with an msys2 install.
   # It includes all required msys packages
@@ -38,6 +40,23 @@ build-windows:
     max: 2
     when: runner_system_failure
   artifacts:
-    name: "Scroom Plugins"
+    name: "Scroom Plugins Windows"
     paths:
       - plugins/
+
+build-linux:
+  stage: build
+  image: registry.gitlab.com/sep-group-2/scroom-ci:latest
+  script:
+    - curl -o scroom.zip "https://gitlab.com/api/v4/projects/18421652/jobs/artifacts/$SCROOM/download?job=windows-dev"
+    - unzip scroom.zip
+    - ls -l
+    - autoreconf -i
+    - $path=$(pwd)/scroom-install
+    - mkdir plugin-build
+    - ./configure --prefix=$(pwd)/plugin-build CPPFLAGS=-I$path/include/ LDFLAGS='-L$path/lib'
+    - make install
+  artifacts:
+    name: "Scroom Plugins Linux"
+    paths:
+      - plugin-build
