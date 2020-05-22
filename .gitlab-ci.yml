@@ -67,5 +67,7 @@ build-linux:
     - make install
   artifacts:
     name: "Scroom Plugins Linux"
+    when: on_failure
+    expire_in: 1 week
     paths:
       - plugin-build
