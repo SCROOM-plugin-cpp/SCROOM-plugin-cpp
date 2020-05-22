@@ -49,6 +49,7 @@ build-linux:
   stage: build
   image: registry.gitlab.com/sep-group-2/scroom-ci:latest
   script:
+    # Download the latest Scroom artifacts and mirror its path
     - cd ..
     - rm -rf scroom
     - mkdir scroom
@@ -56,6 +57,7 @@ build-linux:
     - curl -o scroom.zip -L "https://gitlab.com/api/v4/projects/18421652/jobs/artifacts/$SCROOM/download?job=linux-portable"
     - unzip scroom.zip
     - ls -l
+    # Build the plugin
     - path=$(pwd)/scroom-install
     - cd ../scroom-plugin-cpp
     - autoreconf -i
