@@ -71,3 +71,4 @@ build-linux:
     expire_in: 1 week
     paths:
       - plugin-build
+      - config.log
