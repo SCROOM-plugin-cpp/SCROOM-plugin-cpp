@@ -63,7 +63,7 @@ build-linux:
     - cd ../scroom-plugin-cpp
     - autoreconf -i
     - mkdir plugin-build
-    - ./configure --prefix='$(pwd)/plugin-build' CPPFLAGS=-I$path/include/ LDFLAGS='-L$path/lib -Wl,-z,defs'
+    - ./configure --prefix="$(pwd)/plugin-build" CPPFLAGS=-I$path/include/ LDFLAGS="-L$path/lib -Wl,-z,defs"
     - make install
   artifacts:
     name: "Scroom Plugins Linux"
