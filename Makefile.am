@@ -34,11 +34,15 @@ plugins_sep_src_libspsep_la_SOURCES = \
 	plugins/sep/sep.cc \
 	plugins/sep/sep.hh \
 	plugins/sep/seppresentation.cc \
-	plugins/sep_parsing/seppresentation.hh \
+	plugins/sep/seppresentation.hh \
+	plugins/sep/tiff.cc \
+	plugins/sep/tiff.hh \
+	plugins/sep/tiffpresentation.cc \
+	plugins/sep/tiffpresentation.hh \
 	plugins/sep/main.cc
 
 
-plugins_sep_src_libspsep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@
+plugins_sep_src_libspsep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ -ltiff
 
 
 
