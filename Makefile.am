@@ -18,8 +18,9 @@ plugins_example_src_libspexample_la_SOURCES = \
 	plugins/example/examplepresentation.hh \
 	plugins/example/main.cc
 
-
 plugins_example_src_libspexample_la_LIBADD = @EXAMPLEPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@
+
+plugins_example_src_libspexample_la_LDFLAGS = $(loadflag)
 
 ########################################################################
 ### plugins/sep
@@ -44,7 +45,7 @@ plugins_sep_src_libspsep_la_SOURCES = \
 
 plugins_sep_src_libspsep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ -ltiff
 
-
+plugins_sep_src_libspsep_la_LDFLAGS = $(loadflag)
 
 ########################################################################
 ### Wrapping up
