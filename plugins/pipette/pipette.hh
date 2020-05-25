@@ -7,7 +7,7 @@
 #include <scroom/utilities.hh>
 #include <scroom/viewinterface.hh>
 
-class Listener : public MeasurementListener, virtual public  Scroom::Utils::Base{
+class Listener : public SelectionListener, virtual public  Scroom::Utils::Base{
 public:
 	Listener();
 
@@ -20,7 +20,7 @@ public:
 public:
 	virtual ~Listener();
 
-	virtual void onMeasurement(Measurement* measurement);
+	virtual void onSelection(Selection* measurement);
 };
 
 class Pipette : public PluginInformationInterface, public ViewObserver, public PresentationObserver, virtual public  Scroom::Utils::Base{

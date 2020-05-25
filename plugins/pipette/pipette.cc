@@ -44,7 +44,7 @@ Scroom::Bookkeeping::Token Pipette::viewAdded(ViewInterface::Ptr view){
 
 	gdk_threads_enter();
 
-	view->registerSelectionListener(Listener::create());
+	view->registerSelectionListener(Listener::create(), MouseButton::SECONDARY);
 
 	std::stringstream s;
 	s << "_p";
@@ -94,7 +94,7 @@ Listener::Ptr Listener::create(){
 	return Ptr(new Listener());
 }
 
-void Listener::onMeasurement(Measurement* measurement){
+void Listener::onSelection(Selection* measurement){
 	printf("Cookies received %d %d %d %d\n", measurement->start.x, measurement->end.x, measurement->start.y, measurement->end.y);
 }
 
