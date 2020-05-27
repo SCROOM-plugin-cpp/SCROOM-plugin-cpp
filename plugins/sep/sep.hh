@@ -11,6 +11,7 @@ public:
 
 private:
   Sep();
+  ScroomPluginInterface::Ptr host;
 
 public:
   static Ptr create();

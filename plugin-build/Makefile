@@ -145,6 +145,11 @@ AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+plugins_example_src_libspexample_la_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(plugins_example_src_libspexample_la_LDFLAGS) $(LDFLAGS) -o \
+	$@
 plugins_sep_src_libspsep_la_DEPENDENCIES =
 am_plugins_sep_src_libspsep_la_OBJECTS =  \
 	plugins/sep/plugins_sep_src_libspsep_la-sep.lo \
@@ -154,6 +159,10 @@ am_plugins_sep_src_libspsep_la_OBJECTS =  \
 	plugins/sep/plugins_sep_src_libspsep_la-main.lo
 plugins_sep_src_libspsep_la_OBJECTS =  \
 	$(am_plugins_sep_src_libspsep_la_OBJECTS)
+plugins_sep_src_libspsep_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
+	$(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(plugins_sep_src_libspsep_la_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_$(V))
 am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
 am__v_P_0 = false
@@ -262,6 +271,7 @@ ACLOCAL = ${SHELL} /home/ubuntu/Documents/Development/scroom-plugin-cpp/missing 
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 0
 AR = ar
+AS = as
 AUTOCONF = ${SHELL} /home/ubuntu/Documents/Development/scroom-plugin-cpp/missing autoconf
 AUTOHEADER = ${SHELL} /home/ubuntu/Documents/Development/scroom-plugin-cpp/missing autoheader
 AUTOMAKE = ${SHELL} /home/ubuntu/Documents/Development/scroom-plugin-cpp/missing automake-1.15
@@ -399,6 +409,7 @@ infodir = ${datarootdir}/info
 install_sh = ${SHELL} /home/ubuntu/Documents/Development/scroom-plugin-cpp/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
+loadflag = 
 localedir = ${datarootdir}/locale
 localstatedir = ${prefix}/var
 mandir = ${datarootdir}/man
@@ -459,6 +470,7 @@ plugins_example_src_libspexample_la_SOURCES = \
 	plugins/example/main.cc
 
 plugins_example_src_libspexample_la_LIBADD = -lgtk-x11-2.0 -lgdk-x11-2.0 -lpangocairo-1.0 -latk-1.0 -lgdk_pixbuf-2.0 -lgio-2.0 -lpangoft2-1.0 -lpango-1.0 -lgobject-2.0 -lglib-2.0 -lfontconfig -lfreetype -lcairo -lboost_thread -lboost_system -lstiledbitmap -lsscroom
+plugins_example_src_libspexample_la_LDFLAGS = $(loadflag)
 
 ########################################################################
 ### plugins/sep
@@ -479,6 +491,7 @@ plugins_sep_src_libspsep_la_SOURCES = \
 	plugins/sep/main.cc
 
 plugins_sep_src_libspsep_la_LIBADD = -lgtk-x11-2.0 -lgdk-x11-2.0 -lpangocairo-1.0 -latk-1.0 -lgdk_pixbuf-2.0 -lgio-2.0 -lpangoft2-1.0 -lpango-1.0 -lgobject-2.0 -lglib-2.0 -lfontconfig -lfreetype -lcairo -lboost_thread -lboost_system -lstiledbitmap -lsscroom -ltiff
+plugins_sep_src_libspsep_la_LDFLAGS = $(loadflag) -I../scroom/gui/src/
 
 ########################################################################
 ### Wrapping up
@@ -605,7 +618,7 @@ plugins/example/src/$(am__dirstamp):
 	@: > plugins/example/src/$(am__dirstamp)
 
 plugins/example/src/libspexample.la: $(plugins_example_src_libspexample_la_OBJECTS) $(plugins_example_src_libspexample_la_DEPENDENCIES) $(EXTRA_plugins_example_src_libspexample_la_DEPENDENCIES) plugins/example/src/$(am__dirstamp)
-	$(AM_V_CXXLD)$(CXXLINK) -rpath $(plugindir) $(plugins_example_src_libspexample_la_OBJECTS) $(plugins_example_src_libspexample_la_LIBADD) $(LIBS)
+	$(AM_V_CXXLD)$(plugins_example_src_libspexample_la_LINK) -rpath $(plugindir) $(plugins_example_src_libspexample_la_OBJECTS) $(plugins_example_src_libspexample_la_LIBADD) $(LIBS)
 plugins/sep/$(am__dirstamp):
 	@$(MKDIR_P) plugins/sep
 	@: > plugins/sep/$(am__dirstamp)
@@ -632,7 +645,7 @@ plugins/sep/src/$(am__dirstamp):
 	@: > plugins/sep/src/$(am__dirstamp)
 
 plugins/sep/src/libspsep.la: $(plugins_sep_src_libspsep_la_OBJECTS) $(plugins_sep_src_libspsep_la_DEPENDENCIES) $(EXTRA_plugins_sep_src_libspsep_la_DEPENDENCIES) plugins/sep/src/$(am__dirstamp)
-	$(AM_V_CXXLD)$(CXXLINK) -rpath $(plugindir) $(plugins_sep_src_libspsep_la_OBJECTS) $(plugins_sep_src_libspsep_la_LIBADD) $(LIBS)
+	$(AM_V_CXXLD)$(plugins_sep_src_libspsep_la_LINK) -rpath $(plugindir) $(plugins_sep_src_libspsep_la_OBJECTS) $(plugins_sep_src_libspsep_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

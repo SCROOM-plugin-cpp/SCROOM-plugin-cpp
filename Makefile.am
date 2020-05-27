@@ -45,7 +45,8 @@ plugins_sep_src_libspsep_la_SOURCES = \
 
 plugins_sep_src_libspsep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ -ltiff
 
-plugins_sep_src_libspsep_la_LDFLAGS = $(loadflag)
+
+plugins_sep_src_libspsep_la_LDFLAGS = $(loadflag) -I../scroom/gui/src/
 
 ########################################################################
 ### Wrapping up
