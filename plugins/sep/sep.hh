@@ -29,9 +29,11 @@ public:
 
 	virtual std::list<GtkFileFilter *> getFilters();
 	virtual PresentationInterface::Ptr open(const std::string &fileName);
-	std::string findPathToTiff(std::string tiff, std::string sep_directory);
+	std::string findPathToTiff(std::string sep_directory);
 	std::map<std::string, std::string> parseSep(const std::string &fileName);
-	////////////////////////////////////////////////////////////////////////
+	// void fillTiles(int startLine, int lineCount, int tileWidth,
+	// 			   int firstTile, std::vector<Tile::Ptr> &tiles);
+		////////////////////////////////////////////////////////////////////////
 
-	virtual ~Sep();
+		virtual ~Sep();
 };

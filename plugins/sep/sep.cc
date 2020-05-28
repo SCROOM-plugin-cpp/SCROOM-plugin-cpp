@@ -12,6 +12,7 @@
 #include <map>
 #include <boost/algorithm/string/trim.hpp>
 #include "scroom/transformpresentation.hh"
+#include "scroom/tile.hh"
 
 // #include "tiff.hh"
 // #include "../../scroom/gui/src/view.hh"
@@ -73,7 +74,12 @@ std::list<GtkFileFilter *> Sep::getFilters()
 	return result;
 }
 
-std::string Sep::findPathToTiff(std::string tiff, std::string sep_directory)
+/**
+ * As SEP file only gives the name of the TIFF files, 
+ * we need to find the path in which these TIFF files are located,
+ * which is going to be the same as SEP and can be extracted from SEP fileName.
+ */
+std::string Sep::findPathToTiff(std::string sep_directory)
 {
 	std::string directory;
 	const size_t last_slash_idx = sep_directory.rfind('/');
@@ -86,13 +92,12 @@ std::string Sep::findPathToTiff(std::string tiff, std::string sep_directory)
 
 	boost::algorithm::trim(directory);
 
-	std::string path = (std::string)directory + tiff;
-
-	boost::algorithm::trim(path);
-
-	return path;
+	return directory;
 }
 
+/**
+ * Parses the content of the file into a map. 
+ */
 std::map<std::string, std::string> Sep::parseSep(const std::string &fileName)
 {
 	std::ifstream file(fileName); // open file stream
@@ -137,10 +142,33 @@ PresentationInterface::Ptr Sep::open(const std::string &fileName)
 	// otherwise it uses specced channels i.e. CMYKW+
 	bool simple_channels = file_content.size() == 6;
 
-	std::string path = Sep::findPathToTiff(file_content["C"], fileName);
+	std::string current_path = Sep::findPathToTiff(fileName);
+
+	std::string path = (std::string)current_path + file_content["M"];
+
+	boost::algorithm::trim(path);
 
 	std::cout << "what's up" << std::endl;
 	std::cout << path << std::endl;
+
+	tdata_t buf;
+	TIFF *tif = TIFFOpen(path.c_str(), "r");
+	if (tif)
+	{
+		uint32 imagelength;
+		uint32 row;
+
+		TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &imagelength);
+		buf = _TIFFmalloc(TIFFScanlineSize(tif));
+		for (row = 0; row < imagelength; row++)
+			TIFFReadScanline(tif, buf, row);
+		_TIFFfree(buf);
+		TIFFClose(tif);
+	}
+
+	std::cout << buf << std::endl;
+
+	std::cout << tif << "\n";
 
 	auto result = host->loadPresentation((std::string)path);
 
