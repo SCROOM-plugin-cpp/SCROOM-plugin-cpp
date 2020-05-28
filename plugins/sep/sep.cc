@@ -109,12 +109,18 @@ PresentationInterface::Ptr Sep::open(const std::string &fileName)
 	// otherwise it uses specced channels i.e. CMYKW+
 	bool simple_channels = file_content.size() == 6;
 
-	auto tiff = TIFFOpen("/home/ubuntu/Documents/swathStack_4pass_Triangles/M_6.tif", "r");
-
-	std::cout << tiff << "\n";
-
 	const std::string path = "/home/ubuntu/Documents/swathStack_4pass_Triangles/M_6.tif";
 
+	auto tiff = TIFFOpen(path.c_str(), "r");
+
+	uint16 *r, *g, *b;
+	int x = TIFFGetField(tiff, TIFFTAG_COLORMAP, &r, &g, &b);
+
+	int i = 5057;
+
+	std::cout << r[i] << "\t" << g[i] << "\t" << b[i] << "\n";
+
 	auto result = host->loadPresentation(path);
+
 	return result;
 }
