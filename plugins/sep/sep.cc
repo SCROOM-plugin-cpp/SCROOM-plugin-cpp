@@ -136,43 +136,54 @@ std::map<std::string, std::string> Sep::parseSep(const std::string &fileName)
 
 PresentationInterface::Ptr Sep::open(const std::string &fileName)
 {
+
 	std::map<std::string, std::string> file_content = Sep::parseSep(fileName);
 
 	// if file has 6 lines (width, height, CMYK) , then it a simple cmyk
 	// otherwise it uses specced channels i.e. CMYKW+
-	bool simple_channels = file_content.size() == 6;
+	int channels = file_content.size() - 2;
+	int height = (int)std::stoi(file_content["height"]);
+	int width = (int)std::stoi(file_content["width"]);
 
-	std::string current_path = Sep::findPathToTiff(fileName);
+	int* image_data[][][] = int[height][width][channels];
 
-	std::string path = (std::string)current_path + file_content["M"];
+	std::map<std::string, std::string>::iterator it = file_content.begin();
+	it++;
+	it++;
+	int channel = 0;
 
-	boost::algorithm::trim(path);
+	std::cout << "joe mama" << std::endl;
 
-	TIFF *tif = TIFFOpen(path.c_str(), "r");
-
-	const size_t scanLineSize = static_cast<size_t>(TIFFScanlineSize(tif));
-	std::vector<byte> row(scanLineSize);
-
-	auto dataPtr = std::vector<byte *>(2);
-
-	std::cout << "what's up" << std::endl;
-	std::cout << path << std::endl;
-
-	if (tif)
+	while (it != file_content.end())
 	{
+		std::string current_path = Sep::findPathToTiff(fileName);
+		std::string path = (std::string)current_path + it->second;
+		boost::algorithm::trim(path);
+		TIFF *tif = TIFFOpen(path.c_str(), "r");
+		if (tif)
+		{
+			const size_t scanLineSize = static_cast<size_t>(TIFFScanlineSize(tif));
+			std::vector<byte> row(scanLineSize);
+
+			uint32 imagelength;
+
+			TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &imagelength);
+			for (int i = 0; i < imagelength; i++)
+			{
+				TIFFReadScanline(tif, row.data(), i);
+				for (int j = 0; j < width; j++)
+				{
+					image_data[i][j][channel] = row[j];
+				}
+			}
+		}
+		TIFFClose(tif);
+		channel++;
+		it++;
 	}
-	uint32 imagelength;
 
-	TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &imagelength);
-	for (int i = 0; i < imagelength; i++)
-	{
-		TIFFReadScanline(tif, row.data(), i);
-		std::cout << (int) row [3000] << std::endl;
-	}
+	std::cout << image_data[3000][500][1] << "\n";
+	// auto result = host->loadPresentation((std::string)path);
 
-	TIFFClose(tif);
-
-	auto result = host->loadPresentation((std::string)path);
-
-	return result;
+	return nullptr;
 }
