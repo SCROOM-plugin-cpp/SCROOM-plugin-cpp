@@ -154,8 +154,6 @@ plugins_sep_src_libspsep_la_DEPENDENCIES =
 am_plugins_sep_src_libspsep_la_OBJECTS =  \
 	plugins/sep/plugins_sep_src_libspsep_la-sep.lo \
 	plugins/sep/plugins_sep_src_libspsep_la-seppresentation.lo \
-	plugins/sep/plugins_sep_src_libspsep_la-tiff.lo \
-	plugins/sep/plugins_sep_src_libspsep_la-tiffpresentation.lo \
 	plugins/sep/plugins_sep_src_libspsep_la-main.lo
 plugins_sep_src_libspsep_la_OBJECTS =  \
 	$(am_plugins_sep_src_libspsep_la_OBJECTS)
@@ -484,10 +482,6 @@ plugins_sep_src_libspsep_la_SOURCES = \
 	plugins/sep/sep.hh \
 	plugins/sep/seppresentation.cc \
 	plugins/sep/seppresentation.hh \
-	plugins/sep/tiff.cc \
-	plugins/sep/tiff.hh \
-	plugins/sep/tiffpresentation.cc \
-	plugins/sep/tiffpresentation.hh \
 	plugins/sep/main.cc
 
 plugins_sep_src_libspsep_la_LIBADD = -lgtk-x11-2.0 -lgdk-x11-2.0 -lpangocairo-1.0 -latk-1.0 -lgdk_pixbuf-2.0 -lgio-2.0 -lpangoft2-1.0 -lpango-1.0 -lgobject-2.0 -lglib-2.0 -lfontconfig -lfreetype -lcairo -lboost_thread -lboost_system -lstiledbitmap -lsscroom -ltiff
@@ -631,12 +625,6 @@ plugins/sep/plugins_sep_src_libspsep_la-sep.lo:  \
 plugins/sep/plugins_sep_src_libspsep_la-seppresentation.lo:  \
 	plugins/sep/$(am__dirstamp) \
 	plugins/sep/$(DEPDIR)/$(am__dirstamp)
-plugins/sep/plugins_sep_src_libspsep_la-tiff.lo:  \
-	plugins/sep/$(am__dirstamp) \
-	plugins/sep/$(DEPDIR)/$(am__dirstamp)
-plugins/sep/plugins_sep_src_libspsep_la-tiffpresentation.lo:  \
-	plugins/sep/$(am__dirstamp) \
-	plugins/sep/$(DEPDIR)/$(am__dirstamp)
 plugins/sep/plugins_sep_src_libspsep_la-main.lo:  \
 	plugins/sep/$(am__dirstamp) \
 	plugins/sep/$(DEPDIR)/$(am__dirstamp)
@@ -663,8 +651,6 @@ include plugins/example/$(DEPDIR)/plugins_example_src_libspexample_la-main.Plo
 include plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-main.Plo
 include plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-sep.Plo
 include plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-seppresentation.Plo
-include plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-tiff.Plo
-include plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-tiffpresentation.Plo
 
 .cc.o:
 	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -724,20 +710,6 @@ plugins/sep/plugins_sep_src_libspsep_la-seppresentation.lo: plugins/sep/sepprese
 #	$(AM_V_CXX)source='plugins/sep/seppresentation.cc' object='plugins/sep/plugins_sep_src_libspsep_la-seppresentation.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o plugins/sep/plugins_sep_src_libspsep_la-seppresentation.lo `test -f 'plugins/sep/seppresentation.cc' || echo '$(srcdir)/'`plugins/sep/seppresentation.cc
-
-plugins/sep/plugins_sep_src_libspsep_la-tiff.lo: plugins/sep/tiff.cc
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT plugins/sep/plugins_sep_src_libspsep_la-tiff.lo -MD -MP -MF plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-tiff.Tpo -c -o plugins/sep/plugins_sep_src_libspsep_la-tiff.lo `test -f 'plugins/sep/tiff.cc' || echo '$(srcdir)/'`plugins/sep/tiff.cc
-	$(AM_V_at)$(am__mv) plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-tiff.Tpo plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-tiff.Plo
-#	$(AM_V_CXX)source='plugins/sep/tiff.cc' object='plugins/sep/plugins_sep_src_libspsep_la-tiff.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o plugins/sep/plugins_sep_src_libspsep_la-tiff.lo `test -f 'plugins/sep/tiff.cc' || echo '$(srcdir)/'`plugins/sep/tiff.cc
-
-plugins/sep/plugins_sep_src_libspsep_la-tiffpresentation.lo: plugins/sep/tiffpresentation.cc
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT plugins/sep/plugins_sep_src_libspsep_la-tiffpresentation.lo -MD -MP -MF plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-tiffpresentation.Tpo -c -o plugins/sep/plugins_sep_src_libspsep_la-tiffpresentation.lo `test -f 'plugins/sep/tiffpresentation.cc' || echo '$(srcdir)/'`plugins/sep/tiffpresentation.cc
-	$(AM_V_at)$(am__mv) plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-tiffpresentation.Tpo plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-tiffpresentation.Plo
-#	$(AM_V_CXX)source='plugins/sep/tiffpresentation.cc' object='plugins/sep/plugins_sep_src_libspsep_la-tiffpresentation.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o plugins/sep/plugins_sep_src_libspsep_la-tiffpresentation.lo `test -f 'plugins/sep/tiffpresentation.cc' || echo '$(srcdir)/'`plugins/sep/tiffpresentation.cc
 
 plugins/sep/plugins_sep_src_libspsep_la-main.lo: plugins/sep/main.cc
 	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT plugins/sep/plugins_sep_src_libspsep_la-main.lo -MD -MP -MF plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-main.Tpo -c -o plugins/sep/plugins_sep_src_libspsep_la-main.lo `test -f 'plugins/sep/main.cc' || echo '$(srcdir)/'`plugins/sep/main.cc

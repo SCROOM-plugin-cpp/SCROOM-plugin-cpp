@@ -10,6 +10,7 @@
 #include <tiffio.h>
 #include <iostream>
 #include <map>
+#include <boost/algorithm/string/trim.hpp>
 #include "scroom/transformpresentation.hh"
 
 // #include "tiff.hh"
@@ -109,18 +110,26 @@ PresentationInterface::Ptr Sep::open(const std::string &fileName)
 	// otherwise it uses specced channels i.e. CMYKW+
 	bool simple_channels = file_content.size() == 6;
 
-	const std::string path = "/home/ubuntu/Documents/swathStack_4pass_Triangles/M_6.tif";
+	// boost::filesystem::path p(fileName);
+	// boost::filesystem::path dir = p.parent_path();
 
-	auto tiff = TIFFOpen(path.c_str(), "r");
+	std::string directory;
+	const size_t last_slash_idx = fileName.rfind('/');
+	if (std::string::npos != last_slash_idx)
+	{
+		directory = fileName.substr(0, last_slash_idx+1);
+	}
 
-	uint16 *r, *g, *b;
-	int x = TIFFGetField(tiff, TIFFTAG_COLORMAP, &r, &g, &b);
+	boost::algorithm::trim(directory);
 
-	int i = 5057;
+	std::string path = (std::string) directory + file_content["C"];
 
-	std::cout << r[i] << "\t" << g[i] << "\t" << b[i] << "\n";
 
-	auto result = host->loadPresentation(path);
+	boost::algorithm::trim(path);
+
+	std::cout << path << std::endl;
+
+	auto result = host->loadPresentation((std::string) path);
 
 	return result;
 }
