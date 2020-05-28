@@ -73,7 +73,27 @@ std::list<GtkFileFilter *> Sep::getFilters()
 	return result;
 }
 
-PresentationInterface::Ptr Sep::open(const std::string &fileName)
+std::string Sep::findPathToTiff(std::string tiff, std::string sep_directory)
+{
+	std::string directory;
+	const size_t last_slash_idx = sep_directory.rfind('/');
+	if (std::string::npos != last_slash_idx)
+	{
+		// normally this would fail edge cases, but since we only get passed a
+		// path with sep file at the end, this should be fine
+		directory = sep_directory.substr(0, last_slash_idx + 1);
+	}
+
+	boost::algorithm::trim(directory);
+
+	std::string path = (std::string)directory + tiff;
+
+	boost::algorithm::trim(path);
+
+	return path;
+}
+
+std::map<std::string, std::string> Sep::parseSep(const std::string &fileName)
 {
 	std::ifstream file(fileName); // open file stream
 	std::string str;			  // just a temporary variable
@@ -106,30 +126,23 @@ PresentationInterface::Ptr Sep::open(const std::string &fileName)
 		line++;
 	}
 
+	return file_content;
+}
+
+PresentationInterface::Ptr Sep::open(const std::string &fileName)
+{
+	std::map<std::string, std::string> file_content = Sep::parseSep(fileName);
+
 	// if file has 6 lines (width, height, CMYK) , then it a simple cmyk
 	// otherwise it uses specced channels i.e. CMYKW+
 	bool simple_channels = file_content.size() == 6;
 
-	// boost::filesystem::path p(fileName);
-	// boost::filesystem::path dir = p.parent_path();
+	std::string path = Sep::findPathToTiff(file_content["C"], fileName);
 
-	std::string directory;
-	const size_t last_slash_idx = fileName.rfind('/');
-	if (std::string::npos != last_slash_idx)
-	{
-		directory = fileName.substr(0, last_slash_idx+1);
-	}
-
-	boost::algorithm::trim(directory);
-
-	std::string path = (std::string) directory + file_content["C"];
-
-
-	boost::algorithm::trim(path);
-
+	std::cout << "what's up" << std::endl;
 	std::cout << path << std::endl;
 
-	auto result = host->loadPresentation((std::string) path);
+	auto result = host->loadPresentation((std::string)path);
 
 	return result;
 }
