@@ -148,27 +148,29 @@ PresentationInterface::Ptr Sep::open(const std::string &fileName)
 
 	boost::algorithm::trim(path);
 
+	TIFF *tif = TIFFOpen(path.c_str(), "r");
+
+	const size_t scanLineSize = static_cast<size_t>(TIFFScanlineSize(tif));
+	std::vector<byte> row(scanLineSize);
+
+	auto dataPtr = std::vector<byte *>(2);
+
 	std::cout << "what's up" << std::endl;
 	std::cout << path << std::endl;
 
-	tdata_t buf;
-	TIFF *tif = TIFFOpen(path.c_str(), "r");
 	if (tif)
 	{
-		uint32 imagelength;
-		uint32 row;
+	}
+	uint32 imagelength;
 
-		TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &imagelength);
-		buf = _TIFFmalloc(TIFFScanlineSize(tif));
-		for (row = 0; row < imagelength; row++)
-			TIFFReadScanline(tif, buf, row);
-		_TIFFfree(buf);
-		TIFFClose(tif);
+	TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &imagelength);
+	for (int i = 0; i < imagelength; i++)
+	{
+		TIFFReadScanline(tif, row.data(), i);
+		std::cout << (int) row [3000] << std::endl;
 	}
 
-	std::cout << buf << std::endl;
-
-	std::cout << tif << "\n";
+	TIFFClose(tif);
 
 	auto result = host->loadPresentation((std::string)path);
 
