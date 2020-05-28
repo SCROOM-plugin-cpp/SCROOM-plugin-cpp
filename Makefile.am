@@ -36,10 +36,6 @@ plugins_sep_src_libspsep_la_SOURCES = \
 	plugins/sep/sep.hh \
 	plugins/sep/seppresentation.cc \
 	plugins/sep/seppresentation.hh \
-	plugins/sep/tiff.cc \
-	plugins/sep/tiff.hh \
-	plugins/sep/tiffpresentation.cc \
-	plugins/sep/tiffpresentation.hh \
 	plugins/sep/main.cc
 
 
