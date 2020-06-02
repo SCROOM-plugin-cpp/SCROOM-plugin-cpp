@@ -25,87 +25,86 @@
  * The motivation for having this class and not implement SourcePresentation directly in SepPresentation
  * is to avoid a memory leak through cyclic dependencies
  */
-class SepSource: public SourcePresentation
+class SepSource : public SourcePresentation
 {
 public:
-  typedef boost::shared_ptr<SepSource> Ptr;
+	typedef boost::shared_ptr<SepSource> Ptr;
 
 private:
-  SepSource();
-
+	SepSource();
+	
 public:
-  ~SepSource();
-  static Ptr create();
+	~SepSource();
+	static Ptr create();
 
-  ////////////////////////////////////////////////////////////////////////
-  // SourcePresentation
-  ////////////////////////////////////////////////////////////////////////
-  virtual void fillTiles(int startLine, int lineCount, int tileWidth, int firstTile, std::vector<Tile::Ptr>& tiles);
-  virtual void done();
-
+	////////////////////////////////////////////////////////////////////////
+	// SourcePresentation
+	////////////////////////////////////////////////////////////////////////
+	virtual void fillTiles(int startLine, int lineCount, int tileWidth, int firstTile, std::vector<Tile::Ptr> &tiles);
+	virtual void done();
 };
 
-
 class SepPresentation : public PresentationBase,
-                        public virtual Scroom::Utils::Base
+						public virtual Scroom::Utils::Base
 {
 public:
-  typedef boost::shared_ptr<SepPresentation> Ptr;
+	typedef boost::shared_ptr<SepPresentation> Ptr;
+	// static std::vector<std::string> tifs;
 
 private:
-  typedef std::set<ViewInterface::WeakPtr> Views;
+	typedef std::set<ViewInterface::WeakPtr> Views;
 
-  std::string fileName;
-  int height;
-  int width;
-  TiledBitmapInterface::Ptr tbi;
-  int bps;
-  int spp;
-  std::map<std::string, std::string> properties;
-  Views views;
-  TransformationData::Ptr transformationData;
-  ScroomInterface::Ptr scroomInterface;
-  SepSource::Ptr sepSource;
+	std::string fileName;
+	int height;
+	int width;
+	TiledBitmapInterface::Ptr tbi;
+	int bps;
+	int spp;
+	std::map<std::string, std::string> properties;
+	Views views;
+	TransformationData::Ptr transformationData;
+	ScroomInterface::Ptr scroomInterface;
+	SepSource::Ptr sepSource;
+
 
 private:
-  SepPresentation(ScroomInterface::Ptr scroomInterface_);
+	SepPresentation(ScroomInterface::Ptr scroomInterface_);
 
-  virtual std::string findPathToTiff(std::string sep_directory);
-	virtual std::map<std::string, std::string> parseSep(const std::string &fileName);
+	virtual std::string findPath(std::string sep_directory);
+	virtual std::vector<std::string> parseSep(const std::string &fileName);
 
 public:
-  virtual ~SepPresentation();
+	virtual ~SepPresentation();
 
-  static Ptr create(ScroomInterface::Ptr scroomInterface_);
+	static Ptr create(ScroomInterface::Ptr scroomInterface_);
 
-  /**
+	/**
    * Called when this presentation should go away.
    *
    * Note that this doesn't happen automatically, since the
    * TiledBitmapInterface has a reference to this presentation, via
    * the SourcePresentation.
    */
-  void destroy();
+	void destroy();
 
-  virtual bool load(const std::string& fileName);
-  TransformationData::Ptr getTransformationData() const;
+	virtual bool load(const std::string &fileName);
+	TransformationData::Ptr getTransformationData() const;
 
-  ////////////////////////////////////////////////////////////////////////
-  // PresentationInterface
-  ////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////
+	// PresentationInterface
+	////////////////////////////////////////////////////////////////////////
 
-  virtual Scroom::Utils::Rectangle<double> getRect();
-  virtual void redraw(ViewInterface::Ptr const& vi, cairo_t* cr, Scroom::Utils::Rectangle<double> presentationArea, int zoom);
-  virtual bool getProperty(const std::string& name, std::string& value);
-  virtual bool isPropertyDefined(const std::string& name);
-  virtual std::string getTitle();
+	virtual Scroom::Utils::Rectangle<double> getRect();
+	virtual void redraw(ViewInterface::Ptr const &vi, cairo_t *cr, Scroom::Utils::Rectangle<double> presentationArea, int zoom);
+	virtual bool getProperty(const std::string &name, std::string &value);
+	virtual bool isPropertyDefined(const std::string &name);
+	virtual std::string getTitle();
 
-  ////////////////////////////////////////////////////////////////////////
-  // PresentationBase
-  ////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////
+	// PresentationBase
+	////////////////////////////////////////////////////////////////////////
 
-  virtual void viewAdded(ViewInterface::WeakPtr viewInterface);
-  virtual void viewRemoved(ViewInterface::WeakPtr vi);
-  virtual std::set<ViewInterface::WeakPtr> getViews();
-
+	virtual void viewAdded(ViewInterface::WeakPtr viewInterface);
+	virtual void viewRemoved(ViewInterface::WeakPtr vi);
+	virtual std::set<ViewInterface::WeakPtr> getViews();
 };

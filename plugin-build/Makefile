@@ -152,9 +152,12 @@ plugins_example_src_libspexample_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	$@
 plugins_sep_src_libspsep_la_DEPENDENCIES =
 am_plugins_sep_src_libspsep_la_OBJECTS =  \
+	plugins/sep/plugins_sep_src_libspsep_la-main.lo \
 	plugins/sep/plugins_sep_src_libspsep_la-sep.lo \
 	plugins/sep/plugins_sep_src_libspsep_la-seppresentation.lo \
-	plugins/sep/plugins_sep_src_libspsep_la-main.lo
+	plugins/sep/sli/plugins_sep_src_libspsep_la-slipresentation.lo \
+	plugins/sep/sli/plugins_sep_src_libspsep_la-slicontrolpanel.lo \
+	plugins/sep/sli/plugins_sep_src_libspsep_la-slilayer.lo
 plugins_sep_src_libspsep_la_OBJECTS =  \
 	$(am_plugins_sep_src_libspsep_la_OBJECTS)
 plugins_sep_src_libspsep_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
@@ -478,11 +481,17 @@ sep_plugin_libs = \
 
 plugins_sep_src_libspsep_la_CPPFLAGS = -pthread -I/usr/include/gtk-2.0 -I/usr/lib/x86_64-linux-gnu/gtk-2.0/include -I/usr/include/gio-unix-2.0/ -I/usr/include/cairo -I/usr/include/pango-1.0 -I/usr/include/atk-1.0 -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/libpng16 -I/usr/include/pango-1.0 -I/usr/include/harfbuzz -I/usr/include/pango-1.0 -I/usr/include/cairo -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/freetype2 -I/usr/include/libpng16
 plugins_sep_src_libspsep_la_SOURCES = \
+	plugins/sep/main.cc \
 	plugins/sep/sep.cc \
 	plugins/sep/sep.hh \
 	plugins/sep/seppresentation.cc \
 	plugins/sep/seppresentation.hh \
-	plugins/sep/main.cc
+	plugins/sep/sli/slipresentation.cc \
+	plugins/sep/sli/slipresentation.hh \
+	plugins/sep/sli/slicontrolpanel.cc \
+	plugins/sep/sli/slicontrolpanel.hh \
+	plugins/sep/sli/slilayer.cc \
+	plugins/sep/sli/slilayer.hh
 
 plugins_sep_src_libspsep_la_LIBADD = -lgtk-x11-2.0 -lgdk-x11-2.0 -lpangocairo-1.0 -latk-1.0 -lgdk_pixbuf-2.0 -lgio-2.0 -lpangoft2-1.0 -lpango-1.0 -lgobject-2.0 -lglib-2.0 -lfontconfig -lfreetype -lcairo -lboost_thread -lboost_system -lstiledbitmap -lsscroom -ltiff
 plugins_sep_src_libspsep_la_LDFLAGS = $(loadflag) -I../scroom/gui/src/
@@ -619,15 +628,30 @@ plugins/sep/$(am__dirstamp):
 plugins/sep/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) plugins/sep/$(DEPDIR)
 	@: > plugins/sep/$(DEPDIR)/$(am__dirstamp)
+plugins/sep/plugins_sep_src_libspsep_la-main.lo:  \
+	plugins/sep/$(am__dirstamp) \
+	plugins/sep/$(DEPDIR)/$(am__dirstamp)
 plugins/sep/plugins_sep_src_libspsep_la-sep.lo:  \
 	plugins/sep/$(am__dirstamp) \
 	plugins/sep/$(DEPDIR)/$(am__dirstamp)
 plugins/sep/plugins_sep_src_libspsep_la-seppresentation.lo:  \
 	plugins/sep/$(am__dirstamp) \
 	plugins/sep/$(DEPDIR)/$(am__dirstamp)
-plugins/sep/plugins_sep_src_libspsep_la-main.lo:  \
-	plugins/sep/$(am__dirstamp) \
-	plugins/sep/$(DEPDIR)/$(am__dirstamp)
+plugins/sep/sli/$(am__dirstamp):
+	@$(MKDIR_P) plugins/sep/sli
+	@: > plugins/sep/sli/$(am__dirstamp)
+plugins/sep/sli/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) plugins/sep/sli/$(DEPDIR)
+	@: > plugins/sep/sli/$(DEPDIR)/$(am__dirstamp)
+plugins/sep/sli/plugins_sep_src_libspsep_la-slipresentation.lo:  \
+	plugins/sep/sli/$(am__dirstamp) \
+	plugins/sep/sli/$(DEPDIR)/$(am__dirstamp)
+plugins/sep/sli/plugins_sep_src_libspsep_la-slicontrolpanel.lo:  \
+	plugins/sep/sli/$(am__dirstamp) \
+	plugins/sep/sli/$(DEPDIR)/$(am__dirstamp)
+plugins/sep/sli/plugins_sep_src_libspsep_la-slilayer.lo:  \
+	plugins/sep/sli/$(am__dirstamp) \
+	plugins/sep/sli/$(DEPDIR)/$(am__dirstamp)
 plugins/sep/src/$(am__dirstamp):
 	@$(MKDIR_P) plugins/sep/src
 	@: > plugins/sep/src/$(am__dirstamp)
@@ -641,6 +665,8 @@ mostlyclean-compile:
 	-rm -f plugins/example/*.lo
 	-rm -f plugins/sep/*.$(OBJEXT)
 	-rm -f plugins/sep/*.lo
+	-rm -f plugins/sep/sli/*.$(OBJEXT)
+	-rm -f plugins/sep/sli/*.lo
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -651,6 +677,9 @@ include plugins/example/$(DEPDIR)/plugins_example_src_libspexample_la-main.Plo
 include plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-main.Plo
 include plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-sep.Plo
 include plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-seppresentation.Plo
+include plugins/sep/sli/$(DEPDIR)/plugins_sep_src_libspsep_la-slicontrolpanel.Plo
+include plugins/sep/sli/$(DEPDIR)/plugins_sep_src_libspsep_la-slilayer.Plo
+include plugins/sep/sli/$(DEPDIR)/plugins_sep_src_libspsep_la-slipresentation.Plo
 
 .cc.o:
 	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -697,6 +726,13 @@ plugins/example/plugins_example_src_libspexample_la-main.lo: plugins/example/mai
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_example_src_libspexample_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o plugins/example/plugins_example_src_libspexample_la-main.lo `test -f 'plugins/example/main.cc' || echo '$(srcdir)/'`plugins/example/main.cc
 
+plugins/sep/plugins_sep_src_libspsep_la-main.lo: plugins/sep/main.cc
+	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT plugins/sep/plugins_sep_src_libspsep_la-main.lo -MD -MP -MF plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-main.Tpo -c -o plugins/sep/plugins_sep_src_libspsep_la-main.lo `test -f 'plugins/sep/main.cc' || echo '$(srcdir)/'`plugins/sep/main.cc
+	$(AM_V_at)$(am__mv) plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-main.Tpo plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-main.Plo
+#	$(AM_V_CXX)source='plugins/sep/main.cc' object='plugins/sep/plugins_sep_src_libspsep_la-main.lo' libtool=yes \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o plugins/sep/plugins_sep_src_libspsep_la-main.lo `test -f 'plugins/sep/main.cc' || echo '$(srcdir)/'`plugins/sep/main.cc
+
 plugins/sep/plugins_sep_src_libspsep_la-sep.lo: plugins/sep/sep.cc
 	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT plugins/sep/plugins_sep_src_libspsep_la-sep.lo -MD -MP -MF plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-sep.Tpo -c -o plugins/sep/plugins_sep_src_libspsep_la-sep.lo `test -f 'plugins/sep/sep.cc' || echo '$(srcdir)/'`plugins/sep/sep.cc
 	$(AM_V_at)$(am__mv) plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-sep.Tpo plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-sep.Plo
@@ -711,12 +747,26 @@ plugins/sep/plugins_sep_src_libspsep_la-seppresentation.lo: plugins/sep/sepprese
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o plugins/sep/plugins_sep_src_libspsep_la-seppresentation.lo `test -f 'plugins/sep/seppresentation.cc' || echo '$(srcdir)/'`plugins/sep/seppresentation.cc
 
-plugins/sep/plugins_sep_src_libspsep_la-main.lo: plugins/sep/main.cc
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT plugins/sep/plugins_sep_src_libspsep_la-main.lo -MD -MP -MF plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-main.Tpo -c -o plugins/sep/plugins_sep_src_libspsep_la-main.lo `test -f 'plugins/sep/main.cc' || echo '$(srcdir)/'`plugins/sep/main.cc
-	$(AM_V_at)$(am__mv) plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-main.Tpo plugins/sep/$(DEPDIR)/plugins_sep_src_libspsep_la-main.Plo
-#	$(AM_V_CXX)source='plugins/sep/main.cc' object='plugins/sep/plugins_sep_src_libspsep_la-main.lo' libtool=yes \
+plugins/sep/sli/plugins_sep_src_libspsep_la-slipresentation.lo: plugins/sep/sli/slipresentation.cc
+	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT plugins/sep/sli/plugins_sep_src_libspsep_la-slipresentation.lo -MD -MP -MF plugins/sep/sli/$(DEPDIR)/plugins_sep_src_libspsep_la-slipresentation.Tpo -c -o plugins/sep/sli/plugins_sep_src_libspsep_la-slipresentation.lo `test -f 'plugins/sep/sli/slipresentation.cc' || echo '$(srcdir)/'`plugins/sep/sli/slipresentation.cc
+	$(AM_V_at)$(am__mv) plugins/sep/sli/$(DEPDIR)/plugins_sep_src_libspsep_la-slipresentation.Tpo plugins/sep/sli/$(DEPDIR)/plugins_sep_src_libspsep_la-slipresentation.Plo
+#	$(AM_V_CXX)source='plugins/sep/sli/slipresentation.cc' object='plugins/sep/sli/plugins_sep_src_libspsep_la-slipresentation.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o plugins/sep/plugins_sep_src_libspsep_la-main.lo `test -f 'plugins/sep/main.cc' || echo '$(srcdir)/'`plugins/sep/main.cc
+#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o plugins/sep/sli/plugins_sep_src_libspsep_la-slipresentation.lo `test -f 'plugins/sep/sli/slipresentation.cc' || echo '$(srcdir)/'`plugins/sep/sli/slipresentation.cc
+
+plugins/sep/sli/plugins_sep_src_libspsep_la-slicontrolpanel.lo: plugins/sep/sli/slicontrolpanel.cc
+	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT plugins/sep/sli/plugins_sep_src_libspsep_la-slicontrolpanel.lo -MD -MP -MF plugins/sep/sli/$(DEPDIR)/plugins_sep_src_libspsep_la-slicontrolpanel.Tpo -c -o plugins/sep/sli/plugins_sep_src_libspsep_la-slicontrolpanel.lo `test -f 'plugins/sep/sli/slicontrolpanel.cc' || echo '$(srcdir)/'`plugins/sep/sli/slicontrolpanel.cc
+	$(AM_V_at)$(am__mv) plugins/sep/sli/$(DEPDIR)/plugins_sep_src_libspsep_la-slicontrolpanel.Tpo plugins/sep/sli/$(DEPDIR)/plugins_sep_src_libspsep_la-slicontrolpanel.Plo
+#	$(AM_V_CXX)source='plugins/sep/sli/slicontrolpanel.cc' object='plugins/sep/sli/plugins_sep_src_libspsep_la-slicontrolpanel.lo' libtool=yes \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o plugins/sep/sli/plugins_sep_src_libspsep_la-slicontrolpanel.lo `test -f 'plugins/sep/sli/slicontrolpanel.cc' || echo '$(srcdir)/'`plugins/sep/sli/slicontrolpanel.cc
+
+plugins/sep/sli/plugins_sep_src_libspsep_la-slilayer.lo: plugins/sep/sli/slilayer.cc
+	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT plugins/sep/sli/plugins_sep_src_libspsep_la-slilayer.lo -MD -MP -MF plugins/sep/sli/$(DEPDIR)/plugins_sep_src_libspsep_la-slilayer.Tpo -c -o plugins/sep/sli/plugins_sep_src_libspsep_la-slilayer.lo `test -f 'plugins/sep/sli/slilayer.cc' || echo '$(srcdir)/'`plugins/sep/sli/slilayer.cc
+	$(AM_V_at)$(am__mv) plugins/sep/sli/$(DEPDIR)/plugins_sep_src_libspsep_la-slilayer.Tpo plugins/sep/sli/$(DEPDIR)/plugins_sep_src_libspsep_la-slilayer.Plo
+#	$(AM_V_CXX)source='plugins/sep/sli/slilayer.cc' object='plugins/sep/sli/plugins_sep_src_libspsep_la-slilayer.lo' libtool=yes \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(plugins_sep_src_libspsep_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o plugins/sep/sli/plugins_sep_src_libspsep_la-slilayer.lo `test -f 'plugins/sep/sli/slilayer.cc' || echo '$(srcdir)/'`plugins/sep/sli/slilayer.cc
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -726,6 +776,7 @@ clean-libtool:
 	-rm -rf plugins/example/.libs plugins/example/_libs
 	-rm -rf plugins/example/src/.libs plugins/example/src/_libs
 	-rm -rf plugins/sep/.libs plugins/sep/_libs
+	-rm -rf plugins/sep/sli/.libs plugins/sep/sli/_libs
 	-rm -rf plugins/sep/src/.libs plugins/sep/src/_libs
 
 distclean-libtool:
@@ -991,6 +1042,8 @@ distclean-generic:
 	-rm -f plugins/example/src/$(am__dirstamp)
 	-rm -f plugins/sep/$(DEPDIR)/$(am__dirstamp)
 	-rm -f plugins/sep/$(am__dirstamp)
+	-rm -f plugins/sep/sli/$(DEPDIR)/$(am__dirstamp)
+	-rm -f plugins/sep/sli/$(am__dirstamp)
 	-rm -f plugins/sep/src/$(am__dirstamp)
 
 maintainer-clean-generic:
@@ -1003,7 +1056,7 @@ clean-am: clean-generic clean-libtool clean-pluginLTLIBRARIES \
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf plugins/example/$(DEPDIR) plugins/sep/$(DEPDIR)
+	-rm -rf plugins/example/$(DEPDIR) plugins/sep/$(DEPDIR) plugins/sep/sli/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-tags
@@ -1051,7 +1104,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf plugins/example/$(DEPDIR) plugins/sep/$(DEPDIR)
+	-rm -rf plugins/example/$(DEPDIR) plugins/sep/$(DEPDIR) plugins/sep/sli/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
