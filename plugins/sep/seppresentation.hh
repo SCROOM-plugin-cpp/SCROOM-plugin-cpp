@@ -76,9 +76,13 @@ private:
 public:
 	virtual ~SepPresentation();
 
-	static Ptr create(ScroomInterface::Ptr scroomInterface_);
+  /** Constructor to be called for a standalone SepPresentation to be passed to the Scroom core */
+  static Ptr create(ScroomInterface::Ptr scroomInterface_);
 
-	/**
+  /** Constructor to be called when only wanting to use the SepPresentation for parsing a SEP file */
+  static Ptr create();
+
+  /**
    * Called when this presentation should go away.
    *
    * Note that this doesn't happen automatically, since the
