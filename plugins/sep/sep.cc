@@ -76,4 +76,5 @@ void Sep::open(const std::string &fileName, ScroomInterface::Ptr const &scroomIn
 		presentation->load(fileName);
 		scroomInterface->showPresentation(presentation);
 	}
+
 }
