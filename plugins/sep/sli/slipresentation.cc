@@ -1,5 +1,4 @@
 #include "slipresentation.hh"
-#include "slicontrolpanel.hh"
 
 #include <tiffio.h>
 #include <string.h>
@@ -11,13 +10,17 @@
 #define TIFFGetFieldChecked(file, field, ...) \
 	if(1!=TIFFGetField(file, field, ##__VA_ARGS__)) \
 	  throw std::invalid_argument("Field not present in tiff file: " #field);
+    
+SliPresentationInterface::WeakPtr SliPresentation::weakPtrToThis;
 
 SliPresentation::SliPresentation(ScroomInterface::Ptr scroomInterface_): scroomInterface(scroomInterface_)
 {}
 
 SliPresentation::Ptr SliPresentation::create(ScroomInterface::Ptr scroomInterface_)
 {
-  return Ptr(new SliPresentation(scroomInterface_));
+  SliPresentation::Ptr result = Ptr(new SliPresentation(scroomInterface_));
+  weakPtrToThis = result;
+  return result;
 }
 
 SliPresentation::~SliPresentation()
@@ -103,6 +106,13 @@ void SliPresentation::parseSli(const std::string &fileName)
   }
 }
 
+////////////////////////////////////////////////////////////////////////
+// SliPresentationInterface
+
+void SliPresentation::toggleLayer(int index)
+{
+
+}
 ////////////////////////////////////////////////////////////////////////
 // PresentationInterface
 
@@ -200,7 +210,7 @@ std::string SliPresentation::getTitle()
 
 void SliPresentation::viewAdded(ViewInterface::WeakPtr viewInterface)
 {
-  SliControlPanel::create(viewInterface, static_cast<boost::shared_ptr<SliPresentation>>(this));
+  controlPanel = SliControlPanel::create(viewInterface, weakPtrToThis);
   views.insert(viewInterface);
 }
 

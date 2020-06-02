@@ -248,10 +248,14 @@ SliControlPanel::~SliControlPanel()
   printf("Multilayer control panel has been destroyed\n");
 }
 
-SliControlPanel::Ptr SliControlPanel::create(ViewInterface::WeakPtr viewWeak, SliPresentation::Ptr presentation_)
+SliControlPanel::Ptr SliControlPanel::create(ViewInterface::WeakPtr viewWeak, SliPresentationInterface::WeakPtr presentation_)
 {
   SliControlPanel::Ptr result = SliControlPanel::Ptr(new SliControlPanel(viewWeak));
   result->presentation = presentation_;
+
+  // Calling a function of the SliPresentation (needs to be defined in SliPresentationInterface)
+  //SliPresentationInterface::Ptr presPtr = presentation_.lock();
+  //presPtr->dummyfunc();
 
   return result;
 }
