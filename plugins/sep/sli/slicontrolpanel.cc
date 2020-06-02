@@ -248,9 +248,10 @@ SliControlPanel::~SliControlPanel()
   printf("Multilayer control panel has been destroyed\n");
 }
 
-SliControlPanel::Ptr SliControlPanel::create(ViewInterface::WeakPtr viewWeak)
+SliControlPanel::Ptr SliControlPanel::create(ViewInterface::WeakPtr viewWeak, SliPresentation::Ptr presentation_)
 {
   SliControlPanel::Ptr result = SliControlPanel::Ptr(new SliControlPanel(viewWeak));
+  result->presentation = presentation_;
 
   return result;
 }

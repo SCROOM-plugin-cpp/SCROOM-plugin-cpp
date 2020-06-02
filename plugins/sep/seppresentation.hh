@@ -68,7 +68,11 @@ private:
   SepSource::Ptr sepSource;
 
 private:
+  /** Constructor for a standalone SEP presentation to be passed to the Scroom core */
   SepPresentation(ScroomInterface::Ptr scroomInterface_);
+
+  /** Constructor for using the SEP presentation for parsing the SEP file */
+  SepPresentation();
 
   virtual std::string findPathToTiff(std::string sep_directory);
 	virtual std::map<std::string, std::string> parseSep(const std::string &fileName);
@@ -76,7 +80,11 @@ private:
 public:
   virtual ~SepPresentation();
 
+  /** Constructor to be called for a standalone SepPresentation to be passed to the Scroom core */
   static Ptr create(ScroomInterface::Ptr scroomInterface_);
+
+  /** Constructor to be called when only wanting to use the SepPresentation for parsing a SEP file */
+  static Ptr create();
 
   /**
    * Called when this presentation should go away.

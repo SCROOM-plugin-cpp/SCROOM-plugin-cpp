@@ -5,6 +5,10 @@ SepPresentation::SepPresentation(ScroomInterface::Ptr scroomInterface_): scroomI
   sepSource = SepSource::create();
 }
 
+SepPresentation::SepPresentation()
+{
+}
+
 SepPresentation::~SepPresentation()
 {
 }
@@ -12,6 +16,11 @@ SepPresentation::~SepPresentation()
 SepPresentation::Ptr SepPresentation::create(ScroomInterface::Ptr scroomInterface_)
 {
   return Ptr(new SepPresentation(scroomInterface_));
+}
+
+SepPresentation::Ptr SepPresentation::create()
+{
+  return Ptr(new SepPresentation());
 }
 
 /**

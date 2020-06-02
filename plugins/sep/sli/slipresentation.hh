@@ -17,7 +17,8 @@
 
 
 class SliPresentation : public PresentationBase,
-                        public virtual Scroom::Utils::Base
+                        public virtual Scroom::Utils::Base,
+                        public boost::enable_shared_from_this<SliPresentation>
 {
 public:
   typedef boost::shared_ptr<SliPresentation> Ptr;
@@ -34,7 +35,6 @@ private:
 
 private:
   SliPresentation(ScroomInterface::Ptr scroomInterface);
-  virtual void extractBitmap(TiledBitmapInterface::Ptr tiledBitmap, SliLayer::Ptr sliLayer);
 
 public:
   virtual ~SliPresentation();
