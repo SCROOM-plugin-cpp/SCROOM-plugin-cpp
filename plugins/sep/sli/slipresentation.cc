@@ -8,17 +8,12 @@
 #include <scroom/layeroperations.hh>
 #include <scroom/unused.hh>
 
-// Keep it simple for now and hardcode the allowed parameters
-#define BPS 8
-#define SPP 4
-
 #define TIFFGetFieldChecked(file, field, ...) \
 	if(1!=TIFFGetField(file, field, ##__VA_ARGS__)) \
 	  throw std::invalid_argument("Field not present in tiff file: " #field);
 
 SliPresentation::SliPresentation(ScroomInterface::Ptr scroomInterface_): scroomInterface(scroomInterface_)
-{
-}
+{}
 
 SliPresentation::Ptr SliPresentation::create(ScroomInterface::Ptr scroomInterface_)
 {
@@ -26,16 +21,15 @@ SliPresentation::Ptr SliPresentation::create(ScroomInterface::Ptr scroomInterfac
 }
 
 SliPresentation::~SliPresentation()
-{
-}
+{}
 
 /**
- * Populate the NaiveBitmap with the bitmap data from the TiledBitmap
+ * Populate the SliLayer's bitmap with the bitmap data from the TiledBitmap
  */ 
-void SliPresentation::extractBitmap(TiledBitmapInterface::Ptr tiledBitmap, NaiveBitmap::Ptr naiveBitmap)
+void SliPresentation::extractBitmap(TiledBitmapInterface::Ptr tiledBitmap, SliLayer::Ptr sliLayer)
 {
   Layer::Ptr bottomLayer = tiledBitmap->getBottomLayer();
-  std::vector<uint8_t*>* naiveBitmapData = naiveBitmap->getBitmap();
+  std::vector<uint8_t*>* sliBitmapData = sliLayer->getBitmap();
 
   int horTileCount = bottomLayer->getHorTileCount();
   int verTileCount = bottomLayer->getVerTileCount();
@@ -54,7 +48,7 @@ void SliPresentation::extractBitmap(TiledBitmapInterface::Ptr tiledBitmap, Naive
       for (int pixRow = 0; pixRow < constTile->height; pixRow++)
       {
         memcpy( &tileData + pixRow * tileBitWidth, 
-                &naiveBitmapData[j + pixRow] + i, 
+                &sliBitmapData[j + pixRow] + i, 
                 tileBitWidth);
       }
     }
@@ -71,81 +65,8 @@ void SliPresentation::extractBitmap(TiledBitmapInterface::Ptr tiledBitmap, Naive
  */
 bool SliPresentation::load(const std::string& fileName)
 {
-  parseSli(fileName);
-  PresentationInterface::Ptr interf = scroomInterface->loadPresentation(layers[0].filepath);
-
-  // // Hardcoded files for now
-  // std::vector<std::string> filenames;
-  // filenames.push_back("/home/marco/Desktop/cmyktif1.tif");
-  // filenames.push_back("/home/marco/Desktop/cmyktif2.tif");
-
-  for(auto const& layer : layers)
-  {
-    try
-    {
-      TIFF* tif = TIFFOpen(layer.filepath.c_str(), "r");
-      if (!tif)
-      {
-        printf("PANIC: Failed to open file %s\n", layer.filepath.c_str());
-        return false;
-      }
-
-      uint16 spp_ = 0;
-      if (1 != TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &spp_))
-        spp_ = 1; // Default value, according to tiff spec
-      if (spp_ != SPP)
-      {
-        printf("PANIC: Samples per pixel is not %d, but %d. Giving up\n", SPP, spp_);
-        return false;
-      }
-
-      uint16 bps_ = 0;
-      TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bps_);
-      if(bps_!=BPS)
-      {
-        printf("PANIC: Bits per sample is not %d, but %d. Giving up\n", BPS, bps_);
-        return false;
-      }
-
-      float resolutionX;
-      float resolutionY;
-      uint16 resolutionUnit;
-
-      if(TIFFGetField(tif, TIFFTAG_XRESOLUTION, &resolutionX) &&
-        TIFFGetField(tif, TIFFTAG_YRESOLUTION, &resolutionY) &&
-        TIFFGetField(tif, TIFFTAG_RESOLUTIONUNIT, &resolutionUnit))
-      {
-        if(resolutionUnit != RESUNIT_NONE)
-        {
-          // Fix aspect ratio only
-          float base = std::max(resolutionX, resolutionY);
-          resolutionX = resolutionX/base;
-          resolutionY = resolutionY/base;
-        }
-
-      }
-      else
-      {
-        resolutionX = 1;
-        resolutionY = 1;
-      }
-
-      int width, height;
-      TIFFGetFieldChecked(tif, TIFFTAG_IMAGEWIDTH, &width);
-      TIFFGetFieldChecked(tif, TIFFTAG_IMAGELENGTH, &height);
-      printf("This bitmap has size %d*%d, aspect ratio %.1f*%.1f\n",
-            width, height, 1/resolutionX, 1/resolutionY);
-
-      bitmaps.push_back(NaiveBitmap::create(tif));
-
-      TIFFClose(tif);
-    } 
-    catch (const std::exception& ex)
-    {
-      printf("PANIC: %s\n", ex.what());
-      return false;
-    }
-  }
+  parseSli(fileName); // TODO catch possible exceptions
+  PresentationInterface::Ptr interf = scroomInterface->loadPresentation(layers[0]->getFilepath());
   return true;
 }
 
@@ -161,10 +82,10 @@ Scroom::Utils::Rectangle<double> SliPresentation::getRect()
 
   int width = 0;
   int height = 0;
-  for (NaiveBitmap::Ptr bitmap: bitmaps)
+  for (auto layer: layers)
   {
-    width = std::max(bitmap->getWidth(), width);
-    height = std::max(bitmap->getHeight(), height);
+    width = std::max(layer->getWidth(), width);
+    height = std::max(layer->getHeight(), height);
   }
   rect.width = width;
   rect.height = height;
@@ -199,12 +120,11 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
   Scroom::Utils::Rectangle<double> actualPresentationArea = getRect();
   drawOutOfBoundsWithBackground(cr, presentArea, actualPresentationArea, pp);
 
-  NaiveBitmap::Ptr image = bitmaps[0];
+  SliLayer::Ptr image = layers[0];
   auto image_data = image->getBitmap();
   int height = image->getHeight();
   int width = image->getWidth();
 
-  // std::cout << image->getWidth() << "." << image->getHeight() << std::endl;
   for (int y = 0; y < height; y++)
   {
     uint8_t *row = (*image_data)[y];
@@ -215,7 +135,7 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
       double M = static_cast<double>(row[x*SPP+1]);
       double Y = static_cast<double>(row[x*SPP+2]);
       double K = static_cast<double>(row[x*SPP+3]);
-      // printf("%f.%f.%f\n", C, M, Y, K);
+      // printf("%f.%f.%f.%f\n", C, M, Y, K);
 
       double black = (1 - K/255);
       double R = (1 - C/255) * black;
@@ -304,28 +224,23 @@ void SliPresentation::parseSli(const std::string &fileName)
     }
     else
     {
-      SliLayer layer; // TODO is this actually deleted afterwards?
       std::string directory = trim(fileName.substr(0, fileName.find_last_of("/\\")+1));
       std::string filename = trim(str.substr(0,str.find(delimeter)));
       std::string name = filename.substr(0, filename.find("."));
-      layer.filepath = directory + filename;
-      layer.name = name;
+      std::string filepath = directory + filename;
+      int xoffset, yoffset;
 
       std::string temp = str.substr(str.find(delimeter)+1, std::string::npos);
       auto iss = std::istringstream{temp};
       auto token = std::string{};
       iss >> token;
-      layer.xoffset =  std::stoi(token);
+      xoffset =  std::stoi(token);
       iss >> token;
-      layer.yoffset =  std::stoi(token);
+      yoffset =  std::stoi(token);
 
+      SliLayer::Ptr layer = SliLayer::create(filepath, name, xoffset, yoffset);
       layers.push_back(layer);
     }
     line++;
   }
-}
-
-const std::vector<SliLayer>& SliPresentation::getLayers()
-{
-  return layers;
 }

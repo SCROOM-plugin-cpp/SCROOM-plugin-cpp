@@ -13,16 +13,8 @@
 #include <scroom/tiledbitmapinterface.hh>
 #include <scroom/tiledbitmaplayer.hh>
 
-#include "naive-bitmap.hh"
+#include "slilayer.hh"
 
-class SliLayer
-{
-  public:
-    std::string filepath; // absolute filepath to the tiff/sep file
-    std::string name; // filename without extension; used as an ID
-    int xoffset;
-    int yoffset;
-};
 
 class SliPresentation : public PresentationBase,
                         public virtual Scroom::Utils::Base
@@ -34,16 +26,15 @@ private:
   typedef std::set<ViewInterface::WeakPtr> Views;
   std::map<std::string, std::string> properties;
   Views views;
-  std::vector<NaiveBitmap::Ptr> bitmaps;
+  std::vector<SliLayer::Ptr> layers;
   ScroomInterface::Ptr scroomInterface;
+  int Xresolution;
+  int Yresolution;
   int bpp;
 
 private:
   SliPresentation(ScroomInterface::Ptr scroomInterface);
-  virtual void extractBitmap(TiledBitmapInterface::Ptr tiledBitmap, NaiveBitmap::Ptr naiveBitmap);
-  int Xresolution;
-  int Yresolution;
-  std::vector<SliLayer> layers;
+  virtual void extractBitmap(TiledBitmapInterface::Ptr tiledBitmap, SliLayer::Ptr sliLayer);
 
 public:
   virtual ~SliPresentation();
@@ -53,8 +44,8 @@ public:
   virtual bool load(const std::string& fileName);
 
   virtual void parseSli(const std::string &fileName);
-
-  virtual const std::vector<SliLayer>& getLayers();
+  // TODO look more into whether this is safe to do
+  std::vector<SliLayer::Ptr>& getLayers() {return layers;};
 
   ////////////////////////////////////////////////////////////////////////
   // PresentationInterface
@@ -73,5 +64,4 @@ public:
   virtual void viewAdded(ViewInterface::WeakPtr viewInterface);
   virtual void viewRemoved(ViewInterface::WeakPtr vi);
   virtual std::set<ViewInterface::WeakPtr> getViews();
-
 };
