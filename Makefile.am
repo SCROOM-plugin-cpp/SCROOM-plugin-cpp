@@ -32,15 +32,19 @@ sep_plugin_libs = \
 plugins_sep_src_libspsep_la_CPPFLAGS = @SEPPLUGIN_CFLAGS@
 
 plugins_sep_src_libspsep_la_SOURCES = \
+	plugins/sep/main.cc \
 	plugins/sep/sep.cc \
 	plugins/sep/sep.hh \
 	plugins/sep/seppresentation.cc \
 	plugins/sep/seppresentation.hh \
-	plugins/sep/main.cc
-
+	plugins/sep/sli/slipresentation.cc \
+	plugins/sep/sli/slipresentation.hh \
+	plugins/sep/sli/slicontrolpanel.cc \
+	plugins/sep/sli/slicontrolpanel.hh \
+	plugins/sep/sli/naive-bitmap.cc \
+	plugins/sep/sli/naive-bitmap.hh
 
 plugins_sep_src_libspsep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ -ltiff
-
 
 plugins_sep_src_libspsep_la_LDFLAGS = $(loadflag) -I../scroom/gui/src/
 
