@@ -66,9 +66,9 @@ std::list<GtkFileFilter *> Sep::getFilters()
 	std::list<GtkFileFilter *> result;
 
 	GtkFileFilter *filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, "SEP files");
-	// gtk_file_filter_add_mime_type(filter, "image/tiff"); // i think this has to be text/plain but not sure if that would cause any problems
-	gtk_file_filter_add_pattern(filter, "*.sep"); // maybe this one is better?
+	gtk_file_filter_set_name(filter, "SEP/SLI files");
+	gtk_file_filter_add_pattern(filter, "*.sep"); 
+	gtk_file_filter_add_pattern(filter, "*.sli");
 	result.push_back(filter);
 
 	return result;
@@ -136,54 +136,58 @@ std::map<std::string, std::string> Sep::parseSep(const std::string &fileName)
 
 PresentationInterface::Ptr Sep::open(const std::string &fileName)
 {
+	int index = fileName.rfind('.');
+	if (fileName.substr(index+1, std::string::npos) == "sep")
+		printf("sep file is detected");
+	else 
+		printf("sli file is detected.");
+	// std::map<std::string, std::string> file_content = Sep::parseSep(fileName);
 
-	std::map<std::string, std::string> file_content = Sep::parseSep(fileName);
+	// // if file has 6 lines (width, height, CMYK) , then it a simple cmyk
+	// // otherwise it uses specced channels i.e. CMYKW+
+	// int channels = file_content.size() - 2;
+	// int height = (int)std::stoi(file_content["height"]);
+	// int width = (int)std::stoi(file_content["width"]);
 
-	// if file has 6 lines (width, height, CMYK) , then it a simple cmyk
-	// otherwise it uses specced channels i.e. CMYKW+
-	int channels = file_content.size() - 2;
-	int height = (int)std::stoi(file_content["height"]);
-	int width = (int)std::stoi(file_content["width"]);
+	// int* image_data[][][] = int[height][width][channels];
 
-	int* image_data[][][] = int[height][width][channels];
+	// std::map<std::string, std::string>::iterator it = file_content.begin();
+	// it++;
+	// it++;
+	// int channel = 0;
 
-	std::map<std::string, std::string>::iterator it = file_content.begin();
-	it++;
-	it++;
-	int channel = 0;
+	// std::cout << "joe mama" << std::endl;
 
-	std::cout << "joe mama" << std::endl;
+	// while (it != file_content.end())
+	// {
+	// 	std::string current_path = Sep::findPathToTiff(fileName);
+	// 	std::string path = (std::string)current_path + it->second;
+	// 	boost::algorithm::trim(path);
+	// 	TIFF *tif = TIFFOpen(path.c_str(), "r");
+	// 	if (tif)
+	// 	{
+	// 		const size_t scanLineSize = static_cast<size_t>(TIFFScanlineSize(tif));
+	// 		std::vector<byte> row(scanLineSize);
 
-	while (it != file_content.end())
-	{
-		std::string current_path = Sep::findPathToTiff(fileName);
-		std::string path = (std::string)current_path + it->second;
-		boost::algorithm::trim(path);
-		TIFF *tif = TIFFOpen(path.c_str(), "r");
-		if (tif)
-		{
-			const size_t scanLineSize = static_cast<size_t>(TIFFScanlineSize(tif));
-			std::vector<byte> row(scanLineSize);
+	// 		uint32 imagelength;
 
-			uint32 imagelength;
+	// 		TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &imagelength);
+	// 		for (int i = 0; i < imagelength; i++)
+	// 		{
+	// 			TIFFReadScanline(tif, row.data(), i);
+	// 			for (int j = 0; j < width; j++)
+	// 			{
+	// 				image_data[i][j][channel] = row[j];
+	// 			}
+	// 		}
+	// 	}
+	// 	TIFFClose(tif);
+	// 	channel++;
+	// 	it++;
+	// }
 
-			TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &imagelength);
-			for (int i = 0; i < imagelength; i++)
-			{
-				TIFFReadScanline(tif, row.data(), i);
-				for (int j = 0; j < width; j++)
-				{
-					image_data[i][j][channel] = row[j];
-				}
-			}
-		}
-		TIFFClose(tif);
-		channel++;
-		it++;
-	}
-
-	std::cout << image_data[3000][500][1] << "\n";
-	// auto result = host->loadPresentation((std::string)path);
+	// std::cout << image_data[3000][500][1] << "\n";
+	// // auto result = host->loadPresentation((std::string)path);
 
 	return nullptr;
 }
