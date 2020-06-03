@@ -134,7 +134,7 @@ bool SepPresentation::load(const std::string &fileName)
 
 	delete[] image_data;
 
-	tbi = createTiledBitmap(width, height, );
+	//tbi = createTiledBitmap(width, height, );
 	tbi->setSource(shared_from_this<SourcePresentation>());
 
 	return false;
@@ -167,7 +167,7 @@ Scroom::Utils::Rectangle<double> SepPresentation::getRect()
 void SepPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
 							 Scroom::Utils::Rectangle<double> presentationArea, int zoom)
 {
-	drawOutOfBoundsWithoutBackground(cr, presentationArea, getRect(), pixelSizeFromZoom(zoom));
+	//drawOutOfBoundsWithoutBackground(cr, presentationArea, getRect(), pixelSizeFromZoom(zoom));
 
 	if (tbi)
 		tbi->redraw(vi, cr, presentationArea, zoom);

@@ -12,6 +12,6 @@ public:
 
   virtual void toggleLayer(int index)=0;
 
-  virtual void dummyfunc()=0;
+  //virtual void dummyfunc()=0;
 
 };

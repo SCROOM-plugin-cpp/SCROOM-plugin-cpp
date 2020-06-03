@@ -53,7 +53,7 @@ private:
 public:
   virtual ~SliPresentation();
 
-  virtual void dummyfunc();
+  //virtual void dummyfunc();
 
   static Ptr create(ScroomInterface::Ptr scroomInterface);
 
