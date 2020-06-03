@@ -1,7 +1,6 @@
 #include "slipresentation.hh"
 #include "../seppresentation.hh"
 
-#include <tiffio.h>
 #include <string.h>
 
 #include <scroom/cairo-helpers.hh>
@@ -104,7 +103,7 @@ void SliPresentation::parseSli(const std::string &fileName)
       if (tokens.size() > 1)
         std::get<1>(data) = std::stoi(tokens[1]);
       if (tokens.size() > 2)
-        std::get<2>(data) = std::stoi(tokens[1]);
+        std::get<2>(data) = std::stoi(tokens[2]);
 
       std::string name = std::get<0>(data).substr(0, std::get<0>(data).find("."));
       std::string filepath = directory + std::get<0>(data);
