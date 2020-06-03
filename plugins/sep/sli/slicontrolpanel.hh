@@ -3,6 +3,7 @@
 #include <scroom/unused.hh>
 
 #include "slipresentationinterface.hh"
+#include "slilayer.hh"
 
 class SliControlPanel: public boost::enable_shared_from_this<SliControlPanel>
 {
@@ -10,11 +11,17 @@ public:
   typedef boost::shared_ptr<SliControlPanel> Ptr;
 
 private:
+  /** The SliPresentation that owns this SliControlPanel */
   SliPresentationInterface::WeakPtr presentation;
+
+  /** The number of layers that the SliPresentation consists of*/
+  int n_layers;
 
 private:
   /** Constructor */
-  SliControlPanel(ViewInterface::WeakPtr viewWeak);
+  SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentationInterface::WeakPtr presentation_);
+
+  virtual GtkWidget * create_view_and_model();
 
 public:
   /** Constructor */

@@ -1,6 +1,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
+#include "slilayer.hh"
+
 
 class SliPresentationInterface
 {
@@ -12,6 +14,6 @@ public:
 
   virtual void toggleLayer(int index)=0;
 
-  //virtual void dummyfunc()=0;
+  virtual std::vector<SliLayer::Ptr>& getLayers()=0;
 
 };

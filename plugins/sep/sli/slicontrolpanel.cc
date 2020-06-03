@@ -122,35 +122,9 @@ static void on_toggle(GtkCellRendererToggle *renderer, gchar *path, GtkTreeView 
   }
 }
 
-// The model
-// TODO: making the model an instance variable might be a good idea
-static GtkTreeModel *create_model(int n_layers)
+GtkWidget * SliControlPanel::create_view_and_model()
 {
-  GtkListStore *list_store;
-  GtkTreeIter iter;
-
-  list_store = gtk_list_store_new(NUM_COLS,
-                                  G_TYPE_BOOLEAN,
-                                  G_TYPE_STRING);
-  char id[16];
-  int i = 0;
-  while (i < n_layers)
-  {
-    sprintf(id, "Layer %d", i);
-    gtk_list_store_append(list_store, &iter);
-    gtk_list_store_set(list_store, &iter,
-                       COL_VISIBILITY, TRUE,
-                       COL_ID, id,
-                       -1);
-    i++;
-  }
-
-  return GTK_TREE_MODEL(list_store);
-}
-
-// The view: only displays data from the model
-static GtkWidget *create_view_and_model(int n_layers)
-{
+  // Create the view ----------------------------------------
   GtkCellRenderer *renderer;
   GtkTreeModel *model;
   GtkWidget *treeview;
@@ -177,21 +151,41 @@ static GtkWidget *create_view_and_model(int n_layers)
                                               "text", COL_ID,
                                               NULL);
 
-  model = create_model(n_layers);
+  // Create the model ----------------------------------------
+  GtkListStore *list_store;
+  GtkTreeIter iter;
+  SliPresentationInterface::Ptr presPtr = presentation.lock();
 
-  gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), model);
+  list_store = gtk_list_store_new(NUM_COLS,
+                                  G_TYPE_BOOLEAN,
+                                  G_TYPE_STRING);
+
+  for (SliLayer::Ptr layer: presPtr->getLayers())
+  {
+    gtk_list_store_append(list_store, &iter);
+    gtk_list_store_set(list_store, &iter,
+                       COL_VISIBILITY, TRUE,
+                       COL_ID, layer->getName().c_str(),
+                       -1);
+  }
+
+  // Wrap up ----------------------------------------
+  gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), GTK_TREE_MODEL(list_store));
 
   /* The tree view has acquired its own reference to the
   *  model, so we can drop ours. That way the model will
   *  be freed automatically when the tree view is destroyed */
-  g_object_unref(model);
+  g_object_unref(list_store);
 
   return GTK_WIDGET(treeview);
 }
 
-SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak)
+SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentationInterface::WeakPtr presentation_): presentation(presentation_)
 {
   printf("Multilayer control panel has been created\n");
+  SliPresentationInterface::Ptr presPtr = presentation.lock();
+  std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
+  n_layers = layers.size();
 
   ViewInterface::Ptr view(viewWeak);
 
@@ -199,10 +193,7 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak)
             *slider_high,
             *treeview;
 
-  // TODO: this should be an instance variable
-  int n_layers = 5;
-  
-  treeview = create_view_and_model(n_layers);
+  treeview = create_view_and_model();
   slider_low = gtk_vscale_new_with_range(0, n_layers - 1, 1);
   slider_high = gtk_vscale_new_with_range(0, n_layers - 1, 1);
 
@@ -250,12 +241,7 @@ SliControlPanel::~SliControlPanel()
 
 SliControlPanel::Ptr SliControlPanel::create(ViewInterface::WeakPtr viewWeak, SliPresentationInterface::WeakPtr presentation_)
 {
-  SliControlPanel::Ptr result = SliControlPanel::Ptr(new SliControlPanel(viewWeak));
-  result->presentation = presentation_;
-
-  // Calling a function of the SliPresentation (needs to be defined in SliPresentationInterface)
-  //SliPresentationInterface::Ptr presPtr = presentation_.lock();
-  //presPtr->dummyfunc();
+  SliControlPanel::Ptr result = SliControlPanel::Ptr(new SliControlPanel(viewWeak, presentation_));
 
   return result;
 }
