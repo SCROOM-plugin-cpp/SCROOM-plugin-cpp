@@ -140,6 +140,16 @@ bool SepPresentation::load(const std::string &fileName)
 	return false;
 }
 
+/** 
+ * This function is only needed when the SepPresentation is used by the SliPresentation 
+ * to parse and retrieve a layer of an SLI file.
+ * Upon being called, it fills the bitmap and all other relevant attributes of the SliLayer.
+*/
+void SepPresentation::fillSliLayer(SliLayer::Ptr sliLayer)
+{
+	// TODO
+}
+
 ////////////////////////////////////////////////////////////////////////
 // PresentationInterface
 

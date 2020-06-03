@@ -1,4 +1,5 @@
 #include "slipresentation.hh"
+#include "../seppresentation.hh"
 
 #include <tiffio.h>
 #include <string.h>
@@ -100,6 +101,12 @@ void SliPresentation::parseSli(const std::string &fileName)
       yoffset =  std::stoi(token);
 
       SliLayer::Ptr layer = SliLayer::create(filepath, name, xoffset, yoffset);
+
+      // Getting the SliLayer filled by the SEP plugin, when it's done
+      //SliLayer::Ptr layer = SliLayer::create(filepath, name, xoffset, yoffset);
+      //SepPresentation::Ptr sepPresentation = SepPresentation::create();
+      //sepPresentation->fillSliLayer(layer);
+
       layers.push_back(layer);
     }
     line++;
@@ -113,6 +120,7 @@ void SliPresentation::toggleLayer(int index)
 {
 
 }
+
 ////////////////////////////////////////////////////////////////////////
 // PresentationInterface
 

@@ -18,6 +18,7 @@
 #include <scroom/tiledbitmapinterface.hh>
 #include <scroom/transformpresentation.hh>
 #include "scroom/tile.hh"
+#include "sli/slilayer.hh"
 
 //typedef struct Sep Sep;
 
@@ -68,7 +69,11 @@ private:
 
 
 private:
+	/** Constructor for a standalone SepPresentation to be passed to the Scroom core */
 	SepPresentation(ScroomInterface::Ptr scroomInterface_);
+
+	/** Constructor for using the SepPresentation for only parsing a SEP file */
+	SepPresentation();
 
 	virtual std::string findPath(std::string sep_directory);
 	virtual std::vector<std::string> parseSep(const std::string &fileName);
@@ -93,6 +98,8 @@ public:
 
 	virtual bool load(const std::string &fileName);
 	TransformationData::Ptr getTransformationData() const;
+
+	virtual void fillSliLayer(SliLayer::Ptr sliLayer);
 
 	////////////////////////////////////////////////////////////////////////
 	// PresentationInterface
