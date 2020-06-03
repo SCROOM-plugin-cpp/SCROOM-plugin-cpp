@@ -8,6 +8,7 @@
 #include <scroom/layeroperations.hh>
 #include <scroom/unused.hh>
 
+
 #define TIFFGetFieldChecked(file, field, ...) \
 	if(1!=TIFFGetField(file, field, ##__VA_ARGS__)) \
 	  throw std::invalid_argument("Field not present in tiff file: " #field);
@@ -69,38 +70,46 @@ void SliPresentation::parseSli(const std::string &fileName)
 {
   std::ifstream file(fileName);
   std::string str;
-  std::string delimeter = ":";
   int line = 0;
 
   while (std::getline(file, str))
   { 
     if (str.empty()) continue;
 
+    // Remove :
+    str.erase(std::remove(str.begin(), str.end(), ':'), str.end());
+
     if (line == 0)
     {
-      Xresolution = std::stoi(str.substr(str.find(delimeter)+1, std::string::npos));
+      Xresolution = std::stoi(str.substr(str.find(" ")+1, std::string::npos));
     }
     else if (line == 1)
     {
-      Yresolution = std::stoi(str.substr(str.find(delimeter)+1, std::string::npos));
+      Yresolution = std::stoi(str.substr(str.find(" ")+1, std::string::npos));
     }
     else
     {
       std::string directory = trim(fileName.substr(0, fileName.find_last_of("/\\")+1));
-      std::string filename = trim(str.substr(0,str.find(delimeter)));
-      std::string name = filename.substr(0, filename.find("."));
-      std::string filepath = directory + filename;
-      int xoffset, yoffset;
+      std::tuple<std::string, int, int> data {"Layer", 0, 0};
 
-      std::string temp = str.substr(str.find(delimeter)+1, std::string::npos);
-      auto iss = std::istringstream{temp};
+      std::vector<std::string> tokens;
+      auto iss = std::istringstream{str};
       auto token = std::string{};
-      iss >> token;
-      xoffset =  std::stoi(token);
-      iss >> token;
-      yoffset =  std::stoi(token);
+      while (iss >> token) {
+        tokens.push_back(trim(token));
+      }
 
-      SliLayer::Ptr layer = SliLayer::create(filepath, name, xoffset, yoffset);
+      if (tokens.size() > 0)
+        std::get<0>(data) = tokens[0];
+      if (tokens.size() > 1)
+        std::get<1>(data) = std::stoi(tokens[1]);
+      if (tokens.size() > 2)
+        std::get<2>(data) = std::stoi(tokens[1]);
+
+      std::string name = std::get<0>(data).substr(0, std::get<0>(data).find("."));
+      std::string filepath = directory + std::get<0>(data);
+
+      SliLayer::Ptr layer = SliLayer::create(filepath, name, std::get<1>(data), std::get<2>(data));
 
       // Getting the SliLayer filled by the SEP plugin, when it's done
       //SliLayer::Ptr layer = SliLayer::create(filepath, name, xoffset, yoffset);
