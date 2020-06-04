@@ -28,12 +28,11 @@ build-windows:
     - cp -r "C:/scroom/scroom_build/" "C:/build"
     # Build the plugin
     - if (Test-Path '.\plugin-build') { Remove-Item '.\plugin-build' -Recurse -Force; }
-    - C:/msys64/usr/bin/bash -c "git clone https://gitlab.com/sep-group-2/scroom-plugin-cpp"
-    - cd scroom-plugin-cpp
-    - C:/msys64/usr/bin/bash -c "git checkout $CI_COMMIT_SHA"
-    - C:/msys64/usr/bin/bash -c "autoreconf -i"
-    - C:/msys64/usr/bin/bash -c "./configure --prefix='C:/plugin-build' CPPFLAGS=-I/c/build/include/ LDFLAGS='-L/c/build/lib'"
-    - C:/msys64/usr/bin/bash -c "make install"
+    - C:/msys64/usr/bin/env MSYSTEM=MINGW64 c:/msys64/usr/bin/bash -l -c "cd /c/ && git clone https://gitlab.com/sep-group-2/scroom-plugin-cpp"
+    - C:/msys64/usr/bin/env MSYSTEM=MINGW64 c:/msys64/usr/bin/bash -l -c "cd /c/scroom-plugin-cpp && git checkout $CI_COMMIT_SHA"
+    - C:/msys64/usr/bin/env MSYSTEM=MINGW64 c:/msys64/usr/bin/bash -l -c "cd /c/scroom-plugin-cpp && autoreconf -i"
+    - C:/msys64/usr/bin/env MSYSTEM=MINGW64 c:/msys64/usr/bin/bash -l -c "cd /c/scroom-plugin-cpp && ./configure --prefix='C:/plugin-build' CPPFLAGS=-I/c/build/include/ LDFLAGS='-L/c/build/lib'"
+    - C:/msys64/usr/bin/env MSYSTEM=MINGW64 c:/msys64/usr/bin/bash -l -c "cd /c/scroom-plugin-cpp && make install"
     # Finally, we copy the build into the shared volume, so gitlab can upload it
     - if (Test-Path 'C:/builds/$CI_PROJECT_PATH/plugins') { Remove-Item 'C:/builds/$CI_PROJECT_PATH/plugins' -Recurse -Force; }
     - Copy-Item -Force -Recurse -Verbose "C:/plugin-build/lib/bin" -Destination "C:/builds/$CI_PROJECT_PATH/plugins"
@@ -54,7 +53,7 @@ build-linux:
     - rm -rf scroom
     - mkdir scroom
     - cd scroom
-    - curl -o scroom.zip -L "https://gitlab.com/api/v4/projects/18421652/jobs/artifacts/$SCROOM/download?job=linux-portable"
+    - curl -o scroom.zip -L "https://gitlab.com/api/v4/projects/18421652/jobs/artifacts/$SCROOM/download?job=linux-dev"
     - unzip scroom.zip
     - ls -l
     # Build the plugin
