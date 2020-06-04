@@ -1,7 +1,9 @@
 #include "seppresentation.hh"
+
 #include <scroom/cairo-helpers.hh>
 #include <scroom/layeroperations.hh>
-SepPresentation::SepPresentation(ScroomInterface::Ptr scroomInterface_) : scroomInterface(scroomInterface_)
+
+SepPresentation::SepPresentation(ScroomInterface::Ptr interface) : scroomInterface(interface)
 {
 	sepSource = SepSource::create();
 }
@@ -14,9 +16,9 @@ SepPresentation::~SepPresentation()
 {
 }
 
-SepPresentation::Ptr SepPresentation::create(ScroomInterface::Ptr scroomInterface_)
+SepPresentation::Ptr SepPresentation::create(ScroomInterface::Ptr interface)
 {
-	return Ptr(new SepPresentation(scroomInterface_));
+	return Ptr(new SepPresentation(interface));
 }
 
 SepPresentation::Ptr SepPresentation::create()
@@ -51,7 +53,7 @@ std::string SepPresentation::findPath(std::string sep_directory)
 std::vector<std::string> SepPresentation::parseSep(const std::string &fileName)
 {
 	std::ifstream file(fileName); // open file stream
-	std::string str;			  // just a temporary variable
+	std::string str;
 
 	std::string delimiter = ":";
 
@@ -70,53 +72,55 @@ std::vector<std::string> SepPresentation::parseSep(const std::string &fileName)
 	return file_content;
 }
 
-bool SepPresentation::load(const std::string &fileName)
-{
-
-	std::vector<std::string> file_content = SepPresentation::parseSep(fileName);
+/**
+ * This entire function should be rewritten to not use a temporary file and not
+ * rely on outdated CMYK support.
+ */
+bool SepPresentation::load(const std::string &fileName) {
+	std::vector<std::string> file_content = this->parseSep(fileName);
 
 	// if file has 6 lines (width, height, CMYK) , then it a simple cmyk
 	// otherwise it uses specced channels i.e. CMYKW+
 	int channels = file_content.size() - 2;
-	int height = (int)std::stoi(file_content[1]);
-	int width = (int)std::stoi(file_content[0]);
+	int width = std::stoi(file_content[0]);
+	int height = std::stoi(file_content[1]);
 
 	// initialize the bitmap array
-	byte *image_data = new byte[height * width * channels];
+	byte* image_data = new byte[height * width * channels];
 
-	//iterate through all channels, open the respective TIFF file for each channel and load the data from it
+	// iterate through all channels, open the respective TIFF file for each channel and load the data from it
 	int channel = 0;
-	for (unsigned int i = 2; i < file_content.size(); i++)
-	{
-		//fetch the path to the TIFF image, trim it, and open the image
-		std::string current_path = SepPresentation::findPath(fileName);
-		std::string path = (std::string)current_path + file_content[i];
+	std::string current_path = SepPresentation::findPath(fileName);
+	for (std::size_t i = 2; i < file_content.size(); i++) {
+		// fetch the path to the TIFF image, trim it, and open the image
+		std::string path = current_path + file_content[i];
 		boost::algorithm::trim(path);
+
 		TIFF *tiff = TIFFOpen(path.c_str(), "r");
-		//if the image is opened, scan it line by line and note down the data.
-		if (tiff)
-		{
+
+		if (tiff) {
 			const size_t scanLineSize = static_cast<size_t>(TIFFScanlineSize(tiff));
 			std::vector<byte> row(scanLineSize);
 
-			for (int h = 0; h < height; h++)
-			{
+			for (int h = 0; h < height; h++) {
 				TIFFReadScanline(tiff, row.data(), h);
-				for (int j = 0; j < width; j++)
-				{
+
+				for (int j = 0; j < width; j++) {
 					int index = channel + channels * (j + h * width);
-					image_data[index] = (byte)row[j];
+					image_data[index] = row[j];
 				}
 			}
+
+			// close the connection
+			TIFFClose(tiff);
 		}
-		//close the connection and move on to the next channel
-		TIFFClose(tiff);
+
+		// move on to the next channel
 		channel++;
 	}
 
 	//Create a temporary file in which the CMYK TIFF is to be stored
-	std::string temp_file = "temp.tif"; //fileName.substr(fileName.rfind('/') + 1, std::string::npos);
-	
+	std::string temp_file = "temp.tif"; // fileName.substr(fileName.rfind('/') + 1, std::string::npos);
 
 	//Establish a writing connection to the temporary file, and pass on suitable parameters (8bps, 4spp, w+h, extras)
 	TIFF *image = TIFFOpen(temp_file.c_str(), "w");
@@ -136,7 +140,8 @@ bool SepPresentation::load(const std::string &fileName)
 	for (int i = 0; i < height; i++)
 	{
 		for (int j = 0; j < width; j++)
-		{ //channels = 4 for cmyk
+		{
+			//channels = 4 for cmyk
 			for (int channel = 0; channel < 4; channel++)
 			{
 				cmyk_data[channel + 4 * j] = (image_data[channel + 4 * (j + i * width)]);
@@ -194,7 +199,6 @@ bool SepPresentation::load(const std::string &fileName)
 		}
 		else
 		{
-
 			if (spp == 3)
 			{
 				if (bps_ != 8)
@@ -343,7 +347,6 @@ bool SepPresentation::load(const std::string &fileName)
 		tbi = createTiledBitmap(width, height, ls);
 		tbi->setSource(shared_from_this<SepSource>());
 
-		std::cout << "\033[1;31m load function worked \033[0m\n";
 		return true;
 	}
 	catch (const std::exception &ex)
@@ -400,7 +403,7 @@ bool SepPresentation::getProperty(const std::string &name, std::string &value)
 		found = true;
 		value = p->second;
 	}
-std::cout << "\033[1;31m first debug joe \033[0m\n";
+
 	return found;
 }
 
@@ -465,9 +468,8 @@ SepSource::Ptr SepSource::create()
 
 void SepSource::fillTiles(int startLine, int lineCount, int tileWidth, int firstTile, std::vector<Tile::Ptr> &tiles)
 {
-	std::cout << "\033[1;31mbold tu ist gayy\033[0m\n";
 	TIFF *tif = TIFFOpen("temp.tif", "r");
-	const uint32 startLine_ = static_cast<uint32>(startLine);
+	const uint32_t startLine_ = static_cast<uint32_t>(startLine);
 	const size_t firstTile_ = static_cast<size_t>(firstTile);
 	const size_t scanLineSize = static_cast<size_t>(TIFFScanlineSize(tif));
 	int bps;
@@ -479,13 +481,11 @@ void SepSource::fillTiles(int startLine, int lineCount, int tileWidth, int first
 
 	const size_t tileCount = tiles.size();
 	auto dataPtr = std::vector<byte *>(tileCount);
-	for (size_t tile = 0; tile < tileCount; tile++)
-	{
+	for (size_t tile = 0; tile < tileCount; tile++) {
 		dataPtr[tile] = tiles[tile]->data.get();
 	}
 
-	for (size_t i = 0; i < static_cast<size_t>(lineCount); i++)
-	{
+	for (size_t i = 0; i < static_cast<size_t>(lineCount); i++) {
 		TIFFReadScanline(tif, row.data(), static_cast<uint32>(i) + startLine_);
 
 		for (size_t tile = 0; tile < tileCount - 1; tile++)
@@ -502,7 +502,6 @@ void SepSource::fillTiles(int startLine, int lineCount, int tileWidth, int first
 	}
 }
 
-void SepSource::done()
-{
+void SepSource::done() {
 	remove("temp.tif");
 }
