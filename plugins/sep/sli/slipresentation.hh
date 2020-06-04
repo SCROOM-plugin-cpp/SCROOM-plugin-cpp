@@ -43,9 +43,15 @@ private:
   /** Weak pointer to this. Needed for passing a reference to SliControlPanel */
   static SliPresentationInterface::WeakPtr weakPtrToThis;
 
+  /** Width of all layers combined */
+  int total_width = 0;
+
+  /** Height of all layers combined */
+  int total_height = 0;
+
+  int bpp;
   int Xresolution;
   int Yresolution;
-  int bpp;
 
 private:
   SliPresentation(ScroomInterface::Ptr scroomInterface);

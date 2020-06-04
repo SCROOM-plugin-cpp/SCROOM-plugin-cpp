@@ -36,7 +36,23 @@ SliPresentation::~SliPresentation()
  */
 bool SliPresentation::load(const std::string& fileName)
 {
-  parseSli(fileName); // TODO catch possible exceptions
+  parseSli(fileName);
+ 
+  /** 
+   * Find the total size of the SLI file.
+   * Assumes the the layer with the largest xoffset and the last layer
+   * are the bounds of the image.
+  */
+  int rightmost = 0;
+  for (size_t i = 0; i < layers.size(); i++)
+  {
+    if (layers[i]->getXoffset() > rightmost)
+      rightmost = i;
+  }
+  total_width = layers[rightmost]->getWidth() + layers[rightmost]->getXoffset();
+  int last_layer = layers.size()-1;
+  total_height = layers[last_layer]->getHeight() + layers[last_layer]->getYoffset();
+
   PresentationInterface::Ptr interf = scroomInterface->loadPresentation(layers[0]->getFilepath());
   return true;
 }
@@ -64,6 +80,7 @@ std::string trim(const std::string& s)
 
 /**
  * Parses the content of an SLI file and stores it as a vector of SliLayer
+ * TODO throw possible exceptions
  */
 void SliPresentation::parseSli(const std::string &fileName)
 {
@@ -137,16 +154,8 @@ Scroom::Utils::Rectangle<double> SliPresentation::getRect()
   GdkRectangle rect;
   rect.x = 0;
   rect.y = 0;
-
-  int width = 0;
-  int height = 0;
-  for (auto layer: layers)
-  {
-    width = std::max(layer->getWidth(), width);
-    height = std::max(layer->getHeight(), height);
-  }
-  rect.width = width;
-  rect.height = height;
+  rect.width = total_width;
+  rect.height = total_height;
 
   return rect;
 }
@@ -164,43 +173,44 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
 
   for (auto layer : layers)
   {
-    auto image_data = layer->getBitmap();
-    int height = layer->getHeight();
-    int width = layer->getWidth();
+    auto& bitmap_rows = *layer->getBitmap();
+    int layer_height = layer->getHeight();
+    int layer_width = layer->getWidth();
     int xoffset = layer->getXoffset();
     int yoffset = layer->getYoffset();
 
     // https://stackoverflow.com/q/43127823
     cairo_surface_t *surface;
-    unsigned char *current_row;
+    unsigned char *cur_surface_row;
     int stride;
-    surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
-    current_row = cairo_image_surface_get_data(surface);
+    surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, total_width, total_height);
+    cur_surface_row = cairo_image_surface_get_data(surface);
     stride = cairo_image_surface_get_stride(surface);
 
-    for (int y = 0; y < height; y++)
+    cairo_surface_flush(surface);
+    for (int y = 0; y < layer_height; y++, cur_surface_row+=stride)
     {
-      uint8_t *row = (*image_data)[y];
-      uint32_t *surface_row = (uint32_t *) current_row;
-      for (int x = 0; x < width; x++)
+      uint8_t *bitmap_row = bitmap_rows[y];
+      uint32_t *surface_row = reinterpret_cast<uint32_t*>(cur_surface_row);
+      for (int x = 0; x < layer_width; x++)
       {
         // Convert CMYK to RGB
-        uint8_t C = row[x*SPP+0];
-        uint8_t M = row[x*SPP+1];
-        uint8_t Y = row[x*SPP+2];
-        uint8_t K = row[x*SPP+3];
+        uint8_t C = bitmap_row[x*SPP+0];
+        uint8_t M = bitmap_row[x*SPP+1];
+        uint8_t Y = bitmap_row[x*SPP+2];
+        uint8_t K = bitmap_row[x*SPP+3];
 
         double black = (1 - (double)K/255);
         uint8_t R = static_cast<uint8_t>(255 * (1 - (double)C/255) * black);
         uint8_t G = static_cast<uint8_t>(255 * (1 - (double)M/255) * black);
         uint8_t B = static_cast<uint8_t>(255 * (1 - (double)Y/255) * black);
 
-        surface_row[x] = (R << 16) | (G << 8) | B;
+        surface_row[x] = (255u << 24) | (R << 16) | (G << 8) | B;
       }
-      current_row += stride;
     }
   // https://stackoverflow.com/q/7145780
   cairo_save(cr);
+  cairo_surface_mark_dirty(surface);
   cairo_pattern_t* pattern = cairo_pattern_create_for_surface(surface);
   cairo_pattern_set_filter(pattern, CAIRO_FILTER_NEAREST);
   cairo_translate(cr, -presentArea.x*pixelSize+xoffset*pixelSize,-presentArea.y*pixelSize+yoffset*pixelSize);
