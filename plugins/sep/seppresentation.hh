@@ -30,10 +30,11 @@ class SepSource : public SourcePresentation
 {
 public:
 	typedef boost::shared_ptr<SepSource> Ptr;
+	int *bitmap;
 
 private:
 	SepSource();
-	
+
 public:
 	~SepSource();
 	static Ptr create();
@@ -41,7 +42,7 @@ public:
 	////////////////////////////////////////////////////////////////////////
 	// SourcePresentation
 	////////////////////////////////////////////////////////////////////////
-	virtual void fillTiles(int startLine, int lineCount, int tileWidth, int firstTile, std::vector<Tile::Ptr> &tiles);
+	void fillTiles(int startLine, int lineCount, int tileWidth, int firstTile, std::vector<Tile::Ptr> &tiles) override;
 	virtual void done();
 };
 
@@ -58,6 +59,7 @@ private:
 	std::string fileName;
 	int height;
 	int width;
+	TIFF *tif;
 	TiledBitmapInterface::Ptr tbi;
 	int bps;
 	int spp;
@@ -65,8 +67,8 @@ private:
 	Views views;
 	TransformationData::Ptr transformationData;
 	ScroomInterface::Ptr scroomInterface;
+	ColormapHelper::Ptr colormapHelper;
 	SepSource::Ptr sepSource;
-
 
 private:
 	/** Constructor for a standalone SepPresentation to be passed to the Scroom core */
@@ -81,13 +83,13 @@ private:
 public:
 	virtual ~SepPresentation();
 
-  /** Constructor to be called for a standalone SepPresentation to be passed to the Scroom core */
-  static Ptr create(ScroomInterface::Ptr scroomInterface_);
+	/** Constructor to be called for a standalone SepPresentation to be passed to the Scroom core */
+	static Ptr create(ScroomInterface::Ptr scroomInterface_);
 
-  /** Constructor to be called when only wanting to use the SepPresentation for parsing a SEP file */
-  static Ptr create();
+	/** Constructor to be called when only wanting to use the SepPresentation for parsing a SEP file */
+	static Ptr create();
 
-  /**
+	/**
    * Called when this presentation should go away.
    *
    * Note that this doesn't happen automatically, since the
