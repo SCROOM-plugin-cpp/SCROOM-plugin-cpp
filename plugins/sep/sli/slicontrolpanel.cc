@@ -10,16 +10,19 @@ enum
 };
 
 static void update_layers_upper(GtkRange *this_range,
-                                GtkTreeView *view)
+                                SliControlPanel *controlPanel)
 {
   GtkTreeIter iter;
   GtkTreeModel *model;
   gchar *path;
 
   GtkAdjustment *adj = gtk_range_get_adjustment(this_range);
-  model = gtk_tree_view_get_model(view);
+  model = gtk_tree_view_get_model(GTK_TREE_VIEW(controlPanel->treeview));
   int high = gtk_adjustment_get_upper(adj);
   int this_value = gtk_range_get_value(this_range);
+  
+  SliPresentationInterface::Ptr presPtr = controlPanel->presentation.lock();
+  std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
 
   for (int i = this_value; i <= high; i++)
   {
@@ -29,26 +32,31 @@ static void update_layers_upper(GtkRange *this_range,
       if (i <= this_value)
       {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, TRUE, -1);
+        layers[i]->visible = true;
       }
       else
       {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, FALSE, -1);
+        layers[i]->visible = false;
       }
     }
   }
 }
 
 void update_layers_lower(GtkRange *this_range,
-                         GtkTreeView *view)
+                         SliControlPanel *controlPanel)
 {
   GtkTreeIter iter;
   GtkTreeModel *model;
   gchar *path;
 
   GtkAdjustment *adj = gtk_range_get_adjustment(this_range);
-  model = gtk_tree_view_get_model(view);
+  model = gtk_tree_view_get_model(GTK_TREE_VIEW(controlPanel->treeview));
   int low = gtk_adjustment_get_lower(adj);
   int this_value = gtk_range_get_value(this_range);
+
+  SliPresentationInterface::Ptr presPtr = controlPanel->presentation.lock();
+  std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
 
   for (int i = this_value; low <= i; i--)
   {
@@ -58,10 +66,12 @@ void update_layers_lower(GtkRange *this_range,
       if (i >= this_value)
       {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, TRUE, -1);
+        layers[i]->visible = true;
       }
       else
       {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, FALSE, -1);
+        layers[i]->visible = false;
       }
     }
   }
@@ -106,35 +116,36 @@ static gboolean on_change_value_lower(GtkRange *this_range,
 }
 
 // Toggle callback
-static void on_toggle(GtkCellRendererToggle *renderer, gchar *path, GtkTreeView *view)
+static void on_toggle(GtkCellRendererToggle *renderer, gchar *path, SliControlPanel *controlPanel)
 {
   UNUSED(renderer);
   GtkTreeModel *model;
   GtkTreeIter iter;
   gboolean state;
 
-  model = gtk_tree_view_get_model(view);
+  SliPresentationInterface::Ptr presPtr = controlPanel->presentation.lock();
+  std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
+
+  model = gtk_tree_view_get_model(GTK_TREE_VIEW(controlPanel->treeview));
 
   if (gtk_tree_model_get_iter_from_string(model, &iter, path))
   {
     gtk_tree_model_get(model, &iter, COL_VISIBILITY, &state, -1);
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, !state, -1);
+    layers[atoi(path)]->visible = !state;
   }
 }
 
-GtkWidget * SliControlPanel::create_view_and_model()
+void SliControlPanel::create_view_and_model()
 {
   // Create the view ----------------------------------------
   GtkCellRenderer *renderer;
   GtkTreeModel *model;
-  GtkWidget *treeview;
-
-  treeview = gtk_tree_view_new();
 
   /* --- Column Visibility --- */
   renderer = gtk_cell_renderer_toggle_new();
   gtk_cell_renderer_toggle_set_activatable(GTK_CELL_RENDERER_TOGGLE(renderer), TRUE);
-  g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(on_toggle), treeview);
+  g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(on_toggle), this);
   gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
                                               -1,
                                               "Show",
@@ -176,8 +187,6 @@ GtkWidget * SliControlPanel::create_view_and_model()
   *  model, so we can drop ours. That way the model will
   *  be freed automatically when the tree view is destroyed */
   g_object_unref(list_store);
-
-  return GTK_WIDGET(treeview);
 }
 
 SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentationInterface::WeakPtr presentation_): presentation(presentation_)
@@ -190,12 +199,12 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
   ViewInterface::Ptr view(viewWeak);
 
   GtkWidget *slider_low,
-            *slider_high,
-            *treeview;
+            *slider_high;
 
-  treeview = create_view_and_model();
+  treeview = gtk_tree_view_new();
   slider_low = gtk_vscale_new_with_range(0, n_layers - 1, 1);
   slider_high = gtk_vscale_new_with_range(0, n_layers - 1, 1);
+  create_view_and_model();
 
   // Initially display all layers
   gtk_range_set_value(GTK_RANGE(slider_low), 0);
@@ -207,11 +216,11 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
   g_signal_connect(GTK_RANGE(slider_high), "change-value",
                    G_CALLBACK(on_change_value_upper), GTK_RANGE(slider_low));
   g_signal_connect(G_OBJECT(slider_high), "value-changed",
-                   G_CALLBACK(update_layers_upper), GTK_TREE_VIEW(treeview));
+                   G_CALLBACK(update_layers_upper), this);
   g_signal_connect(GTK_RANGE(slider_low), "change-value",
                    G_CALLBACK(on_change_value_lower), GTK_RANGE(slider_high));
   g_signal_connect(G_OBJECT(slider_low), "value-changed",
-                   G_CALLBACK(update_layers_lower), GTK_TREE_VIEW(treeview));
+                   G_CALLBACK(update_layers_lower), this);
 
   // Set the number of decimal places to display for each widget.
   gtk_scale_set_digits(GTK_SCALE(slider_low), 0);

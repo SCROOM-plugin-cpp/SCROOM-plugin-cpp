@@ -17,7 +17,9 @@ SliLayer::Ptr SliLayer::create(const std::string &filepath,
 }
 
 SliLayer::SliLayer() : height(0), width(0)
-{}
+{
+  visible = true;
+}
 
 SliLayer::~SliLayer()
 {

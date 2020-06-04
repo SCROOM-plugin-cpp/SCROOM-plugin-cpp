@@ -18,6 +18,9 @@ public:
   // TODO does an SliLayer need to be a pointer?
   typedef boost::shared_ptr<SliLayer> Ptr;
 
+  /** Whether or not the layer is toggled to be visible */
+  bool visible;
+
 private:
   int height;
   int width;
