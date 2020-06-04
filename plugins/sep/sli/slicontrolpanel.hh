@@ -32,6 +32,6 @@ public:
   static SliControlPanel::Ptr create(ViewInterface::WeakPtr view, SliPresentationInterface::WeakPtr presentation_);
 
   /** Destructor */
-  ~SliControlPanel();
+  virtual ~SliControlPanel();
 
 };

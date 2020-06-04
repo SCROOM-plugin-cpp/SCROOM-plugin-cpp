@@ -141,9 +141,13 @@ void SliPresentation::parseSli(const std::string &fileName)
 ////////////////////////////////////////////////////////////////////////
 // SliPresentationInterface
 
-void SliPresentation::toggleLayer(int index)
+void SliPresentation::triggerRedraw()
 {
-
+  for (ViewInterface::WeakPtr view: views)
+  {
+    ViewInterface::Ptr viewPtr = view.lock();
+    viewPtr->invalidate();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////
