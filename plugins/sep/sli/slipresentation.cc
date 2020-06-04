@@ -185,6 +185,8 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
   cairo_surface_flush(surface);
   for (auto layer : layers)
   {
+    if (!layer->visible)
+      continue;
     auto bitmap = layer->getBitmap();
     int layer_height = layer->getHeight();
     int layer_width = layer->getWidth();
