@@ -141,9 +141,13 @@ void SliPresentation::parseSli(const std::string &fileName)
 ////////////////////////////////////////////////////////////////////////
 // SliPresentationInterface
 
-void SliPresentation::toggleLayer(int index)
+void SliPresentation::triggerRedraw()
 {
-
+  for (ViewInterface::WeakPtr view: views)
+  {
+    ViewInterface::Ptr viewPtr = view.lock();
+    viewPtr->invalidate();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -160,6 +164,7 @@ Scroom::Utils::Rectangle<double> SliPresentation::getRect()
   return rect;
 }
 
+// TODO only redraw the visible portion of the image 
 void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
                              Scroom::Utils::Rectangle<double> presentationArea, int zoom)
 {
@@ -171,57 +176,57 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
   Scroom::Utils::Rectangle<double> actualPresentationArea = getRect();
   drawOutOfBoundsWithBackground(cr, presentArea, actualPresentationArea, pixelSize);
 
+  cairo_surface_t *surface =  cairo_image_surface_create(CAIRO_FORMAT_ARGB32, total_width, total_height);
+  uint8_t* cur_surface_byte = reinterpret_cast<uint8_t*>(cairo_image_surface_get_data(surface));
+  int stride = cairo_image_surface_get_stride(surface);
+  uint8_t* surface_begin = cur_surface_byte;
+  uint32_t* target_begin = reinterpret_cast<uint32_t *>(surface_begin);
+
+  cairo_surface_flush(surface);
   for (auto layer : layers)
   {
-    auto& bitmap_rows = *layer->getBitmap();
+    if (!layer->visible)
+      continue;
+    auto bitmap = layer->getBitmap();
     int layer_height = layer->getHeight();
     int layer_width = layer->getWidth();
     int xoffset = layer->getXoffset();
     int yoffset = layer->getYoffset();
+    cur_surface_byte = surface_begin + stride * yoffset + xoffset;
 
-    // https://stackoverflow.com/q/43127823
-    cairo_surface_t *surface;
-    unsigned char *cur_surface_row;
-    int stride;
-    surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, total_width, total_height);
-    cur_surface_row = cairo_image_surface_get_data(surface);
-    stride = cairo_image_surface_get_stride(surface);
-
-    cairo_surface_flush(surface);
-    for (int y = 0; y < layer_height; y++, cur_surface_row+=stride)
+    for (int i = 0; i < layer_height*stride; i++)
     {
-      uint8_t *bitmap_row = bitmap_rows[y];
-      uint32_t *surface_row = reinterpret_cast<uint32_t*>(cur_surface_row);
-      for (int x = 0; x < layer_width; x++)
-      {
-        // Convert CMYK to RGB
-        uint8_t C = bitmap_row[x*SPP+0];
-        uint8_t M = bitmap_row[x*SPP+1];
-        uint8_t Y = bitmap_row[x*SPP+2];
-        uint8_t K = bitmap_row[x*SPP+3];
-
-        double black = (1 - (double)K/255);
-        uint8_t R = static_cast<uint8_t>(255 * (1 - (double)C/255) * black);
-        uint8_t G = static_cast<uint8_t>(255 * (1 - (double)M/255) * black);
-        uint8_t B = static_cast<uint8_t>(255 * (1 - (double)Y/255) * black);
-
-        surface_row[x] = (255u << 24) | (R << 16) | (G << 8) | B;
-      }
+      *cur_surface_byte += std::min(bitmap[i], static_cast<uint8_t>(255u - *cur_surface_byte));
+      cur_surface_byte++;
     }
-  // https://stackoverflow.com/q/7145780
-  cairo_save(cr);
+  }
+
+  for (int i = 0; i < stride*total_height; i+=SPP)
+  {
+    uint8_t C = surface_begin[i+0];
+    uint8_t M = surface_begin[i+1];
+    uint8_t Y = surface_begin[i+2];
+    uint8_t K = surface_begin[i+3];
+
+    double black = (1 - (double)K/255);
+    uint8_t A = static_cast<uint8_t>(255);
+    uint8_t R = static_cast<uint8_t>(255 * (1 - (double)C/255) * black);
+    uint8_t G = static_cast<uint8_t>(255 * (1 - (double)M/255) * black);
+    uint8_t B = static_cast<uint8_t>(255 * (1 - (double)Y/255) * black);
+
+    target_begin[i/SPP] = (A << 24) | (R << 16) | (G << 8) | B;
+  }
+
   cairo_surface_mark_dirty(surface);
-  cairo_pattern_t* pattern = cairo_pattern_create_for_surface(surface);
-  cairo_pattern_set_filter(pattern, CAIRO_FILTER_NEAREST);
-  cairo_translate(cr, -presentArea.x*pixelSize+xoffset*pixelSize,-presentArea.y*pixelSize+yoffset*pixelSize);
+  cairo_save(cr);
+  cairo_translate(cr, -presentArea.x*pixelSize,-presentArea.y*pixelSize);
   cairo_scale(cr, scale, scale);
-  cairo_set_source(cr, pattern);
+  cairo_set_source_surface(cr, surface, 0, 0);
+  cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
   cairo_paint(cr);
   cairo_restore(cr);
 
   cairo_surface_destroy(surface);
-  cairo_pattern_destroy(pattern);
-  }
 }
 
 bool SliPresentation::getProperty(const std::string& name, std::string& value)

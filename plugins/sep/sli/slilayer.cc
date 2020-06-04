@@ -17,14 +17,13 @@ SliLayer::Ptr SliLayer::create(const std::string &filepath,
 }
 
 SliLayer::SliLayer() : height(0), width(0)
-{}
+{
+  visible = true;
+}
 
 SliLayer::~SliLayer()
 {
-  for (uint8_t *row : bitmap)
-  {
-    free(row);
-  }
+  free(bitmap);
 }
 
 // TODO set the instance bps, spp values too at some point
@@ -86,15 +85,15 @@ bool SliLayer::load(const std::string &filepath)
     // create sli bitmap ------------------------------------
     // Could just use the width here but we don't want to make overflows too easy, right ;)
     int byteWidth = TIFFScanlineSize(tif);
+    bitmap = static_cast<uint8_t*>(malloc(byteWidth * height));
+    int stride = width*SPP;
 
     // Iterate over the rows and copy the bitmap data to newly allocated memory pointed to by currentBitmap
     for (int row = 0; row < height; row++)
     {
-      uint8_t *currentRow = static_cast<uint8_t *>(malloc(byteWidth * sizeof(uint8_t)));
-      TIFFReadScanline(tif, currentRow, row);
-      bitmap.push_back(currentRow);
+      TIFFReadScanline(tif, bitmap + row*stride, row);
     }
-
+    
     TIFFClose(tif);
   }
   catch (const std::exception &ex)

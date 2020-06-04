@@ -11,23 +11,27 @@ public:
   typedef boost::shared_ptr<SliControlPanel> Ptr;
 
 private:
-  /** The SliPresentation that owns this SliControlPanel */
-  SliPresentationInterface::WeakPtr presentation;
 
   /** The number of layers that the SliPresentation consists of*/
   int n_layers;
+
+public:
+  GtkWidget* treeview;
+
+  /** The SliPresentation that owns this SliControlPanel */
+  SliPresentationInterface::WeakPtr presentation;
 
 private:
   /** Constructor */
   SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentationInterface::WeakPtr presentation_);
 
-  virtual GtkWidget * create_view_and_model();
+  virtual void create_view_and_model();
 
 public:
   /** Constructor */
   static SliControlPanel::Ptr create(ViewInterface::WeakPtr view, SliPresentationInterface::WeakPtr presentation_);
 
   /** Destructor */
-  ~SliControlPanel();
+  virtual ~SliControlPanel();
 
 };
