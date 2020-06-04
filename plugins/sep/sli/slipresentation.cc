@@ -173,7 +173,7 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
 
   for (auto layer : layers)
   {
-    auto& bitmap_rows = *layer->getBitmap();
+    auto bitmap = layer->getBitmap();
     int layer_height = layer->getHeight();
     int layer_width = layer->getWidth();
     int xoffset = layer->getXoffset();
@@ -190,7 +190,7 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
     cairo_surface_flush(surface);
     for (int y = 0; y < layer_height; y++, cur_surface_row+=stride)
     {
-      uint8_t *bitmap_row = bitmap_rows[y];
+      uint8_t *bitmap_row = bitmap + y*stride;
       uint32_t *surface_row = reinterpret_cast<uint32_t*>(cur_surface_row);
       for (int x = 0; x < layer_width; x++)
       {

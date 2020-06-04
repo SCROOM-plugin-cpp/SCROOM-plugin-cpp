@@ -28,7 +28,7 @@ private:
   std::string name;     // filename without extension; used as an ID
   std::string filepath; // absolute filepath to the tiff/sep file
   // The actual bitmap, the elements of the vector are pointers to the rows of the bitmap
-  std::vector<uint8_t *> bitmap;
+  uint8_t* bitmap;
 
 private:
   SliLayer();
@@ -43,5 +43,5 @@ public:
   int getYoffset() { return yoffset; };
   std::string getName() { return name; };
   std::string getFilepath() { return filepath; };
-  std::vector<uint8_t *> *getBitmap() { return &bitmap; };
+  uint8_t *getBitmap() { return bitmap; };
 };
