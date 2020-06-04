@@ -17,6 +17,8 @@ private:
 
 public:
   GtkWidget* treeview;
+  GtkRange* range_high;
+  GtkRange* range_low;
 
   /** The SliPresentation that owns this SliControlPanel */
   SliPresentationInterface::WeakPtr presentation;

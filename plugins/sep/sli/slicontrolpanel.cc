@@ -16,15 +16,16 @@ static void update_layers_upper(GtkRange *this_range,
   GtkTreeModel *model;
   gchar *path;
 
-  GtkAdjustment *adj = gtk_range_get_adjustment(this_range);
+  GtkAdjustment *adj = gtk_range_get_adjustment(controlPanel->range_low);
   model = gtk_tree_view_get_model(GTK_TREE_VIEW(controlPanel->treeview));
   int high = gtk_adjustment_get_upper(adj);
+  int low = gtk_adjustment_get_value(adj);
   int this_value = gtk_range_get_value(this_range);
   
   SliPresentationInterface::Ptr presPtr = controlPanel->presentation.lock();
   std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
 
-  for (int i = this_value; i <= high; i++)
+  for (int i = low; i <= high; i++)
   {
     path = g_strdup_printf("%i", i);
     if (gtk_tree_model_get_iter_from_string(model, &iter, path))
@@ -51,15 +52,16 @@ void update_layers_lower(GtkRange *this_range,
   GtkTreeModel *model;
   gchar *path;
 
-  GtkAdjustment *adj = gtk_range_get_adjustment(this_range);
+  GtkAdjustment *adj = gtk_range_get_adjustment(controlPanel->range_high);
   model = gtk_tree_view_get_model(GTK_TREE_VIEW(controlPanel->treeview));
   int low = gtk_adjustment_get_lower(adj);
+  int high = gtk_adjustment_get_value(adj);
   int this_value = gtk_range_get_value(this_range);
 
   SliPresentationInterface::Ptr presPtr = controlPanel->presentation.lock();
   std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
 
-  for (int i = this_value; low <= i; i--)
+  for (int i = low; i <= high; i++)
   {
     path = g_strdup_printf("%i", i);
     if (gtk_tree_model_get_iter_from_string(model, &iter, path))
@@ -206,6 +208,8 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
   treeview = gtk_tree_view_new();
   slider_low = gtk_vscale_new_with_range(0, n_layers - 1, 1);
   slider_high = gtk_vscale_new_with_range(0, n_layers - 1, 1);
+  range_low = GTK_RANGE(slider_low);
+  range_high = GTK_RANGE(slider_high);
   create_view_and_model();
 
   // Initially display all layers
@@ -256,4 +260,3 @@ SliControlPanel::Ptr SliControlPanel::create(ViewInterface::WeakPtr viewWeak, Sl
 
   return result;
 }
-
