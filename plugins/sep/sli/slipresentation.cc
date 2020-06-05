@@ -27,6 +27,35 @@ SliPresentation::Ptr SliPresentation::create(ScroomInterface::Ptr scroomInterfac
 SliPresentation::~SliPresentation()
 {}
 
+/** 
+ * Find the total height and width of the SLI file.
+*/
+void SliPresentation::computeHeightWidth()
+{
+  int max_xoffset = 0;
+  int rightmost_l = 0;
+  int max_yoffset = 0;
+  int bottommost_l = 0;
+
+  for (size_t i = 0; i < layers.size(); i++)
+  {
+    if (layers[i]->getXoffset() > max_xoffset)
+    {
+      rightmost_l = i;
+      max_xoffset = layers[i]->getXoffset();
+    }
+
+    if (layers[i]->getYoffset() > max_yoffset)
+    {
+      bottommost_l = i;
+      max_yoffset = layers[i]->getXoffset();
+    }
+  }
+  
+  total_width = layers[rightmost_l]->getWidth() + layers[rightmost_l]->getXoffset();
+  total_height = layers[bottommost_l]->getHeight() + layers[bottommost_l]->getYoffset();
+}
+
 /**
  * Create a file *.sli containing for example:
  * Xresolution: 900
@@ -37,22 +66,7 @@ SliPresentation::~SliPresentation()
 bool SliPresentation::load(const std::string& fileName)
 {
   parseSli(fileName);
- 
-  /** 
-   * Find the total size of the SLI file.
-   * Assumes the the layer with the largest xoffset and the last layer
-   * are the bounds of the image.
-  */
-  int rightmost = 0;
-  for (size_t i = 0; i < layers.size(); i++)
-  {
-    if (layers[i]->getXoffset() > rightmost)
-      rightmost = i;
-  }
-  total_width = layers[rightmost]->getWidth() + layers[rightmost]->getXoffset();
-  int last_layer = layers.size()-1;
-  total_height = layers[last_layer]->getHeight() + layers[last_layer]->getYoffset();
-
+  computeHeightWidth();
   PresentationInterface::Ptr interf = scroomInterface->loadPresentation(layers[0]->getFilepath());
   return true;
 }
@@ -192,12 +206,31 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
     int layer_width = layer->getWidth();
     int xoffset = layer->getXoffset();
     int yoffset = layer->getYoffset();
-    cur_surface_byte = surface_begin + stride * yoffset + xoffset;
+    cur_surface_byte = surface_begin + stride * yoffset;
 
-    for (int i = 0; i < layer_height*stride; i++)
-    {
+    int x = 0; // holds the current x-coordinate of the surface byte pointer
+    for (int i = 0; i < layer_height*layer_width*SPP; i++)
+    { 
+      // we're past the image: move back to x-coordinate 0
+      if (x >= xoffset*SPP + SPP*layer_width)
+      {
+        cur_surface_byte += stride - x;
+        x = 0;
+      }
+
+      // we're behind the image: move to the x-coordinate of the next image byte
+      if (x < SPP*xoffset)
+      {
+        cur_surface_byte += SPP*xoffset - x;
+        x = SPP*xoffset;
+      }
+
+      // increment the value of the current surface byte
       *cur_surface_byte += std::min(bitmap[i], static_cast<uint8_t>(255u - *cur_surface_byte));
+
+      // go to the next byte and update the x-coordinate
       cur_surface_byte++;
+      x = (x+1) % stride;
     }
   }
 

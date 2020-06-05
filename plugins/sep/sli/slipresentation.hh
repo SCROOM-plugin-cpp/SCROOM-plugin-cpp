@@ -66,7 +66,9 @@ public:
   virtual bool load(const std::string& fileName);
 
   virtual void parseSli(const std::string &fileName);
-  // TODO look more into whether this is safe to do
+
+  virtual void computeHeightWidth();
+
   std::vector<SliLayer::Ptr>& getLayers() {return layers;};
 
   ////////////////////////////////////////////////////////////////////////
