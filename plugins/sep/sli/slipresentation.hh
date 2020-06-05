@@ -27,9 +27,8 @@ public:
   typedef boost::weak_ptr<SliPresentation> WeakPtr;
 
 private:
-  typedef std::set<ViewInterface::WeakPtr> Views;
   std::map<std::string, std::string> properties;
-  Views views;
+  std::set<ViewInterface::WeakPtr> views;
 
   /** The SliLayers that are part of the presentation */
   std::vector<SliLayer::Ptr> layers;
@@ -54,27 +53,40 @@ private:
   int Yresolution;
 
 private:
+  /** Constructor */
   SliPresentation(ScroomInterface::Ptr scroomInterface);
 
 public:
+  /** Destructor */
   virtual ~SliPresentation();
 
-  //virtual void dummyfunc();
-
+  /** Constructor */
   static Ptr create(ScroomInterface::Ptr scroomInterface);
 
+  /** 
+   * Load the SLI file and instruct the Scroom core to display it
+   * @param fileName the absolute path of the .sli file to be opened
+   */
   virtual bool load(const std::string& fileName);
 
+  /** 
+   * Parse the SLI file and add all its information to the corresponding 
+   * variables of the class
+   * @param fileName the absolute path of the .sli file to be parsed
+   */
   virtual void parseSli(const std::string &fileName);
 
+  /** Compute the overall width and height of the SLi file (over all layers) */
   virtual void computeHeightWidth();
 
+  /** Getter for the layers that the presentation consists of */
   std::vector<SliLayer::Ptr>& getLayers() {return layers;};
 
   ////////////////////////////////////////////////////////////////////////
   // SliPresentationInterface
   ////////////////////////////////////////////////////////////////////////
 
+  /** Causes the complete canvas to be redrawn */
   virtual void triggerRedraw();
 
   ////////////////////////////////////////////////////////////////////////
