@@ -206,31 +206,22 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
     int layer_width = layer->getWidth();
     int xoffset = layer->getXoffset();
     int yoffset = layer->getYoffset();
-    cur_surface_byte = surface_begin + stride * yoffset;
+    cur_surface_byte = surface_begin + stride*yoffset + xoffset*SPP;
+    int byte_width = layer_width*SPP;
 
-    int x = 0; // holds the current x-coordinate of the surface byte pointer
-    for (int i = 0; i < layer_height*layer_width*SPP; i++)
+    for (int i = 1; i <= layer_height*byte_width; i++)
     { 
-      // we're past the image: move back to x-coordinate 0
-      if (x >= xoffset*SPP + SPP*layer_width)
-      {
-        cur_surface_byte += stride - x;
-        x = 0;
-      }
-
-      // we're behind the image: move to the x-coordinate of the next image byte
-      if (x < SPP*xoffset)
-      {
-        cur_surface_byte += SPP*xoffset - x;
-        x = SPP*xoffset;
+      // we are past the image bounds; go to the next next line
+      if (i % byte_width == 0)
+      { 
+        cur_surface_byte += stride - byte_width;
       }
 
       // increment the value of the current surface byte
-      *cur_surface_byte += std::min(bitmap[i], static_cast<uint8_t>(255u - *cur_surface_byte));
+      *cur_surface_byte += std::min(bitmap[i-1], static_cast<uint8_t>(255u - *cur_surface_byte));
 
-      // go to the next byte and update the x-coordinate
+      // go to the next surface byte
       cur_surface_byte++;
-      x = (x+1) % stride;
     }
   }
 
