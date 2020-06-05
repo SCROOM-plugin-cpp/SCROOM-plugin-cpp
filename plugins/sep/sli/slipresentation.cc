@@ -25,7 +25,9 @@ SliPresentation::Ptr SliPresentation::create(ScroomInterface::Ptr scroomInterfac
 }
 
 SliPresentation::~SliPresentation()
-{}
+{
+  free((void*) bitmap_surface);
+}
 
 /** 
  * Find the total height and width of the SLI file.
@@ -54,6 +56,8 @@ void SliPresentation::computeHeightWidth()
   
   total_width = layers[rightmost_l]->getWidth() + layers[rightmost_l]->getXoffset();
   total_height = layers[bottommost_l]->getHeight() + layers[bottommost_l]->getYoffset();
+  total_area = total_width*total_height;
+  total_area_bytes = total_area * SPP;
 }
 
 /**
@@ -67,6 +71,7 @@ bool SliPresentation::load(const std::string& fileName)
 {
   parseSli(fileName);
   computeHeightWidth();
+  bitmap_surface = static_cast<uint8_t*>(calloc(total_area, SPP));
   PresentationInterface::Ptr interf = scroomInterface->loadPresentation(layers[0]->getFilepath());
   return true;
 }
@@ -155,6 +160,11 @@ void SliPresentation::parseSli(const std::string &fileName)
 ////////////////////////////////////////////////////////////////////////
 // SliPresentationInterface
 
+void SliPresentation::setCache(bool val)
+{
+  cached = val;
+}
+
 void SliPresentation::triggerRedraw()
 {
   for (ViewInterface::WeakPtr view: views)
@@ -178,7 +188,6 @@ Scroom::Utils::Rectangle<double> SliPresentation::getRect()
   return rect;
 }
 
-// TODO only redraw the visible portion of the image 
 void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
                              Scroom::Utils::Rectangle<double> presentationArea, int zoom)
 {
@@ -190,55 +199,62 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
   Scroom::Utils::Rectangle<double> actualPresentationArea = getRect();
   drawOutOfBoundsWithBackground(cr, presentArea, actualPresentationArea, pixelSize);
 
-  cairo_surface_t *surface =  cairo_image_surface_create(CAIRO_FORMAT_ARGB32, total_width, total_height);
-  uint8_t* cur_surface_byte = reinterpret_cast<uint8_t*>(cairo_image_surface_get_data(surface));
-  int stride = cairo_image_surface_get_stride(surface);
-  uint8_t* surface_begin = cur_surface_byte;
-  uint32_t* target_begin = reinterpret_cast<uint32_t *>(surface_begin);
+  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, total_width);
+  cairo_surface_t *surface = cairo_image_surface_create_for_data(bitmap_surface, CAIRO_FORMAT_ARGB32, total_width, total_height, stride);
 
-  cairo_surface_flush(surface);
-  for (auto layer : layers)
+  // TODO why do very large images crash when fully zoomed out and 
+  // why does Scroom/Cairo already show the visible area only?
+  if (!cached)
   {
-    if (!layer->visible)
-      continue;
-    auto bitmap = layer->getBitmap();
-    int layer_height = layer->getHeight();
-    int layer_width = layer->getWidth();
-    int xoffset = layer->getXoffset();
-    int yoffset = layer->getYoffset();
-    cur_surface_byte = surface_begin + stride*yoffset + xoffset*SPP;
-    int byte_width = layer_width*SPP;
+    memset((void*) bitmap_surface, 0, total_area_bytes);
+    uint8_t* cur_surface_byte = reinterpret_cast<uint8_t*>(cairo_image_surface_get_data(surface));
+    uint8_t* surface_begin = cur_surface_byte;
+    uint32_t* target_begin = reinterpret_cast<uint32_t *>(surface_begin);
 
-    for (int i = 1; i <= layer_height*byte_width; i++)
-    { 
-      // we are past the image bounds; go to the next next line
-      if (i % byte_width == 0)
+    cairo_surface_flush(surface);
+    for (auto layer : layers)
+    {
+      if (!layer->visible)
+        continue;
+      const auto bitmap = layer->getBitmap();
+      const int layer_height = layer->getHeight();
+      const int layer_width = layer->getWidth();
+      const int xoffset = layer->getXoffset();
+      const int yoffset = layer->getYoffset();
+      cur_surface_byte = surface_begin + stride*yoffset + xoffset*SPP;
+      const int byte_width = layer_width*SPP;
+
+      for (int i = 1; i <= layer_height*byte_width; i++)
       { 
-        cur_surface_byte += stride - byte_width;
+        // we are past the image bounds; go to the next next line
+        if (i % byte_width == 0)
+        { 
+          cur_surface_byte += stride - byte_width;
+        }
+
+        // increment the value of the current surface byte
+        *cur_surface_byte += std::min(bitmap[i-1], static_cast<uint8_t>(255u - *cur_surface_byte));
+
+        // go to the next surface byte
+        cur_surface_byte++;
       }
-
-      // increment the value of the current surface byte
-      *cur_surface_byte += std::min(bitmap[i-1], static_cast<uint8_t>(255u - *cur_surface_byte));
-
-      // go to the next surface byte
-      cur_surface_byte++;
     }
-  }
 
-  for (int i = 0; i < stride*total_height; i+=SPP)
-  {
-    uint8_t C = surface_begin[i+0];
-    uint8_t M = surface_begin[i+1];
-    uint8_t Y = surface_begin[i+2];
-    uint8_t K = surface_begin[i+3];
+    for (int i = 0; i < stride*total_height; i+=SPP)
+    {
+      const uint8_t C = surface_begin[i+0];
+      const uint8_t M = surface_begin[i+1];
+      const uint8_t Y = surface_begin[i+2];
+      const uint8_t K = surface_begin[i+3];
 
-    double black = (1 - (double)K/255);
-    uint8_t A = static_cast<uint8_t>(255);
-    uint8_t R = static_cast<uint8_t>(255 * (1 - (double)C/255) * black);
-    uint8_t G = static_cast<uint8_t>(255 * (1 - (double)M/255) * black);
-    uint8_t B = static_cast<uint8_t>(255 * (1 - (double)Y/255) * black);
+      const double black = (1 - (double)K/255);
+      const uint8_t A = static_cast<uint8_t>(255);
+      const uint8_t R = static_cast<uint8_t>(255 * (1 - (double)C/255) * black);
+      const uint8_t G = static_cast<uint8_t>(255 * (1 - (double)M/255) * black);
+      const uint8_t B = static_cast<uint8_t>(255 * (1 - (double)Y/255) * black);
 
-    target_begin[i/SPP] = (A << 24) | (R << 16) | (G << 8) | B;
+      target_begin[i/SPP] = (A << 24) | (R << 16) | (G << 8) | B;
+    }
   }
 
   cairo_surface_mark_dirty(surface);
@@ -251,6 +267,7 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
   cairo_restore(cr);
 
   cairo_surface_destroy(surface);
+  cached = true;
 }
 
 bool SliPresentation::getProperty(const std::string& name, std::string& value)

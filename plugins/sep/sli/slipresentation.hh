@@ -48,6 +48,20 @@ private:
   /** Height of all layers combined */
   int total_height = 0;
 
+  /** Area of all layers and offsets combined */
+  int total_area;
+
+  /** Area of all layers and offsets combined in bytes*/
+  int total_area_bytes;
+
+  /** Whether the full image is already cached*/
+  bool cached = false;
+
+  /** Block of memory containing `total_area_bytes` bytes of data.
+   *  Used to store and cache the full image.
+   */
+  uint8_t* bitmap_surface;
+
   int bpp;
   int Xresolution;
   int Yresolution;
@@ -85,6 +99,9 @@ public:
   ////////////////////////////////////////////////////////////////////////
   // SliPresentationInterface
   ////////////////////////////////////////////////////////////////////////
+
+  /** Set the boolean cache value to @param val */
+  virtual void setCache(bool val);
 
   /** Causes the complete canvas to be redrawn */
   virtual void triggerRedraw();

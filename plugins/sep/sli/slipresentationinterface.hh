@@ -12,6 +12,7 @@ public:
 
   virtual ~SliPresentationInterface() {}
 
+  virtual void setCache(bool val)=0;
   virtual void triggerRedraw()=0;
 
   virtual std::vector<SliLayer::Ptr>& getLayers()=0;
