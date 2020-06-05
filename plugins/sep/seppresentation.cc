@@ -6,6 +6,8 @@
 #include <tiffio.h>
 #include <fstream>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 SepPresentation::SepPresentation(ScroomInterface::Ptr interface) : scroomInterface(interface)
 {
@@ -37,18 +39,9 @@ SepPresentation::Ptr SepPresentation::create()
  */
 std::string SepPresentation::findPath(std::string sep_directory)
 {
-	const size_t last_slash_idx = sep_directory.rfind('/');
-	if (last_slash_idx == std::string::npos)
-	{
-		return "";
-	}
-
-	// normally this would fail edge cases,
-	// but should be fine in this case
-	std::string directory = sep_directory.substr(0, last_slash_idx + 1);
-	boost::algorithm::trim(directory);
-
-	return directory;
+	// theoretically hardcoding forward slash should be fine since
+	// Windows does accept it, but needs to be tested
+	return boost::filesystem::path{sep_directory}.parent_path().string() + "/";
 }
 
 /**
@@ -63,7 +56,6 @@ std::map<std::string, std::string> SepPresentation::parseSep(const std::string &
 
 	std::map<std::string, std::string> file_values;
 
-	// parse the file into file_content
 	while (std::getline(file, str))
 	{
 		const size_t index = str.rfind(delimiter);
@@ -74,7 +66,8 @@ std::map<std::string, std::string> SepPresentation::parseSep(const std::string &
 		boost::algorithm::trim(key);
 		boost::algorithm::trim(value);
 
-		file_values[key] = value;
+		file_values.insert(std::make_pair(key, value));
+		std::cout << key << "\t : \t" << value << std::endl;
 	}
 
 	return file_values;
@@ -87,22 +80,23 @@ std::map<std::string, std::string> SepPresentation::parseSep(const std::string &
  */
 bool SepPresentation::checkFile(const std::map<std::string, std::string> content)
 {
-	return content.count("C") && content.count("M") && content.count("Y") && content.count("K") && \
-			content.count("width") && content.count("height");
+	return content.count("C") && content.count("M") && content.count("Y") && content.count("K") &&
+		   content.count("width") && content.count("height");
 }
 
 /**
  * TODO: check if this function meets the requirements.
  */
-bool SepPresentation::load(const std::string& file_name) {
+bool SepPresentation::load(const std::string &file_name)
+{
 	const auto file_content = parseSep(file_name);
 	this->file_name = file_name;
 
 	// Verify integrity of the file
-	if (! checkFile(file_content)) {
-		printf("PANIC: Missing C, M, Y, K, width or height in SEP file from '%s'.\n", file_name.c_str());
-		return false;
-	}
+	// if (! checkFile(file_content)) {
+	// 	printf("PANIC: Missing C, M, Y, K, width or height in SEP file from '%s'.\n", file_name.c_str());
+	// 	return false;
+	// }
 
 	// Remember whether we have varnish
 	const bool has_varnish = file_content.count("V") == 1;
@@ -117,7 +111,8 @@ bool SepPresentation::load(const std::string& file_name) {
 	// Allocate an area for the full image
 	auto combined_data = boost::shared_ptr<byte>(new byte[width * height * nr_channels]);
 	boost::shared_ptr<byte> varnish_data;
-	if (has_varnish) {
+	if (has_varnish)
+	{
 		varnish_data = boost::shared_ptr<byte>(new byte[width * height]);
 	}
 
@@ -125,14 +120,16 @@ bool SepPresentation::load(const std::string& file_name) {
 	std::string current_path = findPath(file_name);
 
 	size_t index = 0;
-	for (auto channel : {"C", "M", "Y", "K"}) {
+	for (auto channel : {"C", "M", "Y", "K"})
+	{
 		std::string path = current_path + file_content.at(channel);
 		boost::algorithm::trim(path);
 
 		// Attempt to open the tiff image
-		TIFF* tiff = TIFFOpen(path.c_str(), "r");
+		TIFF *tiff = TIFFOpen(path.c_str(), "r");
 
-		if (tiff == nullptr) {
+		if (tiff == nullptr)
+		{
 			printf("Warning: Could not open channel '%s' from file '%s'.\n", channel, path.c_str());
 			continue;
 		}
@@ -140,11 +137,13 @@ bool SepPresentation::load(const std::string& file_name) {
 		const size_t line_width = static_cast<size_t>(TIFFScanlineSize(tiff));
 		std::vector<byte> row(line_width);
 
-		for (size_t h = 0; h < height; h++) {
+		for (size_t h = 0; h < height; h++)
+		{
 			TIFFReadScanline(tiff, row.data(), h);
 
 			int base = index + h * nr_channels * width;
-			for (size_t j = 0; j < width; j++, base += nr_channels) {
+			for (size_t j = 0; j < width; j++, base += nr_channels)
+			{
 				combined_data.get()[base] = row[j];
 			}
 		}
@@ -153,15 +152,17 @@ bool SepPresentation::load(const std::string& file_name) {
 		index++;
 	}
 
-	if (has_varnish) {
+	if (has_varnish)
+	{
 		// TODO: maybe move this code?
 		std::string path = current_path + file_content.at("V");
 		boost::algorithm::trim(path);
 
 		// Attempt to open the tiff image
-		TIFF* tiff = TIFFOpen(path.c_str(), "r");
+		TIFF *tiff = TIFFOpen(path.c_str(), "r");
 
-		if (tiff == nullptr) {
+		if (tiff == nullptr)
+		{
 			printf("PANIC: Could not open channel 'V' from file '%s'.\n", path.c_str());
 			return false;
 		}
@@ -169,7 +170,8 @@ bool SepPresentation::load(const std::string& file_name) {
 		const size_t line_width = static_cast<size_t>(TIFFScanlineSize(tiff));
 		std::vector<byte> row(line_width);
 
-		for (size_t h = 0; h < height; h++) {
+		for (size_t h = 0; h < height; h++)
+		{
 			TIFFReadScanline(tiff, row.data(), h);
 			memcpy(varnish_data.get() + h * width, row.data(), width);
 		}
@@ -182,11 +184,11 @@ bool SepPresentation::load(const std::string& file_name) {
 	float resolutionY = 1.0f;
 
 	printf("The combined bitmap has size %ld*%ld, aspect ratio %.1f*%.1f\n",
-			this->width, this->height, 1 / resolutionX, 1 / resolutionY);
+		   this->width, this->height, 1 / resolutionX, 1 / resolutionY);
 
 	this->sep_source->setData(combined_data, this->width);
-	
-	this->tbi = createTiledBitmap(width, height, { OperationsCMYK32::create() });
+
+	this->tbi = createTiledBitmap(width, height, {OperationsCMYK32::create()});
 	this->tbi->setSource(this->sep_source);
 
 	return true;
@@ -243,7 +245,8 @@ void SepPresentation::viewAdded(ViewInterface::WeakPtr interface)
 {
 	this->views.insert(interface);
 
-	if (this->tbi == nullptr) {
+	if (this->tbi == nullptr)
+	{
 		printf("ERROR: SepPresentation::open(): No TiledBitmapInterface available!\n");
 		return;
 	}
@@ -255,7 +258,8 @@ void SepPresentation::viewRemoved(ViewInterface::WeakPtr interface)
 {
 	this->views.erase(interface);
 
-	if (this->tbi == nullptr) {
+	if (this->tbi == nullptr)
+	{
 		printf("ERROR: SepPresentation::close(): No TiledBitmapInterface available!\n");
 		return;
 	}
