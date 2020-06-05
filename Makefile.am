@@ -37,6 +37,8 @@ plugins_sep_src_libspsep_la_SOURCES = \
 	plugins/sep/sep.hh \
 	plugins/sep/seppresentation.cc \
 	plugins/sep/seppresentation.hh \
+	plugins/sep/sepsource.cc \
+	plugins/sep/sepsource.hh \
 	plugins/sep/sli/slipresentation.cc \
 	plugins/sep/sli/slipresentation.hh \
 	plugins/sep/sli/slicontrolpanel.cc \
