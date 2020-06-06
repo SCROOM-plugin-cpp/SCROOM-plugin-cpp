@@ -11,6 +11,18 @@
 class SepPresentation : public PresentationBase,
 						public virtual Scroom::Utils::Base
 {
+
+	struct SepFile
+	{
+		size_t width, height;
+		std::string C;
+		std::string M;
+		std::string Y;
+		std::string K;
+		std::string V;
+		std::string W;
+	};
+
 public:
 	typedef boost::shared_ptr<SepPresentation> Ptr;
 
@@ -29,7 +41,6 @@ private:
 
 	std::map<std::string, std::string> properties;
 
-
 private:
 	/**
 	 * Constructor for a standalone SepPresentation to be passed to
@@ -44,7 +55,7 @@ private:
 	SepPresentation();
 
 	std::string findPath(std::string sep_directory);
-	std::map<std::string, std::string> parseSep(const std::string& file_name);
+	std::map<std::string, std::string> parseSep(const std::string &file_name);
 	bool checkFile(const std::map<std::string, std::string> content);
 
 public:
@@ -65,7 +76,7 @@ public:
 	/**
 	 * Load the SEP file whose filename is passed as argument.
 	 */
-	bool load(const std::string& file_name);
+	bool load(const std::string &file_name);
 
 	/** 
 	 * This function is only needed when the SepPresentation is used by

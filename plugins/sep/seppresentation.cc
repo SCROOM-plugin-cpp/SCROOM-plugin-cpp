@@ -5,6 +5,7 @@
 
 #include <tiffio.h>
 #include <fstream>
+#include <string>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -45,7 +46,7 @@ std::string SepPresentation::findPath(std::string sep_directory)
 }
 
 /**
- * Parses the content of the file into a vector. 
+ * Parses the content of the file. 
  */
 std::map<std::string, std::string> SepPresentation::parseSep(const std::string &fileName)
 {
@@ -71,6 +72,7 @@ std::map<std::string, std::string> SepPresentation::parseSep(const std::string &
 	}
 
 	return file_values;
+
 }
 
 /**
