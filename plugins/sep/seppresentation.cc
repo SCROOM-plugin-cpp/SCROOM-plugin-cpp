@@ -46,7 +46,7 @@ std::string SepPresentation::findPath(std::string sep_directory)
 }
 
 /**
- * Parses the content of the file. 
+ * Parses the content of the SEP file.
  */
 std::map<std::string, std::string> SepPresentation::parseSep(const std::string &fileName)
 {
@@ -56,6 +56,9 @@ std::map<std::string, std::string> SepPresentation::parseSep(const std::string &
 	const std::string delimiter = ":";
 
 	std::map<std::string, std::string> file_values;
+
+	std::getline(file, file_values["width"]);
+	std::getline(file, file_values["height"]);
 
 	while (std::getline(file, str))
 	{
@@ -67,12 +70,11 @@ std::map<std::string, std::string> SepPresentation::parseSep(const std::string &
 		boost::algorithm::trim(key);
 		boost::algorithm::trim(value);
 
-		file_values.insert(std::make_pair(key, value));
-		std::cout << key << "\t : \t" << value << std::endl;
+		file_values[key] = value;
+		std::cout << '\'' << key << "': '" << value << "'\n";
 	}
 
 	return file_values;
-
 }
 
 /**
@@ -95,10 +97,10 @@ bool SepPresentation::load(const std::string &file_name)
 	this->file_name = file_name;
 
 	// Verify integrity of the file
-	// if (! checkFile(file_content)) {
-	// 	printf("PANIC: Missing C, M, Y, K, width or height in SEP file from '%s'.\n", file_name.c_str());
-	// 	return false;
-	// }
+	if (! checkFile(file_content)) {
+		printf("PANIC: Missing C, M, Y, K, width or height in SEP file from '%s'.\n", file_name.c_str());
+		return false;
+	}
 
 	// Remember whether we have varnish
 	const bool has_varnish = file_content.count("V") == 1;
