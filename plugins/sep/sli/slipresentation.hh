@@ -66,9 +66,26 @@ private:
   int Xresolution;
   int Yresolution;
 
+  /** 
+   * Contains the cached bitmaps for the different zoom levels. 
+   * The zoom level is the key, the pointer to the bitmap the value.
+   */
+  std::map<int, uint8_t*> rgbCache;
+
 private:
   /** Constructor */
   SliPresentation(ScroomInterface::Ptr scroomInterface);
+
+  /**
+   * Computes the RGB bitmap of the bottommost layer, i.e. without any reductions
+   */
+  virtual void cacheBottomZoomLevelRgb();
+
+  /**
+   * Computes the RGB bitmap for the zoom level from the zoom level bitmap below it, 
+   * reducing it in the process.
+   */
+  virtual void cacheZoomLevelRgb(int zoom);
 
 public:
   /** Destructor */
