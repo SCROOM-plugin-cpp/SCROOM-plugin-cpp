@@ -14,6 +14,23 @@ struct SepFile
 	std::map<std::string, std::string> files;
 };
 
+////////////////////////////////////////////////////////////
+////// Container class for messages to be displayed via displayErrorDialog()
+class ErrorMessage
+{
+private:
+	std::string message;
+
+public:
+	ErrorMessage(std::string msg, std::string color = "red");
+	~ErrorMessage();
+	bool insert(std::string msg);
+	std::string getMessage();
+};
+
+////////////////////////////////////////////////////////////////
+////////////// SepPresentation
+
 class SepPresentation : public PresentationBase,
 						public virtual Scroom::Utils::Base
 {
@@ -23,6 +40,7 @@ public:
 
 private:
 	typedef std::set<ViewInterface::WeakPtr> Views;
+	bool fatal_error;
 
 	std::string file_name;
 	TiledBitmapInterface::Ptr tbi;

@@ -2,7 +2,7 @@
 
 #include <scroom/cairo-helpers.hh>
 #include <scroom/layeroperations.hh>
-
+#include <gtk/gtk.h>
 #include <tiffio.h>
 #include <fstream>
 #include <iostream>
@@ -10,6 +10,50 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string/split.hpp>
+
+////////////////////////////////////////////////////////////
+////// Container class for messages to be displayed via displayErrorDialog()
+
+ErrorMessage::ErrorMessage(std::string msg, std::string color /*= "red"*/)
+{
+	this->insert(msg);
+}
+
+ErrorMessage::~ErrorMessage()
+{
+}
+
+bool ErrorMessage::insert(std::string msg)
+{
+	this->message += msg;
+	// avoid inserting unnessary newlines
+	if (!msg.empty() && msg.back() != '\n')
+		this->message += "\n";
+
+	return true;
+}
+
+std::string ErrorMessage::getMessage()
+{
+	return this->message;
+}
+
+/**
+ * Display an error dialog with given message and message type.
+ */
+void displayErrorDialog(std::string message, GtkMessageType type_gtk = GTK_MESSAGE_WARNING)
+{
+	auto dialog = gtk_message_dialog_new(nullptr,
+										 GTK_DIALOG_DESTROY_WITH_PARENT,
+										 type_gtk,
+										 GTK_BUTTONS_CLOSE,
+										 message.c_str());
+	gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+}
+
+/////////////////////////////////////////////////////////
+///// SepPresentation
 
 SepPresentation::SepPresentation(ScroomInterface::Ptr interface) : scroomInterface(interface)
 {
@@ -48,15 +92,20 @@ std::string SepPresentation::findPath(std::string sep_directory)
 
 /**
  * Parses the content of the SEP file.
+ * Also displays error dialog when an error in the input file is detected.
  */
 SepFile SepPresentation::parseSep(const std::string &fileName)
 {
 	std::ifstream file(fileName); // open file stream
 	std::string str;
 
+	bool warning_error = false; // to see if warning dialog should be displayed
+
 	const std::string delimiter = ":";
 
 	const std::string parent_dir = SepPresentation::findPath(fileName);
+
+	ErrorMessage error(""); // might be overkill now, but originally had a purpose
 
 	SepFile sepfile;
 
@@ -70,25 +119,39 @@ SepFile SepPresentation::parseSep(const std::string &fileName)
 	}
 	catch (const std::exception &e)
 	{
-		std::cerr << "\033[1;31mPANIC: Width or height have not been provided correctly!\033[0m\n";
+		// print error in red
+		error.insert("PANIC: Width or height have not been provided correctly! \n");
+		warning_error = true;
+		// missing width or height is a fatal error as we cannot open the file without it
+		this->fatal_error = true;
 	}
 
 	while (std::getline(file, str))
 	{
 		std::vector<std::string> result;
 		boost::split(result, str, boost::is_any_of(delimiter));
-
-		if (result.size() != 2)
-		{
-			std::cerr << "\033[1;31mPANIC: One of the channels has not been provided correctly!\033[0m\n";
-			continue;
-		}
-
 		boost::algorithm::trim(result[0]);
 		boost::algorithm::trim(result[1]);
 
+		if (result.size() != 2 || result[1] == "")
+		{
+			// print error in red
+			warning_error = true;
+			error.insert("PANIC: One of the channels has not been provided correctly! \n");
+			continue; // skip loading this channel
+		}
+
 		sepfile.files.insert(std::make_pair(result[0], parent_dir + result[1]));
 	}
+
+	file.close(); // close file stream
+
+	if (warning_error || this->fatal_error)
+	{
+		std::cerr << "\033[1;31m" << error.getMessage() << "\033[0m\n";
+		::displayErrorDialog(error.getMessage());
+	}
+	warning_error = false;
 
 	return sepfile;
 }
@@ -113,12 +176,22 @@ bool SepPresentation::load(const std::string &file_name)
 	const auto file_content = sepfile.files;
 	this->file_name = file_name;
 
-	// Verify integrity of the file
-	if (!checkFile(file_content))
+	if (this->fatal_error)
 	{
-		printf("PANIC: Missing C, M, Y, K, width or height in SEP file from '%s'.\n", file_name.c_str());
+		this->fatal_error = false;
 		return false;
 	}
+
+	// I commented this out for 2 reasons:
+	// 1. most of this error handling is already done in parser, where it makes more to me imo
+	// 2. checkFile() actually violates our URD
+
+	// Verify integrity of the file
+	// if (!checkFile(file_content))
+	// {
+	// 	printf("PANIC: Missing C, M, Y, K, width or height in SEP file from '%s'.\n", file_name.c_str());
+	// 	return false;
+	// }
 
 	// Remember whether we have varnish
 	const bool has_varnish = file_content.count("V") == 1;
