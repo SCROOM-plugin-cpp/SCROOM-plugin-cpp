@@ -58,7 +58,8 @@ private:
 
   ThreadPool::Queue::Ptr threadQueue;
 
-  std::mutex cachingPendingMtx;
+  /** Must be acquired by a thread before writing to the cached bitmaps */
+  boost::recursive_mutex cachingPendingMtx;
 
 private:
   /** Constructor */

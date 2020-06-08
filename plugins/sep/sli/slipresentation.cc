@@ -167,65 +167,19 @@ void SliPresentation::parseSli(const std::string &fileName)
   }
 }
 
-////////////////////////////////////////////////////////////////////////
-// SliPresentationInterface
-
-void SliPresentation::wipeCache()
-{
-  std::map<int, uint8_t*>::iterator it;
-
-  // Free all the memory that contains cached bitmaps
-  for ( it = rgbCache.begin(); it != rgbCache.end(); it++)
-  {
-    free(it->second);
-  }
-  rgbCache.clear();
-
-  CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
-                      PRIO_HIGHER, threadQueue);
-}
-
-void SliPresentation::triggerRedraw()
-{
-  for (ViewInterface::WeakPtr view: views)
-  {
-    ViewInterface::Ptr viewPtr = view.lock();
-    gdk_threads_enter();
-    viewPtr->invalidate();
-    gdk_threads_leave();
-  }
-}
-
-////////////////////////////////////////////////////////////////////////
-// PresentationInterface
-
-Scroom::Utils::Rectangle<double> SliPresentation::getRect()
-{
-  GdkRectangle rect;
-  rect.x = 0;
-  rect.y = 0;
-  rect.width = total_width;
-  rect.height = total_height;
-
-  return rect;
-}
-
 void SliPresentation::cacheZoomLevelRgb(int zoom)
 {
-  cachingPendingMtx.lock();
+  boost::recursive_mutex::scoped_lock lock(cachingPendingMtx);
   // Check if another thread has already computed the required bitmap in the meantime
   if (rgbCache.count(zoom))
   {
-    cachingPendingMtx.unlock();
     return;
   }
   // We're basing the computation of the bitmap forzoom level x on the bitmap for zoom level
   // x-1. So ensure that the bitmap for zoom level x-1 is cached
   if (zoom < -1 && !rgbCache.count(zoom))
   {
-    cachingPendingMtx.unlock();
     cacheZoomLevelRgb(zoom + 1);
-    cachingPendingMtx.lock();
   }
   printf("Computing for zoom %d\n", zoom);
 
@@ -280,17 +234,15 @@ void SliPresentation::cacheZoomLevelRgb(int zoom)
 
   // Make the cached bitmap available to the main thread
   rgbCache[zoom] = targetBitmap;
-  cachingPendingMtx.unlock();
   triggerRedraw();
 }
 
 void SliPresentation::cacheBottomZoomLevelRgb()
 {
-  cachingPendingMtx.lock();
+  boost::recursive_mutex::scoped_lock lock(cachingPendingMtx);
   // Check if another thread has already computed the required bitmap in the meantime
   if (rgbCache.count(0))
   {
-    cachingPendingMtx.unlock();
     return;
   }
   uint8_t* bitmap = static_cast<uint8_t*>(calloc(total_area, SPP));
@@ -348,8 +300,50 @@ void SliPresentation::cacheBottomZoomLevelRgb()
 
   // Make the cached bitmap available to the main thread
   rgbCache[0] = bitmap;
-  cachingPendingMtx.unlock();
   triggerRedraw();
+}
+
+////////////////////////////////////////////////////////////////////////
+// SliPresentationInterface
+
+void SliPresentation::wipeCache()
+{
+  std::map<int, uint8_t*>::iterator it;
+
+  // Free all the memory that contains cached bitmaps
+  for ( it = rgbCache.begin(); it != rgbCache.end(); it++)
+  {
+    free(it->second);
+  }
+  rgbCache.clear();
+
+  CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
+                      PRIO_HIGHER, threadQueue);
+}
+
+void SliPresentation::triggerRedraw()
+{
+  for (ViewInterface::WeakPtr view: views)
+  {
+    ViewInterface::Ptr viewPtr = view.lock();
+    gdk_threads_enter();
+    viewPtr->invalidate();
+    gdk_threads_leave();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////
+// PresentationInterface
+
+Scroom::Utils::Rectangle<double> SliPresentation::getRect()
+{
+  GdkRectangle rect;
+  rect.x = 0;
+  rect.y = 0;
+  rect.width = total_width;
+  rect.height = total_height;
+
+  return rect;
 }
 
 void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
