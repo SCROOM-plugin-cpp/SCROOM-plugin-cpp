@@ -1,17 +1,9 @@
 #pragma once
 
-#include <string>
-#include <map>
-#include <list>
-#include <set>
 #include <fstream>
 
-#include <scroom/observable.hh>
 #include <scroom/presentationinterface.hh>
 #include <scroom/scroominterface.hh>
-#include <scroom/transformpresentation.hh>
-#include <scroom/tiledbitmapinterface.hh>
-#include <scroom/tiledbitmaplayer.hh>
 
 #include "slilayer.hh"
 #include "slicontrolpanel.hh"
@@ -19,8 +11,7 @@
 
 class SliPresentation : public PresentationBase,
                         public virtual Scroom::Utils::Base,
-                        public SliPresentationInterface, 
-                        public boost::enable_shared_from_this<SliPresentation>
+                        public SliPresentationInterface
 {
 public:
   typedef boost::shared_ptr<SliPresentation> Ptr;
@@ -54,14 +45,6 @@ private:
   /** Area of all layers and offsets combined in bytes*/
   int total_area_bytes;
 
-  /** Whether the full image is already cached*/
-  bool cached = false;
-
-  /** Block of memory containing `total_area_bytes` bytes of data.
-   *  Used to store and cache the full image.
-   */
-  uint8_t* bitmap_surface;
-
   int bpp;
   int Xresolution;
   int Yresolution;
@@ -77,13 +60,13 @@ private:
   SliPresentation(ScroomInterface::Ptr scroomInterface);
 
   /**
-   * Computes the RGB bitmap of the bottommost layer, i.e. without any reductions
+   * Computes the RGB bitmap of the bottommost layer (zoom=0) without any reductions
    */
   virtual void cacheBottomZoomLevelRgb();
 
   /**
    * Computes the RGB bitmap for the zoom level from the zoom level bitmap below it, 
-   * reducing it in the process.
+   * reducing it in the process. Reductions must only happen if zoom < 0
    */
   virtual void cacheZoomLevelRgb(int zoom);
 
@@ -117,8 +100,8 @@ public:
   // SliPresentationInterface
   ////////////////////////////////////////////////////////////////////////
 
-  /** Set the boolean cache value to @param val */
-  virtual void setCache(bool val);
+  /** Wipe the zoom level RGB cache of the presentation. Needed when layers are enabled or disabled. */
+  virtual void wipeCache();
 
   /** Causes the complete canvas to be redrawn */
   virtual void triggerRedraw();

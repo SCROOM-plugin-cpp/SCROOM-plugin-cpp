@@ -5,6 +5,7 @@
 #include <gtk/gtk.h>
 #include <tiffio.h>
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem.hpp>

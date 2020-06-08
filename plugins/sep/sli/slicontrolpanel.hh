@@ -1,9 +1,6 @@
 #include <gtk/gtk.h>
 
-#include <scroom/unused.hh>
-
 #include "slipresentationinterface.hh"
-#include "slilayer.hh"
 
 class SliControlPanel: public boost::enable_shared_from_this<SliControlPanel>
 {

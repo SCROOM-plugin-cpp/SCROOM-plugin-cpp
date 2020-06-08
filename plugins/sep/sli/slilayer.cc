@@ -1,3 +1,5 @@
+#include <tiffio.h>
+
 #include "slilayer.hh"
 
 #define TIFFGetFieldChecked(file, field, ...)        \
