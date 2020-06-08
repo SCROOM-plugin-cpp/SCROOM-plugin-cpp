@@ -7,11 +7,6 @@
 #include <scroom/layeroperations.hh>
 #include <scroom/unused.hh>
 #include <scroom/bitmap-helpers.hh>
-
-
-#define TIFFGetFieldChecked(file, field, ...) \
-	if(1!=TIFFGetField(file, field, ##__VA_ARGS__)) \
-	  throw std::invalid_argument("Field not present in tiff file: " #field);
     
 SliPresentationInterface::WeakPtr SliPresentation::weakPtrToThis;
 
@@ -50,21 +45,21 @@ void SliPresentation::computeHeightWidth()
 
   for (size_t i = 0; i < layers.size(); i++)
   {
-    if (layers[i]->getXoffset() > max_xoffset)
+    if (layers[i]->xoffset > max_xoffset)
     {
       rightmost_l = i;
-      max_xoffset = layers[i]->getXoffset();
+      max_xoffset = layers[i]->xoffset;
     }
 
-    if (layers[i]->getYoffset() > max_yoffset)
+    if (layers[i]->yoffset > max_yoffset)
     {
       bottommost_l = i;
-      max_yoffset = layers[i]->getXoffset();
+      max_yoffset = layers[i]->xoffset;
     }
   }
   
-  total_width = layers[rightmost_l]->getWidth() + layers[rightmost_l]->getXoffset();
-  total_height = layers[bottommost_l]->getHeight() + layers[bottommost_l]->getYoffset();
+  total_width = layers[rightmost_l]->width + layers[rightmost_l]->xoffset;
+  total_height = layers[bottommost_l]->height + layers[bottommost_l]->yoffset;
   total_area = total_width*total_height;
   total_area_bytes = total_area * SPP;
 }
@@ -82,7 +77,7 @@ bool SliPresentation::load(const std::string& fileName)
   computeHeightWidth();
   CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
                       PRIO_HIGHER, threadQueue);
-  PresentationInterface::Ptr interf = scroomInterface->loadPresentation(layers[0]->getFilepath());
+  PresentationInterface::Ptr interf = scroomInterface->loadPresentation(layers[0]->filepath);
   return true;
 }
 
@@ -258,11 +253,11 @@ void SliPresentation::cacheBottomZoomLevelRgb()
   {
     if (!layer->visible)
       continue;
-    const auto bitmap = layer->getBitmap();
-    const int layer_height = layer->getHeight();
-    const int layer_width = layer->getWidth();
-    const int xoffset = layer->getXoffset();
-    const int yoffset = layer->getYoffset();
+    const auto bitmap = layer->bitmap;
+    const int layer_height = layer->height;
+    const int layer_width = layer->width;
+    const int xoffset = layer->xoffset;
+    const int yoffset = layer->yoffset;
     cur_surface_byte = surface_begin + stride*yoffset + xoffset*SPP;
     const int byte_width = layer_width*SPP;
 
@@ -297,6 +292,7 @@ void SliPresentation::cacheBottomZoomLevelRgb()
 
     target_begin[i/SPP] = (A << 24) | (R << 16) | (G << 8) | B;
   }
+  cairo_surface_destroy(surface);
 
   // Make the cached bitmap available to the main thread
   rgbCache[0] = bitmap;

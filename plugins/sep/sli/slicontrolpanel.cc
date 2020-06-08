@@ -184,7 +184,7 @@ void SliControlPanel::create_view_and_model()
     gtk_list_store_append(list_store, &iter);
     gtk_list_store_set(list_store, &iter,
                        COL_VISIBILITY, TRUE,
-                       COL_ID, layer->getName().c_str(),
+                       COL_ID, layer->name.c_str(),
                        -1);
   }
 
