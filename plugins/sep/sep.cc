@@ -28,7 +28,7 @@ Sep::Ptr Sep::create()
 
 std::string Sep::getPluginName()
 {
-	return "SEP";
+	return "SEP and SLI";
 }
 
 std::string Sep::getPluginVersion()

@@ -59,30 +59,34 @@ SepFile SepPresentation::parseSep(const std::string &fileName)
 
 	SepFile sepfile;
 
-	std::getline(file, str);
-	sepfile.width = std::stoul(str);
+	try
+	{
+		std::getline(file, str);
+		sepfile.width = std::stoul(str);
 
-	std::getline(file, str);
-	sepfile.height = std::stoul(str);
+		std::getline(file, str);
+		sepfile.height = std::stoul(str);
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr << "Width or height were not provided correctly \n";
+	}
 
 	while (std::getline(file, str))
 	{
 		std::vector<std::string> result;
 		boost::split(result, str, boost::is_any_of(delimiter));
 
-		if (result.size() > 2)
+		if (result.size() != 2)
 		{
-			// throw error;
+			std::cerr << "One of the channels has not been provided correctly \n";
+			continue;
 		}
 
 		boost::algorithm::trim(result[0]);
-		std::cout << result[1] << "\n";
 		boost::algorithm::trim(result[1]);
 
 		sepfile.files.insert(std::make_pair(result[0], parent_dir + result[1]));
-
-		std::cout
-			<< '\'' << result[0] << ":" << result[1] << "'\n";
 	}
 
 	return sepfile;
