@@ -6,27 +6,6 @@
 #include <scroom/presentationinterface.hh>
 
 #include "sepsource.hh"
-#include "sli/slilayer.hh"
-
-struct SepFile
-{
-	size_t width, height;
-	std::map<std::string, std::string> files;
-};
-
-////////////////////////////////////////////////////////////
-////// Container class for messages to be displayed via displayErrorDialog()
-class ErrorMessage
-{
-private:
-	std::string message;
-
-public:
-	ErrorMessage(std::string msg, std::string color = "red");
-	~ErrorMessage();
-	bool insert(std::string msg);
-	std::string getMessage();
-};
 
 ////////////////////////////////////////////////////////////////
 ////////////// SepPresentation
@@ -39,18 +18,18 @@ public:
 	typedef boost::shared_ptr<SepPresentation> Ptr;
 
 private:
-	typedef std::set<ViewInterface::WeakPtr> Views;
-	bool fatal_error;
-
-	std::string file_name;
-	TiledBitmapInterface::Ptr tbi;
+	// This variable is only set in the constructor and never used.
+	// TODO: reconsider the existence of this variable.
+	ScroomInterface::Ptr scroom_interface;
 	SepSource::Ptr sep_source;
+
+	TiledBitmapInterface::Ptr tbi;
+	std::string file_name;
 
 	size_t width;
 	size_t height;
 
-	Views views;
-	ScroomInterface::Ptr scroomInterface;
+	std::set<ViewInterface::WeakPtr> views;
 
 	std::map<std::string, std::string> properties;
 
@@ -60,16 +39,6 @@ private:
 	 * the Scroom core.
 	 */
 	SepPresentation(ScroomInterface::Ptr interface);
-
-	/**
-	 * Constructor for using the SepPresentation for only parsing a
-	 * SEP file.
-	 */
-	SepPresentation();
-
-	std::string findPath(std::string sep_directory);
-	SepFile parseSep(const std::string &file_name);
-	bool checkFile(const std::map<std::string, std::string> content);
 
 public:
 	virtual ~SepPresentation();
@@ -81,25 +50,9 @@ public:
 	static Ptr create(ScroomInterface::Ptr interface);
 
 	/**
-	 * Constructor to be called when only wanting to use the
-	 * SepPresentation for parsing a SEP file
-	 */
-	static Ptr create();
-
-	/**
 	 * Load the SEP file whose filename is passed as argument.
 	 */
-	bool load(const std::string &file_name);
-
-	/** 
-	 * This function is only needed when the SepPresentation is used by
-	 * the SliPresentation to parse and retrieve a layer of an SLI file.
-	 * Upon being called, it fills the bitmap and all other relevant
-	 * attributes of the SliLayer.
-	 * 
-	 * TODO: provide implementation
-	 */
-	void fillSliLayer(SliLayer::Ptr) {}
+	bool load(const std::string& file_name);
 
 	/**
 	 * Is this function still needed? It has an empty implementation...
