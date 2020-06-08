@@ -8,20 +8,15 @@
 #include "sepsource.hh"
 #include "sli/slilayer.hh"
 
+struct SepFile
+{
+	size_t width, height;
+	std::map<std::string, std::string> files;
+};
+
 class SepPresentation : public PresentationBase,
 						public virtual Scroom::Utils::Base
 {
-
-	struct SepFile
-	{
-		size_t width, height;
-		std::string C;
-		std::string M;
-		std::string Y;
-		std::string K;
-		std::string V;
-		std::string W;
-	};
 
 public:
 	typedef boost::shared_ptr<SepPresentation> Ptr;
@@ -55,7 +50,7 @@ private:
 	SepPresentation();
 
 	std::string findPath(std::string sep_directory);
-	std::map<std::string, std::string> parseSep(const std::string &file_name);
+	SepFile parseSep(const std::string &file_name);
 	bool checkFile(const std::map<std::string, std::string> content);
 
 public:

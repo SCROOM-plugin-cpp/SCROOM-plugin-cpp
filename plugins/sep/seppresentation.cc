@@ -48,33 +48,44 @@ std::string SepPresentation::findPath(std::string sep_directory)
 /**
  * Parses the content of the SEP file.
  */
-std::map<std::string, std::string> SepPresentation::parseSep(const std::string &fileName)
+SepFile SepPresentation::parseSep(const std::string &fileName)
 {
 	std::ifstream file(fileName); // open file stream
 	std::string str;
 
 	const std::string delimiter = ":";
 
-	std::map<std::string, std::string> file_values;
+	const std::string parent_dir = SepPresentation::findPath(fileName);
 
-	std::getline(file, file_values["width"]);
-	std::getline(file, file_values["height"]);
+	SepFile sepfile;
+
+	std::getline(file, str);
+	sepfile.width = std::stoul(str);
+
+	std::getline(file, str);
+	sepfile.height = std::stoul(str);
 
 	while (std::getline(file, str))
 	{
-		const size_t index = str.rfind(delimiter);
+		std::vector<std::string> result;
+		boost::split(result, str, boost::is_any_of(delimiter));
 
-		std::string key = str.substr(0, index);
-		std::string value = str.substr(index + 1);
+		if (result.size() > 2)
+		{
+			// throw error;
+		}
 
-		boost::algorithm::trim(key);
-		boost::algorithm::trim(value);
+		boost::algorithm::trim(result[0]);
+		std::cout << result[1] << "\n";
+		boost::algorithm::trim(result[1]);
 
-		file_values[key] = value;
-		std::cout << '\'' << key << "': '" << value << "'\n";
+		sepfile.files.insert(std::make_pair(result[0], parent_dir + result[1]));
+
+		std::cout
+			<< '\'' << result[0] << ":" << result[1] << "'\n";
 	}
 
-	return file_values;
+	return sepfile;
 }
 
 /**
@@ -84,8 +95,8 @@ std::map<std::string, std::string> SepPresentation::parseSep(const std::string &
  */
 bool SepPresentation::checkFile(const std::map<std::string, std::string> content)
 {
-	return content.count("C") && content.count("M") && content.count("Y") && content.count("K") &&
-		   content.count("width") && content.count("height");
+	return content.count("C") && content.count("M") && content.count("Y") && content.count("K");
+	// && content.count("width") && content.count("height");
 }
 
 /**
@@ -93,11 +104,13 @@ bool SepPresentation::checkFile(const std::map<std::string, std::string> content
  */
 bool SepPresentation::load(const std::string &file_name)
 {
-	const auto file_content = parseSep(file_name);
+	const auto sepfile = parseSep(file_name);
+	const auto file_content = sepfile.files;
 	this->file_name = file_name;
 
 	// Verify integrity of the file
-	if (! checkFile(file_content)) {
+	if (!checkFile(file_content))
+	{
 		printf("PANIC: Missing C, M, Y, K, width or height in SEP file from '%s'.\n", file_name.c_str());
 		return false;
 	}
@@ -109,8 +122,8 @@ bool SepPresentation::load(const std::string &file_name)
 	// LC / LM are added.
 	const size_t nr_channels = 4;
 
-	this->width = std::stoull(file_content.at("width"));
-	this->height = std::stoull(file_content.at("height"));
+	this->width = sepfile.width;
+	this->height = sepfile.height;
 
 	// Allocate an area for the full image
 	auto combined_data = boost::shared_ptr<byte>(new byte[width * height * nr_channels]);
@@ -126,8 +139,7 @@ bool SepPresentation::load(const std::string &file_name)
 	size_t index = 0;
 	for (auto channel : {"C", "M", "Y", "K"})
 	{
-		std::string path = current_path + file_content.at(channel);
-		boost::algorithm::trim(path);
+		std::string path = file_content.at(channel);
 
 		// Attempt to open the tiff image
 		TIFF *tiff = TIFFOpen(path.c_str(), "r");
