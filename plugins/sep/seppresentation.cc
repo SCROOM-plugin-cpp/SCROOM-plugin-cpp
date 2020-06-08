@@ -69,7 +69,7 @@ SepFile SepPresentation::parseSep(const std::string &fileName)
 	}
 	catch (const std::exception &e)
 	{
-		std::cerr << "Width or height were not provided correctly \n";
+		std::cerr << "\033[1;31mPANIC: Width or height have not been provided correctly!\033[0m\n";
 	}
 
 	while (std::getline(file, str))
@@ -79,7 +79,7 @@ SepFile SepPresentation::parseSep(const std::string &fileName)
 
 		if (result.size() != 2)
 		{
-			std::cerr << "One of the channels has not been provided correctly \n";
+			std::cerr << "\033[1;31mPANIC: One of the channels has not been provided correctly!\033[0m\n";
 			continue;
 		}
 
