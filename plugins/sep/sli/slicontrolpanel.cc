@@ -42,7 +42,7 @@ static void update_layers_upper(GtkRange *this_range,
       }
     }
   }
-  presPtr->setCache(false);
+  presPtr->wipeCache();
   presPtr->triggerRedraw();
 }
 
@@ -79,7 +79,7 @@ void update_layers_lower(GtkRange *this_range,
       }
     }
   }
-  presPtr->setCache(false);
+  presPtr->wipeCache();
   presPtr->triggerRedraw();
 }
 
@@ -140,7 +140,7 @@ static void on_toggle(GtkCellRendererToggle *renderer, gchar *path, SliControlPa
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, !state, -1);
     layers[atoi(path)]->visible = !state;
   }
-  presPtr->setCache(false);
+  presPtr->wipeCache();
   presPtr->triggerRedraw();
 }
 
