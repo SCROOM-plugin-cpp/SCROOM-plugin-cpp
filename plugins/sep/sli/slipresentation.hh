@@ -1,17 +1,9 @@
 #pragma once
 
-#include <string>
-#include <map>
-#include <list>
-#include <set>
 #include <fstream>
 
-#include <scroom/observable.hh>
 #include <scroom/presentationinterface.hh>
 #include <scroom/scroominterface.hh>
-#include <scroom/transformpresentation.hh>
-#include <scroom/tiledbitmapinterface.hh>
-#include <scroom/tiledbitmaplayer.hh>
 
 #include "slilayer.hh"
 #include "slicontrolpanel.hh"
@@ -19,8 +11,7 @@
 
 class SliPresentation : public PresentationBase,
                         public virtual Scroom::Utils::Base,
-                        public SliPresentationInterface, 
-                        public boost::enable_shared_from_this<SliPresentation>
+                        public SliPresentationInterface
 {
 public:
   typedef boost::shared_ptr<SliPresentation> Ptr;

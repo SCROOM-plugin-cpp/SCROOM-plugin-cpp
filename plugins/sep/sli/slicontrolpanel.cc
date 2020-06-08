@@ -1,6 +1,7 @@
-#include <scroom/presentationinterface.hh>
+#include <scroom/unused.hh>
 
 #include "slicontrolpanel.hh"
+#include "slilayer.hh"
 
 enum
 {

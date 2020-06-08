@@ -1,11 +1,6 @@
 #pragma once
 
-#include <tiffio.h>
-#include <iostream>
-
 #include <scroom/scroominterface.hh>
-#include <scroom/global.hh>
-
 
 // Keep it simple for now and hardcode the allowed parameters
 #define BPS 8
