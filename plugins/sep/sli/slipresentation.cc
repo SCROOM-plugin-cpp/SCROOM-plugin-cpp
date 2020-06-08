@@ -77,7 +77,6 @@ bool SliPresentation::load(const std::string& fileName)
   computeHeightWidth();
   CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
                       PRIO_HIGHER, threadQueue);
-  PresentationInterface::Ptr interf = scroomInterface->loadPresentation(layers[0]->filepath);
   return true;
 }
 

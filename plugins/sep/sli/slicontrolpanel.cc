@@ -206,45 +206,48 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
 
   ViewInterface::Ptr view(viewWeak);
 
-  GtkWidget *slider_low,
-            *slider_high;
+  GtkWidget *hbox = gtk_hbox_new(false, 10);
 
   treeview = gtk_tree_view_new();
-  slider_low = gtk_vscale_new_with_range(0, n_layers - 1, 1);
-  slider_high = gtk_vscale_new_with_range(0, n_layers - 1, 1);
-  range_low = GTK_RANGE(slider_low);
-  range_high = GTK_RANGE(slider_high);
   create_view_and_model();
-
-  // Initially display all layers
-  gtk_range_set_value(GTK_RANGE(slider_low), 0);
-  gtk_range_set_value(GTK_RANGE(slider_high), n_layers - 1);
-  gtk_widget_set_can_focus(slider_low, FALSE);
-  gtk_widget_set_can_focus(slider_high, FALSE);
-
-  // Connect the callbacks
-  g_signal_connect(GTK_RANGE(slider_high), "change-value",
-                   G_CALLBACK(on_change_value_upper), GTK_RANGE(slider_low));
-  g_signal_connect(G_OBJECT(slider_high), "value-changed",
-                   G_CALLBACK(update_layers_upper), this);
-  g_signal_connect(GTK_RANGE(slider_low), "change-value",
-                   G_CALLBACK(on_change_value_lower), GTK_RANGE(slider_high));
-  g_signal_connect(G_OBJECT(slider_low), "value-changed",
-                   G_CALLBACK(update_layers_lower), this);
-
-  // Set the number of decimal places to display for each widget.
-  gtk_scale_set_digits(GTK_SCALE(slider_low), 0);
-  gtk_scale_set_digits(GTK_SCALE(slider_high), 0);
-
-  // Set the position of the value with respect to the widget.
-  gtk_scale_set_value_pos(GTK_SCALE(slider_low), GTK_POS_TOP);
-  gtk_scale_set_value_pos(GTK_SCALE(slider_high), GTK_POS_TOP);
-
-  // Pack the widgets into a hbox
-  GtkWidget* hbox = gtk_hbox_new(false, 10);
   gtk_box_pack_start(GTK_BOX(hbox), treeview, false, false, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), slider_low, false, false, 0);
-  gtk_box_pack_start(GTK_BOX(hbox), slider_high, false, false, 0);
+  
+  if (n_layers > 1)
+  {
+    GtkWidget *slider_low = gtk_vscale_new_with_range(0, n_layers - 1, 1);
+    GtkWidget *slider_high = gtk_vscale_new_with_range(0, n_layers - 1, 1);
+    range_low = GTK_RANGE(slider_low);
+    range_high = GTK_RANGE(slider_high);
+
+    // Initially display all layers
+    gtk_range_set_value(GTK_RANGE(slider_low), 0);
+    gtk_range_set_value(GTK_RANGE(slider_high), n_layers - 1);
+    gtk_widget_set_can_focus(slider_low, FALSE);
+    gtk_widget_set_can_focus(slider_high, FALSE);
+
+    // Connect the callbacks
+    g_signal_connect(GTK_RANGE(slider_high), "change-value",
+                    G_CALLBACK(on_change_value_upper), GTK_RANGE(slider_low));
+    g_signal_connect(G_OBJECT(slider_high), "value-changed",
+                    G_CALLBACK(update_layers_upper), this);
+    g_signal_connect(GTK_RANGE(slider_low), "change-value",
+                    G_CALLBACK(on_change_value_lower), GTK_RANGE(slider_high));
+    g_signal_connect(G_OBJECT(slider_low), "value-changed",
+                    G_CALLBACK(update_layers_lower), this);
+
+    // Set the number of decimal places to display for each widget.
+    gtk_scale_set_digits(GTK_SCALE(slider_low), 0);
+    gtk_scale_set_digits(GTK_SCALE(slider_high), 0);
+
+    // Set the position of the value with respect to the widget.
+    gtk_scale_set_value_pos(GTK_SCALE(slider_low), GTK_POS_TOP);
+    gtk_scale_set_value_pos(GTK_SCALE(slider_high), GTK_POS_TOP);
+
+    // Pack the sliders into the hbox
+    gtk_box_pack_start(GTK_BOX(hbox), slider_low, false, false, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), slider_high, false, false, 0);
+  }
+  
   gtk_widget_show_all(hbox);
 
   // Add the hbox to the sidebar
