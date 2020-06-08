@@ -16,7 +16,9 @@
 SliPresentationInterface::WeakPtr SliPresentation::weakPtrToThis;
 
 SliPresentation::SliPresentation(ScroomInterface::Ptr scroomInterface_): scroomInterface(scroomInterface_)
-{}
+{
+  threadQueue = ThreadPool::Queue::createAsync();
+}
 
 SliPresentation::Ptr SliPresentation::create(ScroomInterface::Ptr scroomInterface_)
 {
@@ -78,9 +80,9 @@ bool SliPresentation::load(const std::string& fileName)
 {
   parseSli(fileName);
   computeHeightWidth();
-  cacheBottomZoomLevelRgb();
+  CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
+                      PRIO_HIGHER, threadQueue);
   PresentationInterface::Ptr interf = scroomInterface->loadPresentation(layers[0]->getFilepath());
-  cacheBottomZoomLevelRgb();
   return true;
 }
 
@@ -178,6 +180,9 @@ void SliPresentation::wipeCache()
     free(it->second);
   }
   rgbCache.clear();
+
+  CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
+                      PRIO_HIGHER, threadQueue);
 }
 
 void SliPresentation::triggerRedraw()
@@ -185,7 +190,9 @@ void SliPresentation::triggerRedraw()
   for (ViewInterface::WeakPtr view: views)
   {
     ViewInterface::Ptr viewPtr = view.lock();
+    gdk_threads_enter();
     viewPtr->invalidate();
+    gdk_threads_leave();
   }
 }
 
@@ -205,11 +212,20 @@ Scroom::Utils::Rectangle<double> SliPresentation::getRect()
 
 void SliPresentation::cacheZoomLevelRgb(int zoom)
 {
+  cachingPendingMtx.lock();
+  // Check if another thread has already computed the required bitmap in the meantime
+  if (rgbCache.count(zoom))
+  {
+    cachingPendingMtx.unlock();
+    return;
+  }
   // We're basing the computation of the bitmap forzoom level x on the bitmap for zoom level
   // x-1. So ensure that the bitmap for zoom level x-1 is cached
   if (zoom < -1 && !rgbCache.count(zoom))
   {
+    cachingPendingMtx.unlock();
     cacheZoomLevelRgb(zoom + 1);
+    cachingPendingMtx.lock();
   }
   printf("Computing for zoom %d\n", zoom);
 
@@ -223,7 +239,6 @@ void SliPresentation::cacheZoomLevelRgb(int zoom)
   const int targetHeight = sourceHeight / 2;
   const int targetStride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, targetWidth);
   uint8_t* targetBitmap = static_cast<uint8_t*>(calloc(targetHeight * targetStride, 1));
-  rgbCache[zoom] = targetBitmap;
   Scroom::Bitmap::SampleIterator<uint8_t> targetBase(targetBitmap, 0, 8);
   const unsigned int targetMax = targetBase.pixelMask;
 
@@ -262,15 +277,26 @@ void SliPresentation::cacheZoomLevelRgb(int zoom)
     targetBase += targetStride; // Advance 1 row
     sourceBase += sourceStride * 2; // Advance 2 rows
   }
-  
+
+  // Make the cached bitmap available to the main thread
+  rgbCache[zoom] = targetBitmap;
+  cachingPendingMtx.unlock();
+  triggerRedraw();
 }
 
 void SliPresentation::cacheBottomZoomLevelRgb()
 {
-  rgbCache[0] = static_cast<uint8_t*>(calloc(total_area, SPP));
+  cachingPendingMtx.lock();
+  // Check if another thread has already computed the required bitmap in the meantime
+  if (rgbCache.count(0))
+  {
+    cachingPendingMtx.unlock();
+    return;
+  }
+  uint8_t* bitmap = static_cast<uint8_t*>(calloc(total_area, SPP));
 
   const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, total_width);
-  cairo_surface_t *surface = cairo_image_surface_create_for_data(rgbCache[0], CAIRO_FORMAT_ARGB32, total_width, total_height, stride);
+  cairo_surface_t *surface = cairo_image_surface_create_for_data(bitmap, CAIRO_FORMAT_ARGB32, total_width, total_height, stride);
 
   uint8_t* cur_surface_byte = reinterpret_cast<uint8_t*>(cairo_image_surface_get_data(surface));
   uint8_t* surface_begin = cur_surface_byte;
@@ -320,6 +346,10 @@ void SliPresentation::cacheBottomZoomLevelRgb()
     target_begin[i/SPP] = (A << 24) | (R << 16) | (G << 8) | B;
   }
 
+  // Make the cached bitmap available to the main thread
+  rgbCache[0] = bitmap;
+  cachingPendingMtx.unlock();
+  triggerRedraw();
 }
 
 void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
@@ -328,7 +358,6 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
   GdkRectangle presentArea = presentationArea.toGdkRectangle();
   UNUSED(vi);
   double pixelSize = pixelSizeFromZoom(zoom);
-  cairo_surface_t *surface;
 
   Scroom::Utils::Rectangle<double> actualPresentationArea = getRect();
   drawOutOfBoundsWithBackground(cr, presentArea, actualPresentationArea, pixelSize);
@@ -336,48 +365,58 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
   // TODO why do very large images crash when fully zoomed out and 
   // why does Scroom/Cairo already show the visible area only?
 
-  // If the bottom zoom level is not cached yet, cache it
-  if (!rgbCache.count(0))
-  {
-    cacheBottomZoomLevelRgb();
-  }
-  // If we're zoomed out and the zoom layer is not cached yet, cache it
-  if (zoom < 0 && !rgbCache.count(zoom))
-  {
-    cacheZoomLevelRgb(zoom);
-  }
-
   cairo_save(cr);
-  cairo_translate(cr, -presentArea.x*pixelSize,-presentArea.y*pixelSize);
-
+  
   if(zoom > 0)
   {
-    // Let cairo do the zooming
-    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, total_width);
-    int multiplier = 1<<zoom;
-    surface = cairo_image_surface_create_for_data(rgbCache[0], CAIRO_FORMAT_ARGB32, total_width, total_height, stride);
+    if (!rgbCache.count(0))
+    {
+      CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
+                      PRIO_HIGHER, threadQueue);
+      drawRectangle(cr, Color(0.5, 1, 0.5), pixelSize*(actualPresentationArea - presentationArea.getTopLeft()));
+    }
+    else
+    {
+      // Let cairo do the zooming
+      const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, total_width);
+      int multiplier = 1<<zoom;
+      cairo_surface_t* surface = cairo_image_surface_create_for_data(rgbCache[0], CAIRO_FORMAT_ARGB32, total_width, total_height, stride);
 
-    // We're using the bottom bitmap, hence we have to scale
-    cairo_scale(cr, multiplier, multiplier);
-    cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter (cairo_get_source (cr), CAIRO_FILTER_NEAREST);
+      // We're using the bottom bitmap, hence we have to scale
+      cairo_translate(cr, -presentArea.x*pixelSize,-presentArea.y*pixelSize);
+      cairo_scale(cr, multiplier, multiplier);
+      cairo_set_source_surface(cr, surface, 0, 0);
+      cairo_pattern_set_filter (cairo_get_source (cr), CAIRO_FILTER_NEAREST);
+      cairo_paint(cr);
+      cairo_surface_destroy(surface);
+    }
   }
   else
   {
-    // Use our reduced bitmap for zooming
-    const int zoomLevelWidth = total_width / pow(2, -zoom);
-    const int zoomLevelHeight = total_height / pow(2, -zoom);
-    const int zoomLevelstride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, zoomLevelWidth);
-    surface = cairo_image_surface_create_for_data(rgbCache[zoom], CAIRO_FORMAT_ARGB32, zoomLevelWidth, zoomLevelHeight, zoomLevelstride);
+    if (!rgbCache.count(zoom))
+    {
+      CpuBound()->schedule(boost::bind(&SliPresentation::cacheZoomLevelRgb, shared_from_this<SliPresentation>(), zoom),
+                      PRIO_HIGHER, threadQueue);
+      drawRectangle(cr, Color(0.5, 1, 0.5), pixelSize*(actualPresentationArea - presentationArea.getTopLeft()));
+    }
+    else
+    {
+      // Use our reduced bitmap for zooming
+      cairo_translate(cr, -presentArea.x*pixelSize,-presentArea.y*pixelSize);
+      const int zoomLevelWidth = total_width / pow(2, -zoom);
+      const int zoomLevelHeight = total_height / pow(2, -zoom);
+      const int zoomLevelstride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, zoomLevelWidth);
+      cairo_surface_t* surface = cairo_image_surface_create_for_data(rgbCache[zoom], CAIRO_FORMAT_ARGB32, zoomLevelWidth, zoomLevelHeight, zoomLevelstride);
 
-    // Cached bitmap is already to scale
-    cairo_set_source_surface(cr, surface, 0, 0);
+      // Cached bitmap is already to scale
+      cairo_set_source_surface(cr, surface, 0, 0);
+      cairo_paint(cr);
+      cairo_surface_destroy(surface);
+    }
   }
-
-  cairo_paint(cr);
+  
   cairo_restore(cr);
-  cairo_surface_destroy(surface);
-
+  
 }
 
 bool SliPresentation::getProperty(const std::string& name, std::string& value)

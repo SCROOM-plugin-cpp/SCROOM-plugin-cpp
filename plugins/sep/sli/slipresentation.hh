@@ -4,6 +4,7 @@
 
 #include <scroom/presentationinterface.hh>
 #include <scroom/scroominterface.hh>
+#include <scroom/threadpool.hh>
 
 #include "slilayer.hh"
 #include "slicontrolpanel.hh"
@@ -54,6 +55,10 @@ private:
    * The zoom level is the key, the pointer to the bitmap the value.
    */
   std::map<int, uint8_t*> rgbCache;
+
+  ThreadPool::Queue::Ptr threadQueue;
+
+  std::mutex cachingPendingMtx;
 
 private:
   /** Constructor */
