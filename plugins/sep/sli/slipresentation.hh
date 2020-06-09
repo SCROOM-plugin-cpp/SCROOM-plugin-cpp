@@ -147,5 +147,5 @@ public:
   // PipetteViewInterface
   ////////////////////////////////////////////////////////////////////////
 
-  virtual void SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area);
+  //virtual void SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area);
 };
