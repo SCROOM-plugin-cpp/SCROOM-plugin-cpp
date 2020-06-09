@@ -25,10 +25,11 @@ public:
 private:
 	SepFile sep_file;
 
-	struct tiff* file_c;
-	struct tiff* file_m;
-	struct tiff* file_y;
-	struct tiff* file_k;
+	tiff* file_c;
+	tiff* file_m;
+	tiff* file_y;
+	tiff* file_k;
+	tiff* file_w;
 
 	SepSource();
 
@@ -44,9 +45,15 @@ public:
 	 */
 	static void fillSliLayer(SliLayer::Ptr sli);
 
+	/**
+	 * Hepler functions to parseSep()
+	 */
 	static std::string findPath(const std::string& sep_directory);
-	static SepFile parseSep(const std::string& file_name);
 	static bool checkFile(const SepFile content);
+	/**
+	 * Parse the file into a struct.
+	 */
+	static SepFile parseSep(const std::string& file_name);
 
 	/**
 	 * Sets the tiff files to use as source data.
@@ -56,7 +63,7 @@ public:
 	/**
 	 * Opens the required TIFF files for the individual channels.
 	 */
-	void openFiles();
+	void openFiles(SepFile sep_file_);
 
 	/**
 	 * Retrieves a scanline from all components combined.
