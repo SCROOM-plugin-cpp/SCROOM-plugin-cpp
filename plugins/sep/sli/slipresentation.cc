@@ -261,12 +261,12 @@ void SliPresentation::cacheBottomZoomLevelRgb()
 
 void SliPresentation::wipeCache()
 {
-  cachingPendingMtx.lock();
+  // cachingPendingMtx.lock();
   rgbCache.clear();
   // Make sure all the enqueued jobs are removed as well
   threadQueue.reset();
   threadQueue = ThreadPool::Queue::createAsync();
-  cachingPendingMtx.unlock();
+  // cachingPendingMtx.unlock();
 
   CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
                       PRIO_HIGHER, threadQueue);
@@ -389,3 +389,14 @@ std::set<ViewInterface::WeakPtr> SliPresentation::getViews()
 {
   return views;
 }
+
+
+////////////////////////////////////////////////////////////////////////
+// PipetteViewInterface
+////////////////////////////////////////////////////////////////////////
+
+void SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area)
+{
+
+}
+

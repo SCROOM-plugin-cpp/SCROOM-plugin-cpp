@@ -11,17 +11,44 @@ class SliLayer : public virtual Scroom::Utils::Base
 public:
   typedef boost::shared_ptr<SliLayer> Ptr;
 
+  /** Height of the layer (in pixels) */
   int height;
+
+  /** Width of the layer (in pixels) */
   int width;
-  int spp;
-  int bps;
+  
+  /** Samples per pixel */
+  unsigned int spp;
+
+  /** Bits per sample */
+  unsigned int bps;
+
+  // TODO decide whether these values should belong to SliLayer or SliPresentation
+  /** The unit of measurement for XResolution and YResolution.
+   * 
+   *  The specification defines these values:
+   *  1 = No absolute unit of measurement. Used for images that may have a non-square aspect * ratio, but no meaningful absolute dimensions
+   *  2 = Inch
+   *  3 = Centimeter
+   */
+  unsigned int ResolutionUnit;
+
+  /** The number of pixels per ResolutionUnit in the ImageWidth direction */
+  float Xresolution;
+
+  /** The number of pixels per ResolutionUnit in the ImageLength direction */
+  float Yresolution;
+
+  /** Horizontal offset from the top-left point of the canvas (in pixels) */
   int xoffset;
+
+  /** Vertical offset from the top-left point of the canvas (in pixels) */
   int yoffset;
 
-  /** filename without extension; used as an ID */
+  /** Filename without extension; used as an ID */
   std::string name;
 
-  /** absolute filepath to the tiff/sep file */
+  /** Absolute filepath to the tiff/sep file */
   std::string filepath;
 
   /** The memory chunk containing the bitmap */
