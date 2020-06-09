@@ -8,17 +8,18 @@
 ///// SepPresentation
 
 SepPresentation::SepPresentation(ScroomInterface::Ptr interface)
-: scroom_interface(interface), sep_source(SepSource::create())
-{ }
+	: scroom_interface(interface), sep_source(SepSource::create())
+{
+}
 
 SepPresentation::~SepPresentation()
-{ }
+{
+}
 
 SepPresentation::Ptr SepPresentation::create(ScroomInterface::Ptr interface)
 {
 	return Ptr(new SepPresentation(interface));
 }
-
 
 /**
  * TODO: check if this function meets the requirements.
@@ -26,7 +27,7 @@ SepPresentation::Ptr SepPresentation::create(ScroomInterface::Ptr interface)
  * TODO: Support varnish.
  * TODO: Support pipette.
  */
-bool SepPresentation::load(const std::string& file_name)
+bool SepPresentation::load(const std::string &file_name)
 {
 	const auto file_content = SepSource::parseSep(file_name);
 	this->file_name = file_name;
@@ -34,13 +35,12 @@ bool SepPresentation::load(const std::string& file_name)
 	this->width = file_content.width;
 	this->height = file_content.height;
 
-	this->sep_source->setData(
-		file_content.files.at("C"),
-		file_content.files.at("M"),
-		file_content.files.at("Y"),
-		file_content.files.at("K"),
-		this->width
-	);
+	if (this->width == 0 || this->height == 0)
+	{
+		return false;
+	}
+
+	this->sep_source->setData(file_content);
 
 	this->tbi = createTiledBitmap(this->width, this->height, {OperationsCMYK32::create()});
 	this->tbi->setSource(this->sep_source);
