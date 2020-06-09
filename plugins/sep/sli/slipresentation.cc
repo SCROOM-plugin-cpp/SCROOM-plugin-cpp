@@ -184,6 +184,7 @@ void SliPresentation::cacheZoomLevelRgb(int zoom)
 
   // Make the cached bitmap available to the main thread
   rgbCache[zoom] = targetSurface;
+  cachingPendingMtx.unlock();
   triggerRedraw();
 }
 
@@ -249,6 +250,7 @@ void SliPresentation::cacheBottomZoomLevelRgb()
 
   // Make the cached bitmap available to the main thread
   rgbCache[0] = surface;
+  cachingPendingMtx.unlock();
   triggerRedraw();
 }
 
@@ -257,7 +259,12 @@ void SliPresentation::cacheBottomZoomLevelRgb()
 
 void SliPresentation::wipeCache()
 {
+  cachingPendingMtx.lock();
   rgbCache.clear();
+  // Make sure all the enqueued jobs are removed as well
+  threadQueue.reset();
+  threadQueue = ThreadPool::Queue::createAsync();
+  cachingPendingMtx.unlock();
 
   CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
                       PRIO_HIGHER, threadQueue);
@@ -302,6 +309,8 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
   {
     // Job to compute bottom level RGB has been enqueued already, just draw temporary rectangle
     drawRectangle(cr, Color(0.5, 1, 0.5), pixelSize*(actualPresentationArea - presentationArea.getTopLeft()));
+    CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
+                      PRIO_HIGHER, threadQueue);
     return;
   }
   else if (zoom < 0 && !rgbCache.count(zoom))
