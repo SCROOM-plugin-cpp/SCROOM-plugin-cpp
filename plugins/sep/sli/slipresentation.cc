@@ -395,8 +395,8 @@ std::set<ViewInterface::WeakPtr> SliPresentation::getViews()
 // PipetteViewInterface
 ////////////////////////////////////////////////////////////////////////
 
-void SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area)
-{
+// void SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area)
+// {
 
-}
+// }
 
