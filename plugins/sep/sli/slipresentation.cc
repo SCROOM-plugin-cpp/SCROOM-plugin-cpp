@@ -1,10 +1,9 @@
 #include "slipresentation.hh"
-#include "../seppresentation.hh"
 
-#include <string.h>
+#include <regex>
+#include <boost/filesystem.hpp>
 
 #include <scroom/cairo-helpers.hh>
-#include <scroom/layeroperations.hh>
 #include <scroom/unused.hh>
 #include <scroom/bitmap-helpers.hh>
     
@@ -73,84 +72,48 @@ bool SliPresentation::load(const std::string& fileName)
   return true;
 }
 
-/* Trimming functions */
-// TODO maybe move these into a utils file or something
-const std::string WHITESPACE = " \n\r\t\f\v";
-
-std::string ltrim(const std::string& s)
+void SliPresentation::parseSli(const std::string &sliFileName)
 {
-  size_t start = s.find_first_not_of(WHITESPACE);
-  return (start == std::string::npos) ? "" : s.substr(start);
-}
+  std::ifstream file(sliFileName);
+  std::string line;
+  std::regex e("\\s+"); // split on whitespaces
+  std::sregex_token_iterator j;
+  namespace fs = boost::filesystem;
+  std::string dirPath = fs::path(sliFileName).parent_path().string();
 
-std::string rtrim(const std::string& s)
-{
-  size_t end = s.find_last_not_of(WHITESPACE);
-  return (end == std::string::npos) ? "" : s.substr(0, end + 1);
-}
-
-std::string trim(const std::string& s)
-{
-  return rtrim(ltrim(s));
-}
-
-/**
- * Parses the content of an SLI file and stores it as a vector of SliLayer
- * TODO throw possible exceptions
- */
-void SliPresentation::parseSli(const std::string &fileName)
-{
-  std::ifstream file(fileName);
-  std::string str;
-  int line = 0;
-
-  while (std::getline(file, str))
-  { 
-    if (str.empty()) continue;
-
-    // Remove :
-    str.erase(std::remove(str.begin(), str.end(), ':'), str.end());
-
-    if (line == 0)
+  // Iterate over the lines
+  while (std::getline(file, line))  
+  {
+    std::sregex_token_iterator i(line.begin(), line.end(), e, -1);
+    // Iterate over the whitespace-separated tokens of the line
+    while(i != j)
     {
-      Xresolution = std::stoi(str.substr(str.find(" ")+1, std::string::npos));
-    }
-    else if (line == 1)
-    {
-      Yresolution = std::stoi(str.substr(str.find(" ")+1, std::string::npos));
-    }
-    else
-    {
-      std::string directory = trim(fileName.substr(0, fileName.find_last_of("/\\")+1));
-      std::tuple<std::string, int, int> data {"Layer", 0, 0};
-
-      std::vector<std::string> tokens;
-      auto iss = std::istringstream{str};
-      auto token = std::string{};
-      while (iss >> token) {
-        tokens.push_back(trim(token));
+      std::string firstToken = *i++;
+      if (firstToken == "Xresolution:")
+      {
+        Xresolution = std::stoi(*i++);
       }
-
-      if (tokens.size() > 0)
-        std::get<0>(data) = tokens[0];
-      if (tokens.size() > 1)
-        std::get<1>(data) = std::stoi(tokens[1]);
-      if (tokens.size() > 2)
-        std::get<2>(data) = std::stoi(tokens[2]);
-
-      std::string name = std::get<0>(data).substr(0, std::get<0>(data).find("."));
-      std::string filepath = directory + std::get<0>(data);
-
-      SliLayer::Ptr layer = SliLayer::create(filepath, name, std::get<1>(data), std::get<2>(data));
-
-      // Getting the SliLayer filled by the SEP plugin, when it's done
-      //SliLayer::Ptr layer = SliLayer::create(filepath, name, xoffset, yoffset);
-      //SepPresentation::Ptr sepPresentation = SepPresentation::create();
-      //sepPresentation->fillSliLayer(layer);
-
-      layers.push_back(layer);
+      else if (firstToken == "Yresolution:")
+      {
+        Yresolution = std::stoi(*i++);
+      }
+      else if (!firstToken.empty())
+      {
+        // Line seems to contain an image name
+        fs::path imagePath = fs::path(dirPath) /= firstToken; 
+        if (fs::exists(imagePath))
+        {
+          i++; // discard the colon
+          int xOffset = std::stoi(*i++);
+          int yOffset = std::stoi(*i++);
+          layers.push_back(SliLayer::create(imagePath.string(), firstToken, xOffset, yOffset));
+        }
+        else
+        {
+          printf("Error: Cannot find file %s - skipping it\n", imagePath.string().c_str());
+        }
+      }
     }
-    line++;
   }
 }
 

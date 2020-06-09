@@ -92,8 +92,7 @@ public:
   virtual bool load(const std::string& fileName);
 
   /** 
-   * Parse the SLI file and add all its information to the corresponding 
-   * variables of the class
+   * Parse the SLI file and trigger creation of the layers
    * @param fileName the absolute path of the .sli file to be parsed
    */
   virtual void parseSli(const std::string &fileName);
