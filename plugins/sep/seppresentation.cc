@@ -40,7 +40,7 @@ bool SepPresentation::load(const std::string &file_name)
 		return false;
 	}
 
-	this->sep_source->setData(file_content);
+	this->sep_source->openFiles(file_content);
 
 	this->tbi = createTiledBitmap(this->width, this->height, {OperationsCMYK32::create()});
 	this->tbi->setSource(this->sep_source);

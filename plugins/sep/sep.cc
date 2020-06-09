@@ -71,9 +71,9 @@ void Sep::open(const std::string &fileName, ScroomInterface::Ptr const &scroomIn
 		scroomInterface->showPresentation(presentation);
 	} else {
 		printf("A SLI file will be opened\n");
-		SliPresentation::Ptr presentation = SliPresentation::create(scroomInterface);
-		presentation->load(fileName);
-		scroomInterface->showPresentation(presentation);
+		// SliPresentation::Ptr presentation = SliPresentation::create(scroomInterface);
+		// presentation->load(fileName);
+		// scroomInterface->showPresentation(presentation);
 	}
 
 }
