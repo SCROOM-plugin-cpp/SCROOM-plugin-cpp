@@ -297,51 +297,39 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
   double pixelSize = pixelSizeFromZoom(zoom);
  
   drawOutOfBoundsWithBackground(cr, presentArea, actualPresentationArea, pixelSize);
-
-  cairo_save(cr);
   
-  if(zoom > 0)
+  if (zoom >= 0 && !rgbCache.count(0))
   {
-    if (!rgbCache.count(0))
-    {
-      CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
+    // Job to compute bottom level RGB has been enqueued already, just draw temporary rectangle
+    drawRectangle(cr, Color(0.5, 1, 0.5), pixelSize*(actualPresentationArea - presentationArea.getTopLeft()));
+    return;
+  }
+  else if (zoom < 0 && !rgbCache.count(zoom))
+  {
+    // Reduced level hasn't been cached yet, enqueue the job and draw the temporary rectangle
+    drawRectangle(cr, Color(0.5, 1, 0.5), pixelSize*(actualPresentationArea - presentationArea.getTopLeft()));
+    CpuBound()->schedule(boost::bind(&SliPresentation::cacheZoomLevelRgb, shared_from_this<SliPresentation>(), zoom),
                       PRIO_HIGHER, threadQueue);
-      drawRectangle(cr, Color(0.5, 1, 0.5), pixelSize*(actualPresentationArea - presentationArea.getTopLeft()));
-    }
-    else
-    {
-      // Let cairo do the zooming
-      int multiplier = 1<<zoom;
-
-      // We're using the bottom bitmap, hence we have to scale
-      cairo_translate(cr, -presentArea.x*pixelSize,-presentArea.y*pixelSize);
-      cairo_scale(cr, multiplier, multiplier);
-      cairo_set_source_surface(cr, rgbCache[0]->surface, 0, 0);
-      cairo_pattern_set_filter (cairo_get_source (cr), CAIRO_FILTER_NEAREST);
-      cairo_paint(cr);
-    }
+    return;
+  }
+  
+  // The level that we need is in the cache, so draw it! 
+  cairo_save(cr);
+  cairo_translate(cr, -presentArea.x*pixelSize,-presentArea.y*pixelSize);
+  if(zoom >= 0)
+  {
+    // We're using the bottom bitmap, hence we have to scale
+    cairo_scale(cr, 1<<zoom, 1<<zoom);
+    cairo_set_source_surface(cr, rgbCache[0]->surface, 0, 0);
+    cairo_pattern_set_filter (cairo_get_source (cr), CAIRO_FILTER_NEAREST);
   }
   else
   {
-    if (!rgbCache.count(zoom))
-    {
-      CpuBound()->schedule(boost::bind(&SliPresentation::cacheZoomLevelRgb, shared_from_this<SliPresentation>(), zoom),
-                      PRIO_HIGHER, threadQueue);
-      drawRectangle(cr, Color(0.5, 1, 0.5), pixelSize*(actualPresentationArea - presentationArea.getTopLeft()));
-    }
-    else
-    {
-      // Use our reduced bitmap for zooming
-      cairo_translate(cr, -presentArea.x*pixelSize,-presentArea.y*pixelSize);
-
-      // Cached bitmap is already to scale
-      cairo_set_source_surface(cr, rgbCache[zoom]->surface, 0, 0);
-      cairo_paint(cr);
-    }
+    // Cached and reduced bitmap is already to scale
+    cairo_set_source_surface(cr, rgbCache[zoom]->surface, 0, 0);
   }
-  
+  cairo_paint(cr);
   cairo_restore(cr);
-  
 }
 
 bool SliPresentation::getProperty(const std::string& name, std::string& value)
