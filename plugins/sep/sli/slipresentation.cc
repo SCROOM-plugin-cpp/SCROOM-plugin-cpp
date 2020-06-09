@@ -119,10 +119,11 @@ void SliPresentation::parseSli(const std::string &sliFileName)
 
 void SliPresentation::cacheZoomLevelRgb(int zoom)
 {
-  boost::recursive_mutex::scoped_lock lock(cachingPendingMtx);
+  cachingPendingMtx.lock();
   // Check if another thread has already computed the required bitmap in the meantime
   if (rgbCache.count(zoom))
   {
+    cachingPendingMtx.unlock();
     return;
   }
   // We're basing the computation of the bitmap forzoom level x on the bitmap for zoom level
@@ -190,10 +191,11 @@ void SliPresentation::cacheZoomLevelRgb(int zoom)
 
 void SliPresentation::cacheBottomZoomLevelRgb()
 {
-  boost::recursive_mutex::scoped_lock lock(cachingPendingMtx);
+  cachingPendingMtx.lock();
   // Check if another thread has already computed the required bitmap in the meantime
   if (rgbCache.count(0))
   {
+    cachingPendingMtx.unlock();
     return;
   }
 
