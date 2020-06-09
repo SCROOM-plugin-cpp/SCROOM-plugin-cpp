@@ -29,6 +29,12 @@ public:
   /** Get the bitmap of the wrapped surface */
   virtual uint8_t* getBitmap();
 
+  /** Fill the entire surface with 0s */
+  virtual void clearSurface();
+
+  /** Fill a rectangle of the surface with 0s */
+  virtual void clearSurface(int x0, int y0, int x1, int y1);
+
   /** Destructor */
   virtual ~SurfaceWrapper();
 };

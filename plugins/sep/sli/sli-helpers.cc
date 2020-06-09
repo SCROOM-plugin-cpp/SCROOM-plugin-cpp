@@ -34,6 +34,23 @@ uint8_t* SurfaceWrapper::getBitmap()
   return cairo_image_surface_get_data(surface);
 }
 
+void SurfaceWrapper::clearSurface()
+{
+  cairo_t* cr = cairo_create(surface);
+  cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+  cairo_paint(cr);
+  cairo_destroy(cr);
+}
+
+void SurfaceWrapper::clearSurface(int x0, int y0, int width, int height)
+{
+  cairo_t* cr = cairo_create(surface);
+  cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
+  cairo_rectangle(cr, x0, y0, width, height);
+  cairo_fill(cr);
+  cairo_destroy(cr);
+}
+
 SurfaceWrapper::~SurfaceWrapper()
 {
   free(cairo_image_surface_get_data(surface));
