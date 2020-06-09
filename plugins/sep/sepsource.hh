@@ -23,11 +23,7 @@ public:
 	typedef boost::shared_ptr<SepSource> Ptr;
 
 private:
-	std::string file_name_c;
-	std::string file_name_m;
-	std::string file_name_y;
-	std::string file_name_k;
-	size_t image_width;
+	SepFile sep_file;
 
 	struct tiff* file_c;
 	struct tiff* file_m;
@@ -55,7 +51,7 @@ public:
 	/**
 	 * Sets the tiff files to use as source data.
 	 */
-	void setData(std::string c_name, std::string m_name, std::string y_name, std::string k_name, size_t width);
+	void setData(SepFile sep_file_);
 	
 	/**
 	 * Opens the required TIFF files for the individual channels.
