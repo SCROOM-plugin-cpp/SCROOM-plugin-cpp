@@ -8,6 +8,7 @@
 
 #include "slilayer.hh"
 #include "slicontrolpanel.hh"
+#include "sli-helpers.hh"
 
 
 class SliPresentation : public PresentationBase,
@@ -54,8 +55,9 @@ private:
    * Contains the cached bitmaps for the different zoom levels. 
    * The zoom level is the key, the pointer to the bitmap the value.
    */
-  std::map<int, uint8_t*> rgbCache;
+  std::map<int, SurfaceWrapper::Ptr> rgbCache;
 
+  /** The thread queue into which caching jobs are enqueued */
   ThreadPool::Queue::Ptr threadQueue;
 
   /** Must be acquired by a thread before writing to the cached bitmaps */

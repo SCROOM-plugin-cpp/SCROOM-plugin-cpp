@@ -24,13 +24,6 @@ SliPresentation::Ptr SliPresentation::create(ScroomInterface::Ptr scroomInterfac
 
 SliPresentation::~SliPresentation()
 {
-  std::map<int, uint8_t*>::iterator it;
-
-  // Free all the memory that contains cached bitmaps
-  for ( it = rgbCache.begin(); it != rgbCache.end(); it++)
-  {
-    free(it->second);
-  }
 }
 
 /** 
@@ -179,15 +172,15 @@ void SliPresentation::cacheZoomLevelRgb(int zoom)
 
   const int sourceWidth = total_width / pow(2, -zoom - 1);
   const int sourceHeight = total_height / pow(2, -zoom - 1);
-  const int sourceStride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, sourceWidth);
-  Scroom::Bitmap::SampleIterator<const uint8_t> sourceBase(rgbCache[zoom+1], 0, 8);
+  const int sourceStride = rgbCache[zoom+1]->getStride();
+  Scroom::Bitmap::SampleIterator<const uint8_t> sourceBase(rgbCache[zoom+1]->getBitmap(), 0, 8);
   const unsigned int sourceMax = sourceBase.pixelMask;
 
   const int targetWidth = sourceWidth / 2;
   const int targetHeight = sourceHeight / 2;
-  const int targetStride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, targetWidth);
-  uint8_t* targetBitmap = static_cast<uint8_t*>(calloc(targetHeight * targetStride, 1));
-  Scroom::Bitmap::SampleIterator<uint8_t> targetBase(targetBitmap, 0, 8);
+  SurfaceWrapper::Ptr targetSurface = SurfaceWrapper::create(targetWidth, targetHeight, CAIRO_FORMAT_ARGB32);
+  const int targetStride = targetSurface->getStride();
+  Scroom::Bitmap::SampleIterator<uint8_t> targetBase(targetSurface->getBitmap(), 0, 8);
   const unsigned int targetMax = targetBase.pixelMask;
 
   for (int y = 0; y < targetHeight; y++)
@@ -227,7 +220,7 @@ void SliPresentation::cacheZoomLevelRgb(int zoom)
   }
 
   // Make the cached bitmap available to the main thread
-  rgbCache[zoom] = targetBitmap;
+  rgbCache[zoom] = targetSurface;
   triggerRedraw();
 }
 
@@ -239,12 +232,11 @@ void SliPresentation::cacheBottomZoomLevelRgb()
   {
     return;
   }
-  uint8_t* bitmap = static_cast<uint8_t*>(calloc(total_area, SPP));
 
-  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, total_width);
-  cairo_surface_t *surface = cairo_image_surface_create_for_data(bitmap, CAIRO_FORMAT_ARGB32, total_width, total_height, stride);
+  SurfaceWrapper::Ptr surface = SurfaceWrapper::create(total_width, total_height, CAIRO_FORMAT_ARGB32);
+  const int stride = surface->getStride();
 
-  uint8_t* cur_surface_byte = reinterpret_cast<uint8_t*>(cairo_image_surface_get_data(surface));
+  uint8_t* cur_surface_byte = surface->getBitmap();
   uint8_t* surface_begin = cur_surface_byte;
   uint32_t* target_begin = reinterpret_cast<uint32_t *>(surface_begin);
 
@@ -291,10 +283,9 @@ void SliPresentation::cacheBottomZoomLevelRgb()
 
     target_begin[i/SPP] = (A << 24) | (R << 16) | (G << 8) | B;
   }
-  cairo_surface_destroy(surface);
 
   // Make the cached bitmap available to the main thread
-  rgbCache[0] = bitmap;
+  rgbCache[0] = surface;
   triggerRedraw();
 }
 
@@ -303,13 +294,6 @@ void SliPresentation::cacheBottomZoomLevelRgb()
 
 void SliPresentation::wipeCache()
 {
-  std::map<int, uint8_t*>::iterator it;
-
-  // Free all the memory that contains cached bitmaps
-  for ( it = rgbCache.begin(); it != rgbCache.end(); it++)
-  {
-    free(it->second);
-  }
   rgbCache.clear();
 
   CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
@@ -344,15 +328,12 @@ Scroom::Utils::Rectangle<double> SliPresentation::getRect()
 void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
                              Scroom::Utils::Rectangle<double> presentationArea, int zoom)
 {
-  GdkRectangle presentArea = presentationArea.toGdkRectangle();
   UNUSED(vi);
-  double pixelSize = pixelSizeFromZoom(zoom);
-
+  GdkRectangle presentArea = presentationArea.toGdkRectangle();
   Scroom::Utils::Rectangle<double> actualPresentationArea = getRect();
+  double pixelSize = pixelSizeFromZoom(zoom);
+ 
   drawOutOfBoundsWithBackground(cr, presentArea, actualPresentationArea, pixelSize);
-
-  // TODO why do very large images crash when fully zoomed out and 
-  // why does Scroom/Cairo already show the visible area only?
 
   cairo_save(cr);
   
@@ -367,17 +348,14 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
     else
     {
       // Let cairo do the zooming
-      const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, total_width);
       int multiplier = 1<<zoom;
-      cairo_surface_t* surface = cairo_image_surface_create_for_data(rgbCache[0], CAIRO_FORMAT_ARGB32, total_width, total_height, stride);
 
       // We're using the bottom bitmap, hence we have to scale
       cairo_translate(cr, -presentArea.x*pixelSize,-presentArea.y*pixelSize);
       cairo_scale(cr, multiplier, multiplier);
-      cairo_set_source_surface(cr, surface, 0, 0);
+      cairo_set_source_surface(cr, rgbCache[0]->surface, 0, 0);
       cairo_pattern_set_filter (cairo_get_source (cr), CAIRO_FILTER_NEAREST);
       cairo_paint(cr);
-      cairo_surface_destroy(surface);
     }
   }
   else
@@ -392,15 +370,10 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
     {
       // Use our reduced bitmap for zooming
       cairo_translate(cr, -presentArea.x*pixelSize,-presentArea.y*pixelSize);
-      const int zoomLevelWidth = total_width / pow(2, -zoom);
-      const int zoomLevelHeight = total_height / pow(2, -zoom);
-      const int zoomLevelstride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, zoomLevelWidth);
-      cairo_surface_t* surface = cairo_image_surface_create_for_data(rgbCache[zoom], CAIRO_FORMAT_ARGB32, zoomLevelWidth, zoomLevelHeight, zoomLevelstride);
 
       // Cached bitmap is already to scale
-      cairo_set_source_surface(cr, surface, 0, 0);
+      cairo_set_source_surface(cr, rgbCache[zoom]->surface, 0, 0);
       cairo_paint(cr);
-      cairo_surface_destroy(surface);
     }
   }
   
