@@ -64,7 +64,7 @@ private:
   ThreadPool::Queue::Ptr threadQueue;
 
   /** Must be acquired by a thread before writing to the cached bitmaps */
-  boost::recursive_mutex cachingPendingMtx;
+  boost::mutex mtx;
 
   TransformationData::Ptr transformationData;
 
@@ -82,6 +82,8 @@ private:
    * reducing it in the process. Reductions must only happen if zoom < 0
    */
   virtual void cacheZoomLevelRgb(int zoom);
+
+  virtual void fillCache(int zoom);
 
 public:
   /** Destructor */

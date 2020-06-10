@@ -12,6 +12,8 @@ private:
   /** The number of layers that the SliPresentation consists of*/
   int n_layers;
 
+  std::vector<GtkWidget*> widgets;
+
 public:
   GtkWidget* treeview;
   GtkRange* range_high;
@@ -29,6 +31,10 @@ private:
 public:
   /** Constructor */
   static SliControlPanel::Ptr create(ViewInterface::WeakPtr view, SliPresentationInterface::WeakPtr presentation_);
+
+  virtual void disableInteractions();
+
+  virtual void enableInteractions();
 
   /** Destructor */
   virtual ~SliControlPanel();

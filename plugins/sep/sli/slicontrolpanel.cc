@@ -209,6 +209,7 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
   GtkWidget *hbox = gtk_hbox_new(false, 10);
 
   treeview = gtk_tree_view_new();
+  widgets.push_back(treeview);
   create_view_and_model();
   gtk_box_pack_start(GTK_BOX(hbox), treeview, false, false, 0);
   
@@ -216,6 +217,8 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
   {
     GtkWidget *slider_low = gtk_vscale_new_with_range(0, n_layers - 1, 1);
     GtkWidget *slider_high = gtk_vscale_new_with_range(0, n_layers - 1, 1);
+    widgets.push_back(slider_low);
+    widgets.push_back(slider_high);
     range_low = GTK_RANGE(slider_low);
     range_high = GTK_RANGE(slider_high);
 
@@ -254,6 +257,22 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
   gdk_threads_enter();
   view->addSideWidget("Layers", hbox);
   gdk_threads_leave();
+}
+
+void SliControlPanel::disableInteractions()
+{
+  for (GtkWidget* widget: widgets)
+  {
+    gtk_widget_set_sensitive(widget, false);
+  }
+}
+
+void SliControlPanel::enableInteractions()
+{
+  for (GtkWidget* widget: widgets)
+  {
+    gtk_widget_set_sensitive(widget, true);
+  }
 }
 
 SliControlPanel::~SliControlPanel()

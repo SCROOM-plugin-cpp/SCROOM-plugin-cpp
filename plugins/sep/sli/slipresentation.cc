@@ -81,9 +81,6 @@ bool SliPresentation::load(const std::string& fileName)
              Xresolution, Yresolution, layer->name.c_str(), layer->Xresolution, layer->Yresolution);
     }
   }
-
-  CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
-                      PRIO_HIGHER, threadQueue);
   return true;
 }
 
@@ -134,21 +131,32 @@ void SliPresentation::parseSli(const std::string &sliFileName)
   }
 }
 
+void SliPresentation::fillCache(int zoom)
+{
+  mtx.lock();
+  controlPanel->disableInteractions();
+
+  if (!rgbCache.count(0))
+  {
+    cacheBottomZoomLevelRgb();
+  }
+  if (zoom < 0)
+  {
+    for (int i = -1; i >= zoom; i--)
+    {
+      if (!rgbCache.count(i))
+      {
+        cacheZoomLevelRgb(i);
+      }
+    }
+  }
+  controlPanel->enableInteractions();
+  mtx.unlock();
+  triggerRedraw();
+}
+
 void SliPresentation::cacheZoomLevelRgb(int zoom)
 {
-  cachingPendingMtx.lock();
-  // Check if another thread has already computed the required bitmap in the meantime
-  if (rgbCache.count(zoom))
-  {
-    cachingPendingMtx.unlock();
-    return;
-  }
-  // We're basing the computation of the bitmap forzoom level x on the bitmap for zoom level
-  // x-1. So ensure that the bitmap for zoom level x-1 is cached
-  if (zoom < -1 && !rgbCache.count(zoom))
-  {
-    cacheZoomLevelRgb(zoom + 1);
-  }
   printf("Computing for zoom %d\n", zoom);
 
   const int sourceWidth = total_width / pow(2, -zoom - 1);
@@ -202,20 +210,10 @@ void SliPresentation::cacheZoomLevelRgb(int zoom)
 
   // Make the cached bitmap available to the main thread
   rgbCache[zoom] = targetSurface;
-  cachingPendingMtx.unlock();
-  triggerRedraw();
 }
 
 void SliPresentation::cacheBottomZoomLevelRgb()
 {
-  cachingPendingMtx.lock();
-  // Check if another thread has already computed the required bitmap in the meantime
-  if (rgbCache.count(0))
-  {
-    cachingPendingMtx.unlock();
-    return;
-  }
-
   SurfaceWrapper::Ptr surface = SurfaceWrapper::create(total_width, total_height, CAIRO_FORMAT_ARGB32);
   const int stride = surface->getStride();
 
@@ -269,8 +267,6 @@ void SliPresentation::cacheBottomZoomLevelRgb()
 
   // Make the cached bitmap available to the main thread
   rgbCache[0] = surface;
-  cachingPendingMtx.unlock();
-  triggerRedraw();
 }
 
 TransformationData::Ptr SliPresentation::getTransformationData() const
@@ -283,15 +279,7 @@ TransformationData::Ptr SliPresentation::getTransformationData() const
 
 void SliPresentation::wipeCache()
 {
-  //cachingPendingMtx.lock();
   rgbCache.clear();
-  // Make sure all the enqueued jobs are removed as well
-  threadQueue.reset();
-  threadQueue = ThreadPool::Queue::createAsync();
-  //cachingPendingMtx.unlock();
-
-  CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
-                      PRIO_HIGHER, threadQueue);
 }
 
 void SliPresentation::triggerRedraw()
@@ -329,23 +317,14 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
  
   drawOutOfBoundsWithBackground(cr, presentArea, actualPresentationArea, pixelSize);
   
-  if (zoom >= 0 && !rgbCache.count(0))
+  if (!rgbCache.count(std::min(0, zoom)))
   {
-    // Job to compute bottom level RGB has been enqueued already, just draw temporary rectangle
     drawRectangle(cr, Color(0.5, 1, 0.5), pixelSize*(actualPresentationArea - presentationArea.getTopLeft()));
-    CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
+    CpuBound()->schedule(boost::bind(&SliPresentation::fillCache, shared_from_this<SliPresentation>(), zoom),
                       PRIO_HIGHER, threadQueue);
     return;
   }
-  else if (zoom < 0 && !rgbCache.count(zoom))
-  {
-    // Reduced level hasn't been cached yet, enqueue the job and draw the temporary rectangle
-    drawRectangle(cr, Color(0.5, 1, 0.5), pixelSize*(actualPresentationArea - presentationArea.getTopLeft()));
-    CpuBound()->schedule(boost::bind(&SliPresentation::cacheZoomLevelRgb, shared_from_this<SliPresentation>(), zoom),
-                      PRIO_HIGHER, threadQueue);
-    return;
-  }
-  
+
   // The level that we need is in the cache, so draw it! 
   cairo_save(cr);
   cairo_translate(cr, -presentArea.x*pixelSize,-presentArea.y*pixelSize);
