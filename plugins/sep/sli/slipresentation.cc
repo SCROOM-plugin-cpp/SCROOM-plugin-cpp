@@ -67,6 +67,21 @@ bool SliPresentation::load(const std::string& fileName)
 {
   parseSli(fileName);
   computeHeightWidth();
+  
+  transformationData = TransformationData::create();
+  float base = std::max(Xresolution, Yresolution);
+  transformationData->setAspectRatio(base / Xresolution, base / Yresolution);
+
+  for (SliLayer::Ptr layer: layers)
+  {
+    if (std::abs(layer->Xresolution - Xresolution) > 1e-2 || std::abs(layer->Yresolution - Yresolution) > 1e-2)
+    {
+      printf("WARNING: Resolution mismatch - SLI file defines Xresolution=%.2f and Yresolution=%.2f "
+             "but layer %s has Xresolution=%.2f and Yresolution=%.2f\n", 
+             Xresolution, Yresolution, layer->name.c_str(), layer->Xresolution, layer->Yresolution);
+    }
+  }
+
   CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
                       PRIO_HIGHER, threadQueue);
   return true;
@@ -91,11 +106,13 @@ void SliPresentation::parseSli(const std::string &sliFileName)
       std::string firstToken = *i++;
       if (firstToken == "Xresolution:")
       {
-        Xresolution = std::stoi(*i++);
+        Xresolution = std::stof(*i++);
+        printf("xresolution: %f\n", Xresolution);
       }
       else if (firstToken == "Yresolution:")
       {
-        Yresolution = std::stoi(*i++);
+        Yresolution = std::stof(*i++);
+        printf("yresolution: %f\n", Yresolution);
       }
       else if (!firstToken.empty())
       {
@@ -256,17 +273,22 @@ void SliPresentation::cacheBottomZoomLevelRgb()
   triggerRedraw();
 }
 
+TransformationData::Ptr SliPresentation::getTransformationData() const
+{
+  return transformationData;
+}
+
 ////////////////////////////////////////////////////////////////////////
 // SliPresentationInterface
 
 void SliPresentation::wipeCache()
 {
-  // cachingPendingMtx.lock();
+  //cachingPendingMtx.lock();
   rgbCache.clear();
   // Make sure all the enqueued jobs are removed as well
   threadQueue.reset();
   threadQueue = ThreadPool::Queue::createAsync();
-  // cachingPendingMtx.unlock();
+  //cachingPendingMtx.unlock();
 
   CpuBound()->schedule(boost::bind(&SliPresentation::cacheBottomZoomLevelRgb, shared_from_this<SliPresentation>()),
                       PRIO_HIGHER, threadQueue);

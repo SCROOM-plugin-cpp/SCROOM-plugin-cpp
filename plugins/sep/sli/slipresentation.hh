@@ -5,6 +5,7 @@
 #include <scroom/presentationinterface.hh>
 #include <scroom/scroominterface.hh>
 #include <scroom/threadpool.hh>
+#include <scroom/transformpresentation.hh>
 
 #include "slilayer.hh"
 #include "slicontrolpanel.hh"
@@ -46,22 +47,12 @@ private:
 
   /** Area of all layers and offsets combined in bytes */
   int total_area_bytes;
-  
-  // TODO decide whether these values should belong to SliLayer or SliPresentation
-  /** The unit of measurement for XResolution and YResolution.
-   * 
-   *  The specification defines these values:
-   *  1 = No absolute unit of measurement. Used for images that may have a non-square aspect * ratio, but no meaningful absolute dimensions
-   *  2 = Inch
-   *  3 = Centimeter
-   */
-  int ResolutionUnit;
 
   /** The number of pixels per ResolutionUnit in the ImageWidth direction */
-  int Xresolution;
+  float Xresolution;
 
   /** The number of pixels per ResolutionUnit in the ImageLength direction */
-  int Yresolution;
+  float Yresolution;
 
   /** 
    * Contains the cached bitmaps for the different zoom levels. 
@@ -74,6 +65,8 @@ private:
 
   /** Must be acquired by a thread before writing to the cached bitmaps */
   boost::recursive_mutex cachingPendingMtx;
+
+  TransformationData::Ptr transformationData;
 
 private:
   /** Constructor */
@@ -114,6 +107,8 @@ public:
 
   /** Getter for the layers that the presentation consists of */
   std::vector<SliLayer::Ptr>& getLayers() {return layers;};
+
+  TransformationData::Ptr getTransformationData() const;
 
   ////////////////////////////////////////////////////////////////////////
   // SliPresentationInterface

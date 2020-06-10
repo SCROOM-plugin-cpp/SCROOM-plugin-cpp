@@ -23,21 +23,11 @@ public:
   /** Bits per sample */
   unsigned int bps;
 
-  // TODO decide whether these values should belong to SliLayer or SliPresentation
-  /** The unit of measurement for XResolution and YResolution.
-   * 
-   *  The specification defines these values:
-   *  1 = No absolute unit of measurement. Used for images that may have a non-square aspect * ratio, but no meaningful absolute dimensions
-   *  2 = Inch
-   *  3 = Centimeter
-   */
-  unsigned int ResolutionUnit;
-
   /** The number of pixels per ResolutionUnit in the ImageWidth direction */
-  float Xresolution;
+  float Xresolution=0;
 
   /** The number of pixels per ResolutionUnit in the ImageLength direction */
-  float Yresolution;
+  float Yresolution=0;
 
   /** Horizontal offset from the top-left point of the canvas (in pixels) */
   int xoffset;
