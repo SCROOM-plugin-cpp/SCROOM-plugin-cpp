@@ -13,7 +13,7 @@ enum MSG_TYPE
 	ERROR
 };
 
-void showWarning(MSG_TYPE type, std::string message)
+int showWarning(MSG_TYPE type, std::string message)
 {
 	GtkMessageType type_gtk;
 	if (type == MSG_TYPE::INFO)
@@ -34,8 +34,9 @@ void showWarning(MSG_TYPE type, std::string message)
 		nullptr, GTK_DIALOG_DESTROY_WITH_PARENT,
 		type_gtk, GTK_BUTTONS_CLOSE, message.c_str());
 
-	gtk_dialog_run(GTK_DIALOG(dialog));
+	gint k = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
+	return (int)k;
 }
 
 SepSource::SepSource() {}
@@ -97,7 +98,7 @@ SepFile SepSource::parseSep(const std::string &file_name)
 		boost::algorithm::trim(result[0]);
 		boost::algorithm::trim(result[1]);
 
-		if (result.size() != 2 || result[1].empty() )
+		if (result.size() != 2 || result[1].empty() || (result[0].empty() && !result[1].empty()))
 		{
 			// Remember the warning and skip this line
 			errors += "PANIC: One of the channels has not been provided correctly!\n";
@@ -138,8 +139,8 @@ void SepSource::fillSliLayer(SliLayer::Ptr sli)
 	sli->bitmap = new uint8_t[sli->height * row_width];
 
 	auto source = SepSource::create();
-	// source->setData(values);
-	source->openFiles(values);
+	source->setData(values);
+	source->openFiles();
 
 	auto temp = std::vector<byte>(row_width);
 	for (int y = 0; y < sli->height; y++)
@@ -153,19 +154,18 @@ void SepSource::fillSliLayer(SliLayer::Ptr sli)
 
 void SepSource::setData(SepFile sep_file_)
 {
-	
+	this->sep_file = sep_file_;
 }
 
-void SepSource::openFiles(SepFile sep_file_)
+void SepSource::openFiles()
 {
-	this->sep_file = sep_file_;
-	if (this->file_c != NULL && this->file_m != NULL && this->file_y != NULL && this->file_k != NULL)
+	if (this->file_c != nullptr && this->file_m != nullptr && this->file_y != nullptr && this->file_k != nullptr && this->file_w != nullptr)
 	{
 		// why is this being printed?
 		printf("PANIC: PANIC\n");
 		return;
 	}
-
+	printf("first time \n");
 	this->file_c = TIFFOpen(this->sep_file.files["C"].c_str(), "r");
 	this->file_m = TIFFOpen(this->sep_file.files["M"].c_str(), "r");
 	this->file_y = TIFFOpen(this->sep_file.files["Y"].c_str(), "r");
@@ -174,7 +174,7 @@ void SepSource::openFiles(SepFile sep_file_)
 	if (this->sep_file.files.count("W"))
 		this->file_w = TIFFOpen(this->sep_file.files["W"].c_str(), "r");
 
-	if (this->file_c == NULL || this->file_m == NULL || this->file_y == NULL || this->file_k == NULL || this->file_w == NULL)
+	if (this->file_c == nullptr || this->file_m == nullptr || this->file_y == nullptr || this->file_k == nullptr || this->file_w == nullptr)
 	{
 		std::string error = "PANIC: One of the provided files is not valid, or could not be opened!\n";
 		printf(error.c_str());
@@ -198,28 +198,39 @@ void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr)
 	size_t size = out.size() / 4;
 
 	// Create buffers for the scanlines of the individual channels.
-	auto c_line = std::vector<byte>(size);
-	auto m_line = std::vector<byte>(size);
-	auto y_line = std::vector<byte>(size);
-	auto k_line = std::vector<byte>(size);
-	auto w_line = std::vector<byte>(size);
+	auto c_line = std::vector<uint8_t>(size);
+	auto m_line = std::vector<uint8_t>(size);
+	auto y_line = std::vector<uint8_t>(size);
+	auto k_line = std::vector<uint8_t>(size);
+	auto w_line = std::vector<uint8_t>(size);
+
+	int type; // 1 is subtrative
 
 	// Read scanlines of the individual channels.
 	TIFFReadScanline_(this->file_c, c_line.data(), line_nr);
 	TIFFReadScanline_(this->file_m, m_line.data(), line_nr);
 	TIFFReadScanline_(this->file_y, y_line.data(), line_nr);
 	TIFFReadScanline_(this->file_k, k_line.data(), line_nr);
-	TIFFReadScanline_(this->file_w, w_line.data(), line_nr);
+	if (this->file_w != nullptr)
+	{
+		type = 2;
+	}
 
-	// Merge the scanlines of individual channels: first C, then M,
-	// then Y and finally K.
 	for (size_t i = 0; i < size; i++)
 	{
-		out[4 * i + 0] = c_line[i] - w_line[i];
-		out[4 * i + 1] = m_line[i] - w_line[i];
-		out[4 * i + 2] = y_line[i] - w_line[i];
-		out[4 * i + 3] = k_line[i] - w_line[i];
+		out[4 * i + 0] = whiteInk(w_line[i], c_line[i], type);
+		out[4 * i + 1] = whiteInk(w_line[i], m_line[i], type);
+		out[4 * i + 2] = whiteInk(w_line[i], y_line[i], type);
+		out[4 * i + 3] = whiteInk(w_line[i], k_line[i], type);
 	}
+}
+
+uint8_t SepSource::whiteInk(uint8_t a, uint8_t b, int type)
+{
+	if (type == 1)
+		return a >= b ? 0 : b - a;
+	else
+		return a > 0 ? b / a : b;
 }
 
 void SepSource::fillTiles(int startLine, int line_count, int tileWidth, int firstTile, std::vector<Tile::Ptr> &tiles)
@@ -297,5 +308,10 @@ void SepSource::done()
 	{
 		TIFFClose(this->file_k);
 		this->file_k = nullptr;
+	}
+	if (this->file_w != nullptr)
+	{
+		TIFFClose(this->file_w);
+		this->file_w = nullptr;
 	}
 }

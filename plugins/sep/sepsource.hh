@@ -25,11 +25,11 @@ public:
 private:
 	SepFile sep_file;
 
-	tiff* file_c;
-	tiff* file_m;
-	tiff* file_y;
-	tiff* file_k;
-	tiff* file_w;
+	tiff* file_c = nullptr;
+	tiff* file_m = nullptr;
+	tiff* file_y = nullptr;
+	tiff* file_k = nullptr;
+	tiff* file_w = nullptr;
 
 	SepSource();
 
@@ -63,7 +63,9 @@ public:
 	/**
 	 * Opens the required TIFF files for the individual channels.
 	 */
-	void openFiles(SepFile sep_file_);
+	void openFiles();
+
+	static uint8_t whiteInk(uint8_t a, uint8_t b, int type);
 
 	/**
 	 * Retrieves a scanline from all components combined.
