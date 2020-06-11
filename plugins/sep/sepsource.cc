@@ -6,37 +6,31 @@
 
 #include "sepsource.hh"
 
-enum MSG_TYPE
-{
+enum MSG_TYPE {
 	INFO,
 	WARNING,
 	ERROR
 };
 
-int showWarning(MSG_TYPE type, std::string message)
-{
+void ShowWarning(MSG_TYPE type, std::string message) {
 	GtkMessageType type_gtk;
-	if (type == MSG_TYPE::INFO)
-	{
+	if (type == MSG_TYPE::INFO) {
 		type_gtk = GTK_MESSAGE_INFO;
-	}
-	else if (type == MSG_TYPE::WARNING)
-	{
+	} else if (type == MSG_TYPE::WARNING) {
 		type_gtk = GTK_MESSAGE_WARNING;
-	}
-	else
-	{
+	} else {
 		type_gtk = GTK_MESSAGE_ERROR;
 	}
 
-	// We don't have a pointer to the parent window, so we'll just supply nullptr..
-	GtkWidget *dialog = gtk_message_dialog_new(
+	// We don't have a pointer to the parent window, so
+	// we'll just supply nullptr..
+	GtkWidget* dialog = gtk_message_dialog_new(
 		nullptr, GTK_DIALOG_DESTROY_WITH_PARENT,
-		type_gtk, GTK_BUTTONS_CLOSE, message.c_str());
+		type_gtk, GTK_BUTTONS_CLOSE, message.c_str()
+	);
 
-	gint k = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
-	return (int)k;
 }
 
 SepSource::SepSource() {}
@@ -114,7 +108,7 @@ SepFile SepSource::parseSep(const std::string &file_name)
 	if (!errors.empty())
 	{
 		std::cerr << errors;
-		showWarning(WARNING, errors);
+		ShowWarning(WARNING, errors);
 	}
 
 	return sep_file;
@@ -218,13 +212,12 @@ void SepSource::setData(SepFile file)
 
 void SepSource::openFiles()
 {
-	if (this->file_c != nullptr && this->file_m != nullptr && this->file_y != nullptr && this->file_k != nullptr && this->file_w != nullptr)
-	{
+	if (this->file_c != nullptr && this->file_m != nullptr && this->file_y != nullptr && this->file_k != nullptr) {
 		// This return is reached when all files are already opened. This happens for example when an image
 		// has multiple tiles and its tiles are filled using multiple calls to fillTiles.
 		return;
 	}
-	printf("first time \n");
+
 	this->file_c = TIFFOpen(this->sep_file.files["C"].c_str(), "r");
 	this->file_m = TIFFOpen(this->sep_file.files["M"].c_str(), "r");
 	this->file_y = TIFFOpen(this->sep_file.files["Y"].c_str(), "r");
@@ -233,21 +226,16 @@ void SepSource::openFiles()
 	if (this->sep_file.files.count("W"))
 		this->file_w = TIFFOpen(this->sep_file.files["W"].c_str(), "r");
 
-	if (this->file_c == nullptr || this->file_m == nullptr || this->file_y == nullptr || this->file_k == nullptr || this->file_w == nullptr)
-	{
-		std::string error = "PANIC: One of the provided files is not valid, or could not be opened!\n";
-		printf(error.c_str());
-		showWarning(WARNING, error);
+	if (this->file_c == nullptr || this->file_m == nullptr || this->file_y == nullptr || this->file_k == nullptr) {
+		ShowWarning(WARNING, "PANIC: One of the provided files is not valid, or could not be opened!");
 	}
 }
 
 int TIFFReadScanline_(tiff *file, void *buf, uint32 row, uint16 sample = 0)
 {
-	if (file)
-	{
-		return TIFFReadScanline(file, buf, row, sample);
-	}
-	return -1;
+	if (file == nullptr)
+		return -1;
+	return TIFFReadScanline(file, buf, row, sample);
 }
 
 void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr)
@@ -263,17 +251,15 @@ void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr)
 	auto k_line = std::vector<uint8_t>(size);
 	auto w_line = std::vector<uint8_t>(size);
 
-	int type; // 1 is subtrative
-
 	// Read scanlines of the individual channels.
 	TIFFReadScanline_(this->file_c, c_line.data(), line_nr);
 	TIFFReadScanline_(this->file_m, m_line.data(), line_nr);
 	TIFFReadScanline_(this->file_y, y_line.data(), line_nr);
 	TIFFReadScanline_(this->file_k, k_line.data(), line_nr);
+
+	int type = 1; // 1 is subtrative
 	if (this->file_w != nullptr)
-	{
 		type = 2;
-	}
 
 	for (size_t i = 0; i < size; i++)
 	{
@@ -310,8 +296,7 @@ void SepSource::fillTiles(int startLine, int line_count, int tileWidth, int firs
 	// separate vector, so we can update it to point to the
 	// start of the current row in the loop.
 	auto tile_data = std::vector<byte *>(tile_count);
-	for (size_t tile = 0; tile < tile_count; tile++)
-	{
+	for (size_t tile = 0; tile < tile_count; tile++) {
 		tile_data[tile] = tiles[tile]->data.get();
 	}
 
@@ -324,7 +309,6 @@ void SepSource::fillTiles(int startLine, int line_count, int tileWidth, int firs
 	// This points to the beginning of the row (taking the starting tile
 	// into account).
 	const byte *horizontal_offset = row.data() + first_tile * tile_stride;
-	std::cout << horizontal_offset << std::endl;
 
 	for (size_t i = 0; i < static_cast<size_t>(line_count); i++)
 	{
