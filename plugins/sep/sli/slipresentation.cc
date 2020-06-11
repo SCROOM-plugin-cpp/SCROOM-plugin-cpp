@@ -131,14 +131,25 @@ void SliPresentation::parseSli(const std::string &sliFileName)
   }
 }
 
+void SliPresentation::clearBottomSurface()
+{
+  auto layer = layers[lastToggledLayer];
+  auto rect = layer->toRectangle();
+
+  if (rgbCache.count(0))
+  {
+    rgbCache[0]->clearSurface(rect);
+  }
+}
+
 void SliPresentation::fillCache(int zoom)
 {
-  cachingMtx.lock();
+  mtx.lock();
   controlPanel->disableInteractions();
 
-  if (!rgbCache.count(0))
+  if (!rgbCache.count(0) || rgbCache[0]->clear)
   {
-    computeRgb();
+    cacheBottomZoomLevelRgb();
   }
   if (zoom < 0)
   {
@@ -146,16 +157,16 @@ void SliPresentation::fillCache(int zoom)
     {
       if (!rgbCache.count(i))
       {
-        reduceRgb(i);
+        cacheZoomLevelRgb(i);
       }
     }
   }
   controlPanel->enableInteractions();
-  cachingMtx.unlock();
+  mtx.unlock();
   triggerRedraw();
 }
 
-void SliPresentation::reduceRgb(int zoom)
+void SliPresentation::cacheZoomLevelRgb(int zoom)
 {
   printf("Computing for zoom %d\n", zoom);
 
@@ -163,12 +174,14 @@ void SliPresentation::reduceRgb(int zoom)
   const int sourceHeight = total_height / pow(2, -zoom - 1);
   const int sourceStride = rgbCache[zoom+1]->getStride();
   Scroom::Bitmap::SampleIterator<const uint8_t> sourceBase(rgbCache[zoom+1]->getBitmap(), 0, 8);
+  const unsigned int sourceMax = sourceBase.pixelMask;
 
   const int targetWidth = sourceWidth / 2;
   const int targetHeight = sourceHeight / 2;
   SurfaceWrapper::Ptr targetSurface = SurfaceWrapper::create(targetWidth, targetHeight, CAIRO_FORMAT_ARGB32);
   const int targetStride = targetSurface->getStride();
   Scroom::Bitmap::SampleIterator<uint8_t> targetBase(targetSurface->getBitmap(), 0, 8);
+  const unsigned int targetMax = targetBase.pixelMask;
 
   for (int y = 0; y < targetHeight; y++)
   {
@@ -178,7 +191,7 @@ void SliPresentation::reduceRgb(int zoom)
     {
       // We want to store the average colour of the 2*2 pixel image
       // with (x, y) as its top-left corner into targetSample.
-      auto sourceRow = sourceBase + 2 * 4 * x; // 2 pixels of 4 samples times x
+      auto sourceRow = sourceBase + 2*4*x;//2 pixels of 4 samples times x
 
       int sum_a = 0;
       int sum_r = 0;
@@ -196,10 +209,10 @@ void SliPresentation::reduceRgb(int zoom)
         }
       }
 
-      (targetSample++).set(sum_a / 4);
-      (targetSample++).set(sum_r / 4);
-      (targetSample++).set(sum_g / 4);
-      (targetSample++).set(sum_b / 4);
+      (targetSample++).set(sum_a * targetMax / sourceMax / 4);
+      (targetSample++).set(sum_r * targetMax / sourceMax / 4);
+      (targetSample++).set(sum_g * targetMax / sourceMax / 4);
+      (targetSample++).set(sum_b * targetMax / sourceMax / 4);
     }
 
     targetBase += targetStride; // Advance 1 row
@@ -210,74 +223,145 @@ void SliPresentation::reduceRgb(int zoom)
   rgbCache[zoom] = targetSurface;
 }
 
-void SliPresentation::computeRgb()
+void SliPresentation::cacheBottomZoomLevelRgb()
 {
-  SurfaceWrapper::Ptr surface = SurfaceWrapper::create(total_width, total_height, CAIRO_FORMAT_ARGB32);
+  SurfaceWrapper::Ptr surface = SurfaceWrapper::create();
+  
+  // Check if cache surface exists first
+  if (rgbCache.count(0))
+  {
+    surface = rgbCache[0];
+  }
+  else
+  {
+    surface = SurfaceWrapper::create(total_width, total_height, CAIRO_FORMAT_ARGB32);
+  }
+
+  // Rectangle area (in bytes) of the last toggled layer
+  Scroom::Utils::Rectangle<int> toggledRect;
+
   const int stride = surface->getStride();
 
-  uint8_t* cur_surface_byte = surface->getBitmap();
-  uint8_t* surface_begin = cur_surface_byte;
-  uint32_t* target_begin = reinterpret_cast<uint32_t *>(surface_begin);
+  if (lastToggledLayer < 0) // first redraw: entire canvas
+  {
+    toggledRect = surface->toBytesRectangle();
+  }
+  else
+  {
+    SliLayer::Ptr layer = layers[lastToggledLayer];
+    toggledRect = layer->toBytesRectangle();
+  }
 
+  uint8_t *surface_begin = cairo_image_surface_get_data(surface->surface);
+  uint32_t *target_begin = reinterpret_cast<uint32_t *>(surface_begin);
+  uint8_t *current_surface_byte = surface_begin;
+  
+  cairo_surface_flush(surface->surface);
   for (auto layer : layers)
   {
     if (!layer->visible)
       continue;
-    const auto bitmap = layer->bitmap;
-    const int layer_height = layer->height;
-    const int layer_width = layer->width;
-    const int xoffset = layer->xoffset;
-    const int yoffset = layer->yoffset;
-    cur_surface_byte = surface_begin + stride*yoffset + xoffset*SPP;
-    const int byte_width = layer_width*SPP;
 
-    for (int i = 1; i <= layer_height*byte_width; i++)
-    { 
-      // we are past the image bounds; go to the next next line
-      if (i % byte_width == 0)
-      { 
-        cur_surface_byte += stride - byte_width;
-      }
+    // Rectangle area (in bytes) of the current layer
+    Scroom::Utils::Rectangle<int> layerRect = layer->toBytesRectangle();
+    auto bitmap = layer->bitmap;
 
+    if (!layerRect.intersects(toggledRect))
+      continue;
+
+    // Rectangle area (in bytes) of the intersection between the toggled and current rectangles
+    Scroom::Utils::Rectangle<int> intersectRect = toggledRect.intersection(layerRect);
+    // index of the first pixel that needs to be drawn
+    int bitmap_start = std::max(0, pointToOffset(layerRect, intersectRect.getTopLeft()));
+    // offset of the last pixel from bitmap_start
+    int bitmap_offset = intersectRect.getHeight() * layerRect.getWidth();
+    // offset of the surface pointer from the top-left point of the surface
+    int surface_pointer_offset = pointToOffset(intersectRect.getTopLeft(), stride);
+    current_surface_byte = surface_begin + surface_pointer_offset;
+
+
+    // TODO maybe do this 32 bits at a time and move calculations out of the loops
+    int layerBound = std::min(intersectRect.getRight() - layerRect.getLeft(), 
+                    layerRect.getRight() - layerRect.getLeft()) % layerRect.getWidth();
+    for (int i = bitmap_start; i < bitmap_start + bitmap_offset;)
+    {
       // increment the value of the current surface byte
-      *cur_surface_byte += std::min(bitmap[i-1], static_cast<uint8_t>(255u - *cur_surface_byte));
+      *current_surface_byte += std::min(bitmap[i], static_cast<uint8_t>(255 - *current_surface_byte));
 
       // go to the next surface byte
-      cur_surface_byte++;
+      current_surface_byte++;
+      i++;
+
+      // we are past the image bounds; go to the next next line
+      if (i % layerRect.getWidth() == layerBound)
+      {
+        current_surface_byte += stride - intersectRect.getWidth();
+        i += layerRect.getWidth() - intersectRect.getWidth();
+      }
     }
   }
 
-  for (int i = 0; i < stride*total_height; i+=SPP)
+  uint8_t C, M, Y, K, A, R, G, B;
+  double black;
+
+  int topLeftOffset = pointToOffset(toggledRect.getTopLeft(), stride);
+  int bottomRightOffset = pointToOffset(toggledRect.getBottomRight(), stride) - stride; // TODO weird
+  int imageBound = toggledRect.getRight() % stride;
+  for (int i = topLeftOffset; i < bottomRightOffset;)
   {
-    const uint8_t C = surface_begin[i+0];
-    const uint8_t M = surface_begin[i+1];
-    const uint8_t Y = surface_begin[i+2];
-    const uint8_t K = surface_begin[i+3];
+    C = surface_begin[i + 0];
+    M = surface_begin[i + 1];
+    Y = surface_begin[i + 2];
+    K = surface_begin[i + 3];
 
-    const double black = (1 - (double)K/255);
-    const uint8_t A = static_cast<uint8_t>(255);
-    const uint8_t R = static_cast<uint8_t>(255 * (1 - (double)C/255) * black);
-    const uint8_t G = static_cast<uint8_t>(255 * (1 - (double)M/255) * black);
-    const uint8_t B = static_cast<uint8_t>(255 * (1 - (double)Y/255) * black);
+    black = (1 - K / 255.0);
+    A = 255;
+    R = 255 * (1 - C / 255.0) * black;
+    G = 255 * (1 - M / 255.0) * black;
+    B = 255 * (1 - Y / 255.0) * black;
 
-    target_begin[i/SPP] = (A << 24) | (R << 16) | (G << 8) | B;
+    target_begin[i / SPP] = (A << 24) | (R << 16) | (G << 8) | B;
+    i += SPP;
+
+    // we are past the image bounds; go to the next next line
+    if (i % stride == imageBound)
+    {
+      i += stride - toggledRect.getWidth();
+    }
   }
+  cairo_surface_mark_dirty(surface->surface);
 
   // Make the cached bitmap available to the main thread
-  rgbCache[0] = surface;
+  if (!rgbCache.count(0))
+    rgbCache[0] = surface;
+  rgbCache[0]->clear = false;
 }
-/*
+
 TransformationData::Ptr SliPresentation::getTransformationData() const
 {
   return transformationData;
 }
-*/
+
 ////////////////////////////////////////////////////////////////////////
 // SliPresentationInterface
 
 void SliPresentation::wipeCache()
 {
-  rgbCache.clear();
+  // Erase all cache levels except for the bottom layer
+  auto it = rgbCache.begin();
+  while (it != rgbCache.end())
+  {
+    if (it->first != 0)
+    {
+      it = rgbCache.erase(it);
+    }
+    else
+    {
+      it++;
+    }
+  }
+  // Clear the area of the last toggled layer from the bottom surface
+  clearBottomSurface();
 }
 
 void SliPresentation::triggerRedraw()
@@ -289,6 +373,11 @@ void SliPresentation::triggerRedraw()
     viewPtr->invalidate();
     gdk_threads_leave();
   }
+}
+
+void SliPresentation::setLastToggled(int index)
+{
+  lastToggledLayer = index;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -315,7 +404,7 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
  
   drawOutOfBoundsWithBackground(cr, presentArea, actualPresentationArea, pixelSize);
   
-  if (!rgbCache.count(std::min(0, zoom)))
+  if (!rgbCache.count(std::min(0, zoom)) || rgbCache[0]->clear)
   {
     drawRectangle(cr, Color(0.5, 1, 0.5), pixelSize*(actualPresentationArea - presentationArea.getTopLeft()));
     CpuBound()->schedule(boost::bind(&SliPresentation::fillCache, shared_from_this<SliPresentation>(), zoom),
