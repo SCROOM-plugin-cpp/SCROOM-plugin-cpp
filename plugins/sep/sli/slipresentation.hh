@@ -57,6 +57,9 @@ private:
   /** The number of pixels per ResolutionUnit in the ImageLength direction */
   float Yresolution;
 
+  /** Index of the last toggled layer */
+  int lastToggledLayer = -1;
+
   /** 
    * Contains the cairo surfaces for the different zoom levels. 
    * The zoom level is the key, the pointer to the surface the value.
@@ -124,8 +127,14 @@ public:
   /** Causes the complete canvas to be redrawn */
   virtual void triggerRedraw();
 
+  /** Sets the index of the last toggled layer */
+  virtual void setLastToggled(int index);
+
   /** Getter for the layers that the presentation consists of */
   std::vector<SliLayer::Ptr>& getLayers() {return layers;};
+
+  /** Clear the last modified area of the bottom surface */
+  virtual void clearBottomSurface();
 
   ////////////////////////////////////////////////////////////////////////
   // PresentationInterface

@@ -58,4 +58,10 @@ public:
   /** Destructor */
   virtual ~SliLayer();
 
+  /** Returns the Rectangle representation of the layer (in pixels) */
+  virtual Scroom::Utils::Rectangle<int> toRectangle();
+
+  /** Returns the Rectangle representation of the layer (in bytes) */
+  virtual Scroom::Utils::Rectangle<int> toBytesRectangle();
+
 };

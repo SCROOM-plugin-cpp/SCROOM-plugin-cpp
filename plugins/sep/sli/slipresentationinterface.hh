@@ -14,6 +14,7 @@ public:
 
   virtual void wipeCache()=0;
   virtual void triggerRedraw()=0;
+  virtual void setLastToggled(int)=0;
 
   virtual std::vector<SliLayer::Ptr>& getLayers()=0;
 
