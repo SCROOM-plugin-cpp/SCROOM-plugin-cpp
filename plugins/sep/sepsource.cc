@@ -211,9 +211,9 @@ void SepSource::fillSliLayer(SliLayer::Ptr sli)
 	source->done();
 }
 
-void SepSource::setData(SepFile sep_file_)
+void SepSource::setData(SepFile file)
 {
-	this->sep_file = sep_file_;
+	this->sep_file = file;
 }
 
 void SepSource::openFiles()
