@@ -220,8 +220,8 @@ void SepSource::openFiles()
 {
 	if (this->file_c != nullptr && this->file_m != nullptr && this->file_y != nullptr && this->file_k != nullptr && this->file_w != nullptr)
 	{
-		// why is this being printed?
-		printf("PANIC: PANIC\n");
+		// This return is reached when all files are already opened. This happens for example when an image
+		// has multiple tiles and its tiles are filled using multiple calls to fillTiles.
 		return;
 	}
 	printf("first time \n");
@@ -306,7 +306,9 @@ void SepSource::fillTiles(int startLine, int line_count, int tileWidth, int firs
 	// Buffer for the scanline to be written into
 	auto row = std::vector<byte>(bpp * this->sep_file.width);
 
-	//
+	// Store the pointers to the beginning of the tiles in a
+	// separate vector, so we can update it to point to the
+	// start of the current row in the loop.
 	auto tile_data = std::vector<byte *>(tile_count);
 	for (size_t tile = 0; tile < tile_count; tile++)
 	{
