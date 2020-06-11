@@ -60,12 +60,6 @@ public:
 	 */
 	TransformationData::Ptr getTransform();
 
-	/**
-	 * Is this function still needed? It has an empty implementation...
-	 * 
-	 * TODO: Investigate this.
-	 */
-	void destroy() {}
 
 	////////////////////////////////////////////////////////////////////////
 	// PresentationInterface
