@@ -17,10 +17,11 @@ static void update_layers_upper(GtkRange *this_range,
   GtkTreeModel *model;
   gchar *path;
 
-  GtkAdjustment *adj = gtk_range_get_adjustment(controlPanel->range_low);
+  GtkAdjustment *adj_range_low = gtk_range_get_adjustment(controlPanel->range_low);
   model = gtk_tree_view_get_model(GTK_TREE_VIEW(controlPanel->treeview));
-  int high = gtk_adjustment_get_upper(adj);
-  int low = gtk_adjustment_get_value(adj);
+  int high = gtk_adjustment_get_upper(adj_range_low);
+  int low = gtk_adjustment_get_lower(adj_range_low);
+  int other_value = gtk_adjustment_get_value(adj_range_low);
   int this_value = gtk_range_get_value(this_range);
   SliPresentationInterface::Ptr presPtr = controlPanel->presentation.lock();
   std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
@@ -31,7 +32,7 @@ static void update_layers_upper(GtkRange *this_range,
     path = g_strdup_printf("%i", i);
     if (gtk_tree_model_get_iter_from_string(model, &iter, path))
     {
-      if (i <= this_value)
+      if (i <= this_value && i >= other_value)
       {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, TRUE, -1);
         if (!layers[i]->visible)
@@ -71,8 +72,9 @@ void update_layers_lower(GtkRange *this_range,
 
   GtkAdjustment *adj_range_high = gtk_range_get_adjustment(controlPanel->range_high);
   model = gtk_tree_view_get_model(GTK_TREE_VIEW(controlPanel->treeview));
+  int high = gtk_adjustment_get_upper(adj_range_high);
   int low = gtk_adjustment_get_lower(adj_range_high);
-  int high = gtk_adjustment_get_value(adj_range_high);
+  int other_value = gtk_adjustment_get_value(adj_range_high);
   int this_value = gtk_range_get_value(this_range);
   SliPresentationInterface::Ptr presPtr = controlPanel->presentation.lock();
   std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
@@ -83,7 +85,7 @@ void update_layers_lower(GtkRange *this_range,
     path = g_strdup_printf("%i", i);
     if (gtk_tree_model_get_iter_from_string(model, &iter, path))
     {
-      if (i >= this_value)
+      if (i >= this_value && i <= other_value)
       {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, TRUE, -1);
         if (!layers[i]->visible)
