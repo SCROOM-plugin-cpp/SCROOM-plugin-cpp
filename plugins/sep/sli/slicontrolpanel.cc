@@ -34,27 +34,17 @@ static void update_layers_upper(GtkRange *this_range,
       if (i <= this_value)
       {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, TRUE, -1);
-        if (layers[i]->visible != true)
-        {
-          layers[i]->visible = true;
-          presPtr->setLastToggled(i);
-          presPtr->wipeCache();
-          presPtr->triggerRedraw();
-        }
+        layers[i]->visible = true;
       }
       else
       {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, FALSE, -1);
-        if (layers[i]->visible != false)
-        {
-          layers[i]->visible = false;
-          presPtr->setLastToggled(i);
-          presPtr->wipeCache();
-          presPtr->triggerRedraw();
-        }
+        layers[i]->visible = false;
       }
     }
   }
+  presPtr->wipeCache();
+  presPtr->triggerRedraw();
 }
 
 void update_layers_lower(GtkRange *this_range,
@@ -81,27 +71,17 @@ void update_layers_lower(GtkRange *this_range,
       if (i >= this_value)
       {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, TRUE, -1);
-        if (layers[i]->visible != true)
-        {
-          layers[i]->visible = true;
-          presPtr->setLastToggled(i);
-          presPtr->wipeCache();
-          presPtr->triggerRedraw();
-        }
+        layers[i]->visible = true;
       }
       else
       {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, FALSE, -1);
-        if (layers[i]->visible != false)
-        {
-          layers[i]->visible = false;
-          presPtr->setLastToggled(i);
-          presPtr->wipeCache();
-          presPtr->triggerRedraw();
-        }
+        layers[i]->visible = false;
       }
     }
   }
+  presPtr->wipeCache();
+  presPtr->triggerRedraw();
 }
 
 static gboolean on_change_value_upper(GtkRange *this_range,
@@ -160,10 +140,9 @@ static void on_toggle(GtkCellRendererToggle *renderer, gchar *path, SliControlPa
     gtk_tree_model_get(model, &iter, COL_VISIBILITY, &state, -1);
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, !state, -1);
     layers[atoi(path)]->visible = !state;
-    presPtr->setLastToggled(atoi(path));
-    presPtr->wipeCache();
-    presPtr->triggerRedraw();
   }
+  presPtr->wipeCache();
+  presPtr->triggerRedraw();
 }
 
 void SliControlPanel::create_view_and_model()

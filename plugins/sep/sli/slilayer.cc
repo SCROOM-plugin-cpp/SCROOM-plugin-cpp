@@ -106,17 +106,3 @@ bool SliLayer::load(const std::string &filepath)
   
   return true;
 }
-
-Scroom::Utils::Rectangle<int> SliLayer::toRectangle()
-{
-  Scroom::Utils::Rectangle<int> rect {xoffset, yoffset, width, height};
-  
-  return rect;
-}
-
-Scroom::Utils::Rectangle<int> SliLayer::toBytesRectangle()
-{
-  Scroom::Utils::Rectangle<int> rect {xoffset*SPP, yoffset, width*SPP, height};
-  
-  return rect;
-}
