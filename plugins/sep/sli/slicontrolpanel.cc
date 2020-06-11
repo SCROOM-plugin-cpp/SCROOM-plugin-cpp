@@ -2,7 +2,6 @@
 
 #include "slicontrolpanel.hh"
 #include "slilayer.hh"
-#include <boost/thread/shared_mutex.hpp>
 
 enum
 {
@@ -17,10 +16,6 @@ static void update_layers_upper(GtkRange *this_range,
   GtkTreeIter iter;
   GtkTreeModel *model;
   gchar *path;
-  if (! controlPanel->cacheMtx->try_lock())
-  {
-    return;
-  }
 
   GtkAdjustment *adj = gtk_range_get_adjustment(controlPanel->range_low);
   model = gtk_tree_view_get_model(GTK_TREE_VIEW(controlPanel->treeview));
@@ -60,7 +55,6 @@ static void update_layers_upper(GtkRange *this_range,
       }
     }
   }
-  controlPanel->cacheMtx->unlock();
 }
 
 void update_layers_lower(GtkRange *this_range,
@@ -69,10 +63,6 @@ void update_layers_lower(GtkRange *this_range,
   GtkTreeIter iter;
   GtkTreeModel *model;
   gchar *path;
-  if (! controlPanel->cacheMtx->try_lock())
-  {
-    return;
-  }
 
   GtkAdjustment *adj = gtk_range_get_adjustment(controlPanel->range_high);
   model = gtk_tree_view_get_model(GTK_TREE_VIEW(controlPanel->treeview));
@@ -112,7 +102,6 @@ void update_layers_lower(GtkRange *this_range,
       }
     }
   }
-  controlPanel->cacheMtx->unlock();
 }
 
 static gboolean on_change_value_upper(GtkRange *this_range,
@@ -160,10 +149,6 @@ static void on_toggle(GtkCellRendererToggle *renderer, gchar *path, SliControlPa
   GtkTreeModel *model;
   GtkTreeIter iter;
   gboolean state;
-  if (! controlPanel->cacheMtx->try_lock())
-  {
-    return;
-  }
 
   SliPresentationInterface::Ptr presPtr = controlPanel->presentation.lock();
   std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
@@ -179,7 +164,6 @@ static void on_toggle(GtkCellRendererToggle *renderer, gchar *path, SliControlPa
     presPtr->wipeCache();
     presPtr->triggerRedraw();
   }
-  controlPanel->cacheMtx->unlock();
 }
 
 void SliControlPanel::create_view_and_model()
@@ -234,7 +218,7 @@ void SliControlPanel::create_view_and_model()
   g_object_unref(list_store);
 }
 
-SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentationInterface::WeakPtr presentation_, boost::mutex* cacheMtx_): presentation(presentation_), cacheMtx(cacheMtx_)
+SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentationInterface::WeakPtr presentation_): presentation(presentation_)
 {
   printf("Multilayer control panel has been created\n");
   SliPresentationInterface::Ptr presPtr = presentation.lock();
@@ -317,9 +301,9 @@ SliControlPanel::~SliControlPanel()
   printf("Multilayer control panel has been destroyed\n");
 }
 
-SliControlPanel::Ptr SliControlPanel::create(ViewInterface::WeakPtr viewWeak, SliPresentationInterface::WeakPtr presentation_, boost::mutex* cacheMtx_)
+SliControlPanel::Ptr SliControlPanel::create(ViewInterface::WeakPtr viewWeak, SliPresentationInterface::WeakPtr presentation_)
 {
-  SliControlPanel::Ptr result = SliControlPanel::Ptr(new SliControlPanel(viewWeak, presentation_, cacheMtx_));
+  SliControlPanel::Ptr result = SliControlPanel::Ptr(new SliControlPanel(viewWeak, presentation_));
 
   return result;
 }

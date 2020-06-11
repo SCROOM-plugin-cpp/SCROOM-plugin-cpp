@@ -463,7 +463,7 @@ std::string SliPresentation::getTitle()
 
 void SliPresentation::viewAdded(ViewInterface::WeakPtr viewInterface)
 {
-  controlPanel = SliControlPanel::create(viewInterface, weakPtrToThis, &cachingMtx);
+  controlPanel = SliControlPanel::create(viewInterface, weakPtrToThis);
   views.insert(viewInterface);
 }
 
