@@ -20,12 +20,15 @@ public:
   typedef boost::shared_ptr<SliPresentation> Ptr;
   typedef boost::weak_ptr<SliPresentation> WeakPtr;
 
-private:
-  std::map<std::string, std::string> properties;
-  std::set<ViewInterface::WeakPtr> views;
+  /** Contains aspect ration information for proper scaling */
+  TransformationData::Ptr transformationData;
 
   /** The SliLayers that are part of the presentation */
   std::vector<SliLayer::Ptr> layers;
+
+private:
+  std::map<std::string, std::string> properties;
+  std::set<ViewInterface::WeakPtr> views;
 
   /** Reference to the ScroomInterface, needed for showing presentation */
   ScroomInterface::Ptr scroomInterface;
@@ -55,34 +58,36 @@ private:
   float Yresolution;
 
   /** 
-   * Contains the cached bitmaps for the different zoom levels. 
-   * The zoom level is the key, the pointer to the bitmap the value.
+   * Contains the cairo surfaces for the different zoom levels. 
+   * The zoom level is the key, the pointer to the surface the value.
    */
   std::map<int, SurfaceWrapper::Ptr> rgbCache;
 
   /** The thread queue into which caching jobs are enqueued */
   ThreadPool::Queue::Ptr threadQueue;
 
-  /** Must be acquired by a thread before writing to the cached bitmaps */
-  boost::mutex mtx;
-
-  TransformationData::Ptr transformationData;
+  /** Must be acquired by a thread before modifying the cache */
+  boost::mutex cachingMtx;
 
 private:
   /** Constructor */
   SliPresentation(ScroomInterface::Ptr scroomInterface);
 
   /**
-   * Computes the RGB bitmap of the bottommost layer (zoom=0) without any reductions
+   * Computes the RGB bitmap without any reductions from the CMYK layer data
    */
-  virtual void cacheBottomZoomLevelRgb();
+  virtual void computeRgb();
 
   /**
-   * Computes the RGB bitmap for the zoom level from the zoom level bitmap below it, 
-   * reducing it in the process. Reductions must only happen if zoom < 0
+   * Compute the reduced RGB bitmap for the given zoom. When reducing from zoom level x to x-1, 
+   * a 2x2 pixel square of level x is converted to a single pixel of level x-1.
    */
-  virtual void cacheZoomLevelRgb(int zoom);
+  virtual void reduceRgb(int zoom);
 
+  /** Given the zoom level, computes all RGB bitmaps that are required for displaying this zoom level
+   *  May be very computationally expensive and should therefore be executed in a separate thread.
+   *  To avoid race conditions, it disables the multilayer UI during caching operations.
+   */
   virtual void fillCache(int zoom);
 
 public:
@@ -107,10 +112,7 @@ public:
   /** Compute the overall width and height of the SLi file (over all layers) */
   virtual void computeHeightWidth();
 
-  /** Getter for the layers that the presentation consists of */
-  std::vector<SliLayer::Ptr>& getLayers() {return layers;};
-
-  TransformationData::Ptr getTransformationData() const;
+  //TransformationData::Ptr getTransformationData() const;
 
   ////////////////////////////////////////////////////////////////////////
   // SliPresentationInterface
@@ -121,6 +123,9 @@ public:
 
   /** Causes the complete canvas to be redrawn */
   virtual void triggerRedraw();
+
+  /** Getter for the layers that the presentation consists of */
+  std::vector<SliLayer::Ptr>& getLayers() {return layers;};
 
   ////////////////////////////////////////////////////////////////////////
   // PresentationInterface

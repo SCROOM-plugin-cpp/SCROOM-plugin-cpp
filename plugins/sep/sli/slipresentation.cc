@@ -133,12 +133,12 @@ void SliPresentation::parseSli(const std::string &sliFileName)
 
 void SliPresentation::fillCache(int zoom)
 {
-  mtx.lock();
+  cachingMtx.lock();
   controlPanel->disableInteractions();
 
   if (!rgbCache.count(0))
   {
-    cacheBottomZoomLevelRgb();
+    computeRgb();
   }
   if (zoom < 0)
   {
@@ -146,16 +146,16 @@ void SliPresentation::fillCache(int zoom)
     {
       if (!rgbCache.count(i))
       {
-        cacheZoomLevelRgb(i);
+        reduceRgb(i);
       }
     }
   }
   controlPanel->enableInteractions();
-  mtx.unlock();
+  cachingMtx.unlock();
   triggerRedraw();
 }
 
-void SliPresentation::cacheZoomLevelRgb(int zoom)
+void SliPresentation::reduceRgb(int zoom)
 {
   printf("Computing for zoom %d\n", zoom);
 
@@ -163,14 +163,12 @@ void SliPresentation::cacheZoomLevelRgb(int zoom)
   const int sourceHeight = total_height / pow(2, -zoom - 1);
   const int sourceStride = rgbCache[zoom+1]->getStride();
   Scroom::Bitmap::SampleIterator<const uint8_t> sourceBase(rgbCache[zoom+1]->getBitmap(), 0, 8);
-  const unsigned int sourceMax = sourceBase.pixelMask;
 
   const int targetWidth = sourceWidth / 2;
   const int targetHeight = sourceHeight / 2;
   SurfaceWrapper::Ptr targetSurface = SurfaceWrapper::create(targetWidth, targetHeight, CAIRO_FORMAT_ARGB32);
   const int targetStride = targetSurface->getStride();
   Scroom::Bitmap::SampleIterator<uint8_t> targetBase(targetSurface->getBitmap(), 0, 8);
-  const unsigned int targetMax = targetBase.pixelMask;
 
   for (int y = 0; y < targetHeight; y++)
   {
@@ -180,7 +178,7 @@ void SliPresentation::cacheZoomLevelRgb(int zoom)
     {
       // We want to store the average colour of the 2*2 pixel image
       // with (x, y) as its top-left corner into targetSample.
-      auto sourceRow = sourceBase + 2*4*x;//2 pixels of 4 samples times x
+      auto sourceRow = sourceBase + 2 * 4 * x; // 2 pixels of 4 samples times x
 
       int sum_a = 0;
       int sum_r = 0;
@@ -198,10 +196,10 @@ void SliPresentation::cacheZoomLevelRgb(int zoom)
         }
       }
 
-      (targetSample++).set(sum_a * targetMax / sourceMax / 4);
-      (targetSample++).set(sum_r * targetMax / sourceMax / 4);
-      (targetSample++).set(sum_g * targetMax / sourceMax / 4);
-      (targetSample++).set(sum_b * targetMax / sourceMax / 4);
+      (targetSample++).set(sum_a / 4);
+      (targetSample++).set(sum_r / 4);
+      (targetSample++).set(sum_g / 4);
+      (targetSample++).set(sum_b / 4);
     }
 
     targetBase += targetStride; // Advance 1 row
@@ -212,7 +210,7 @@ void SliPresentation::cacheZoomLevelRgb(int zoom)
   rgbCache[zoom] = targetSurface;
 }
 
-void SliPresentation::cacheBottomZoomLevelRgb()
+void SliPresentation::computeRgb()
 {
   SurfaceWrapper::Ptr surface = SurfaceWrapper::create(total_width, total_height, CAIRO_FORMAT_ARGB32);
   const int stride = surface->getStride();
@@ -268,12 +266,12 @@ void SliPresentation::cacheBottomZoomLevelRgb()
   // Make the cached bitmap available to the main thread
   rgbCache[0] = surface;
 }
-
+/*
 TransformationData::Ptr SliPresentation::getTransformationData() const
 {
   return transformationData;
 }
-
+*/
 ////////////////////////////////////////////////////////////////////////
 // SliPresentationInterface
 
