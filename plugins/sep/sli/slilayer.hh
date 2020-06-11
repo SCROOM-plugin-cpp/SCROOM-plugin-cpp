@@ -49,7 +49,6 @@ public:
 
 private:
   SliLayer();
-  virtual bool load(const std::string &filepath);
 
 public:
   /** Constructor */

@@ -6,6 +6,8 @@
 #include <scroom/rectangle.hh>
 #include <scroom/point.hh>
 
+#include "slilayer.hh"
+
 class SurfaceWrapper: public virtual Scroom::Utils::Base
 {
 public:
@@ -72,3 +74,5 @@ inline int pointToOffset(Scroom::Utils::Rectangle<int> rect, Scroom::Utils::Poin
 {
   return (p.y - rect.getTop()) * rect.getWidth() + (p.x - rect.getLeft());
 }
+
+void fillFromTiff(SliLayer::Ptr layer);

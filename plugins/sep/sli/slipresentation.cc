@@ -127,7 +127,9 @@ void SliPresentation::parseSli(const std::string &sliFileName)
         }
         else if (fs::extension(firstToken) == ".tif")
         {
-          layers.push_back(SliLayer::create(imagePath.string(), firstToken, xOffset, yOffset));
+          SliLayer::Ptr layer = SliLayer::create(imagePath.string(), firstToken, xOffset, yOffset);
+          fillFromTiff(layer);
+          layers.push_back(layer);
         }
         else
         {
