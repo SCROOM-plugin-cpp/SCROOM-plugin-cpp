@@ -22,9 +22,9 @@ static void update_layers_upper(GtkRange *this_range,
   int high = gtk_adjustment_get_upper(adj);
   int low = gtk_adjustment_get_value(adj);
   int this_value = gtk_range_get_value(this_range);
-  
   SliPresentationInterface::Ptr presPtr = controlPanel->presentation.lock();
   std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
+  int toggledCount = 0;
 
   for (int i = low; i <= high; i++)
   {
@@ -34,27 +34,32 @@ static void update_layers_upper(GtkRange *this_range,
       if (i <= this_value)
       {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, TRUE, -1);
-        if (layers[i]->visible != true)
+        if (!layers[i]->visible)
         {
           layers[i]->visible = true;
           presPtr->setLastToggled(i);
-          presPtr->wipeCache();
-          presPtr->triggerRedraw();
+          toggledCount++;
         }
       }
       else
       {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, FALSE, -1);
-        if (layers[i]->visible != false)
+        if (layers[i]->visible)
         {
           layers[i]->visible = false;
           presPtr->setLastToggled(i);
-          presPtr->wipeCache();
-          presPtr->triggerRedraw();
+          toggledCount++;
         }
       }
     }
   }
+
+  if (toggledCount > 1)
+  {
+    presPtr->setLastToggled(-1);
+  }
+  presPtr->wipeCache();
+  presPtr->triggerRedraw();
 }
 
 void update_layers_lower(GtkRange *this_range,
@@ -64,14 +69,14 @@ void update_layers_lower(GtkRange *this_range,
   GtkTreeModel *model;
   gchar *path;
 
-  GtkAdjustment *adj = gtk_range_get_adjustment(controlPanel->range_high);
+  GtkAdjustment *adj_range_high = gtk_range_get_adjustment(controlPanel->range_high);
   model = gtk_tree_view_get_model(GTK_TREE_VIEW(controlPanel->treeview));
-  int low = gtk_adjustment_get_lower(adj);
-  int high = gtk_adjustment_get_value(adj);
+  int low = gtk_adjustment_get_lower(adj_range_high);
+  int high = gtk_adjustment_get_value(adj_range_high);
   int this_value = gtk_range_get_value(this_range);
-
   SliPresentationInterface::Ptr presPtr = controlPanel->presentation.lock();
   std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
+  int toggledCount = 0;
 
   for (int i = low; i <= high; i++)
   {
@@ -81,27 +86,32 @@ void update_layers_lower(GtkRange *this_range,
       if (i >= this_value)
       {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, TRUE, -1);
-        if (layers[i]->visible != true)
+        if (!layers[i]->visible)
         {
           layers[i]->visible = true;
           presPtr->setLastToggled(i);
-          presPtr->wipeCache();
-          presPtr->triggerRedraw();
+          toggledCount++;
         }
       }
       else
       {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, FALSE, -1);
-        if (layers[i]->visible != false)
+        if (layers[i]->visible)
         {
           layers[i]->visible = false;
           presPtr->setLastToggled(i);
-          presPtr->wipeCache();
-          presPtr->triggerRedraw();
+          toggledCount++;
         }
       }
     }
   }
+
+  if (toggledCount > 1)
+  {
+    presPtr->setLastToggled(-1);
+  }
+  presPtr->wipeCache();
+  presPtr->triggerRedraw();
 }
 
 static gboolean on_change_value_upper(GtkRange *this_range,
@@ -112,8 +122,14 @@ static gboolean on_change_value_upper(GtkRange *this_range,
   UNUSED(this_range);
   UNUSED(scroll);
 
-  int other_value;
+  int other_value, this_old_value;
   other_value = gtk_range_get_value(other_range);
+  this_old_value = gtk_range_get_value(this_range);
+
+  if (abs(this_value - this_old_value) > 1)
+  {
+    return TRUE;
+  }
 
   if (this_value - other_value <= 0)
   {
@@ -131,8 +147,14 @@ static gboolean on_change_value_lower(GtkRange *this_range,
   UNUSED(this_range);
   UNUSED(scroll);
 
-  int other_value;
+  int other_value, this_old_value;
   other_value = gtk_range_get_value(other_range);
+  this_old_value = gtk_range_get_value(this_range);
+
+  if (abs(this_value - this_old_value) > 1)
+  {
+    return TRUE;
+  }
 
   if (other_value - this_value <= 0)
   {
@@ -200,7 +222,7 @@ void SliControlPanel::create_view_and_model()
                                   G_TYPE_BOOLEAN,
                                   G_TYPE_STRING);
 
-  for (SliLayer::Ptr layer: presPtr->getLayers())
+  for (SliLayer::Ptr layer : presPtr->getLayers())
   {
     gtk_list_store_append(list_store, &iter);
     gtk_list_store_set(list_store, &iter,
@@ -218,7 +240,7 @@ void SliControlPanel::create_view_and_model()
   g_object_unref(list_store);
 }
 
-SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentationInterface::WeakPtr presentation_): presentation(presentation_)
+SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentationInterface::WeakPtr presentation_) : presentation(presentation_)
 {
   printf("Multilayer control panel has been created\n");
   SliPresentationInterface::Ptr presPtr = presentation.lock();
@@ -233,7 +255,7 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
   widgets.push_back(treeview);
   create_view_and_model();
   gtk_box_pack_start(GTK_BOX(hbox), treeview, false, false, 0);
-  
+
   if (n_layers > 1)
   {
     GtkWidget *slider_low = gtk_vscale_new_with_range(0, n_layers - 1, 1);
@@ -251,13 +273,13 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
 
     // Connect the callbacks
     g_signal_connect(GTK_RANGE(slider_high), "change-value",
-                    G_CALLBACK(on_change_value_upper), GTK_RANGE(slider_low));
+                     G_CALLBACK(on_change_value_upper), GTK_RANGE(slider_low));
     g_signal_connect(G_OBJECT(slider_high), "value-changed",
-                    G_CALLBACK(update_layers_upper), this);
+                     G_CALLBACK(update_layers_upper), this);
     g_signal_connect(GTK_RANGE(slider_low), "change-value",
-                    G_CALLBACK(on_change_value_lower), GTK_RANGE(slider_high));
+                     G_CALLBACK(on_change_value_lower), GTK_RANGE(slider_high));
     g_signal_connect(G_OBJECT(slider_low), "value-changed",
-                    G_CALLBACK(update_layers_lower), this);
+                     G_CALLBACK(update_layers_lower), this);
 
     // Set the number of decimal places to display for each widget.
     gtk_scale_set_digits(GTK_SCALE(slider_low), 0);
@@ -271,7 +293,7 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
     gtk_box_pack_start(GTK_BOX(hbox), slider_low, false, false, 0);
     gtk_box_pack_start(GTK_BOX(hbox), slider_high, false, false, 0);
   }
-  
+
   gtk_widget_show_all(hbox);
 
   // Add the hbox to the sidebar
@@ -283,7 +305,7 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
 void SliControlPanel::disableInteractions()
 {
   gdk_threads_enter();
-  for (GtkWidget* widget: widgets)
+  for (GtkWidget *widget : widgets)
   {
     gtk_widget_set_sensitive(widget, false);
   }
@@ -293,7 +315,7 @@ void SliControlPanel::disableInteractions()
 void SliControlPanel::enableInteractions()
 {
   gdk_threads_enter();
-  for (GtkWidget* widget: widgets)
+  for (GtkWidget *widget : widgets)
   {
     gtk_widget_set_sensitive(widget, true);
   }

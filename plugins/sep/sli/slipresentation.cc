@@ -146,12 +146,22 @@ void SliPresentation::parseSli(const std::string &sliFileName)
 
 void SliPresentation::clearBottomSurface()
 {
-  auto layer = layers[lastToggledLayer];
-  auto rect = layer->toRectangle();
 
-  if (rgbCache.count(0))
+  if (lastToggledLayer < 0 && rgbCache.count(0))
   {
-    rgbCache[0]->clearSurface(rect);
+    rgbCache[0]->clearSurface();
+    printf("Complete redraw!\n");
+  }
+  else
+  {
+    auto layer = layers[lastToggledLayer];
+    auto rect = layer->toRectangle();
+
+    if (rgbCache.count(0))
+    {
+      rgbCache[0]->clearSurface(rect);
+      printf("Partial redraw!\n");
+    }
   }
 }
 
