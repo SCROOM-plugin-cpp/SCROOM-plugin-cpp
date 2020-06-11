@@ -223,7 +223,7 @@ void SepSource::openFiles()
 	this->file_y = TIFFOpen(this->sep_file.files["Y"].c_str(), "r");
 	this->file_k = TIFFOpen(this->sep_file.files["K"].c_str(), "r");
 
-	if (this->sep_file.files.count("W"))
+	if (this->sep_file.files.count("W") == 1)
 		this->file_w = TIFFOpen(this->sep_file.files["W"].c_str(), "r");
 
 	if (this->file_c == nullptr || this->file_m == nullptr || this->file_y == nullptr || this->file_k == nullptr) {
