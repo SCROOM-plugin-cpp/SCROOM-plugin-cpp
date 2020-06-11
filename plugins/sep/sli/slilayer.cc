@@ -14,7 +14,11 @@ SliLayer::Ptr SliLayer::create(const std::string &filepath,
   layer->name = name;
   layer->xoffset = xoffset;
   layer->yoffset = yoffset;
+  // TODO: Make this nice, possibly move tiff loading capabilities out of layer
+  if(layer->name.substr( layer->name.length() - 4 ) == ".tif")
+  {
   layer->load(filepath);
+  }
   return layer;
 }
 

@@ -1,4 +1,5 @@
 #include "slipresentation.hh"
+#include "../sepsource.hh"
 
 #include <regex>
 #include <boost/filesystem.hpp>
@@ -111,21 +112,31 @@ void SliPresentation::parseSli(const std::string &sliFileName)
         Yresolution = std::stof(*i++);
         printf("yresolution: %f\n", Yresolution);
       }
-      else if (!firstToken.empty())
+      else if (fs::exists(fs::path(dirPath) /= firstToken))
       {
-        // Line seems to contain an image name
-        fs::path imagePath = fs::path(dirPath) /= firstToken; 
-        if (fs::exists(imagePath))
+        // Line contains name of an existing file
+        fs::path imagePath = fs::path(dirPath) /= firstToken;
+        i++; // discard the colon
+        int xOffset = std::stoi(*i++);
+        int yOffset = std::stoi(*i++);
+        if (fs::extension(firstToken) == ".sep")
         {
-          i++; // discard the colon
-          int xOffset = std::stoi(*i++);
-          int yOffset = std::stoi(*i++);
+          SliLayer::Ptr layer = SliLayer::create(imagePath.string(), firstToken, xOffset, yOffset);
+          SepSource::fillSliLayer(layer);
+          layers.push_back(layer);
+        }
+        else if (fs::extension(firstToken) == ".tif")
+        {
           layers.push_back(SliLayer::create(imagePath.string(), firstToken, xOffset, yOffset));
         }
         else
         {
-          printf("Error: Cannot find file %s - skipping it\n", imagePath.string().c_str());
+          printf("Warning: File extension of %s not supported - skipping file\n", firstToken.c_str());
         }
+      }
+      else
+      {
+        printf("Warning: Token '%s' in SLI file is not an exiting file\n", firstToken.c_str());
       }
     }
   }
