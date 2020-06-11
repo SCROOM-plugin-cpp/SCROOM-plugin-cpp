@@ -301,7 +301,7 @@ void SepSource::fillTiles(int startLine, int line_count, int tileWidth, int firs
 	const size_t tile_count = tiles.size();
 
 	// Open the TIFF files so we can read from them later.
-	// this->openFiles();
+	this->openFiles();
 
 	// Buffer for the scanline to be written into
 	auto row = std::vector<byte>(bpp * this->sep_file.width);
