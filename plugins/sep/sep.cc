@@ -75,11 +75,9 @@ void Sep::open(const std::string &fileName, ScroomInterface::Ptr const &scroomIn
 		presentation->load(fileName);
 		
 		TransformationData::Ptr data = presentation->transformationData;
-    if(data)
-    {
-      PresentationInterface::Ptr result = TransformPresentation::create(presentation, data);
+		if (data) {
+			PresentationInterface::Ptr result = TransformPresentation::create(presentation, data);
 			scroomInterface->showPresentation(result);
-    }
+		}
 	}
-
 }
