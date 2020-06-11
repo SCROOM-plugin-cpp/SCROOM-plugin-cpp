@@ -120,6 +120,62 @@ SepFile SepSource::parseSep(const std::string &file_name)
 	return sep_file;
 }
 
+void SepSource::getForOneChannel(struct tiff* channel, uint16_t& unit, float& x_resolution, float& y_resolution) {
+	if (TIFFGetField(channel, TIFFTAG_XRESOLUTION, &x_resolution) &&
+			TIFFGetField(channel, TIFFTAG_YRESOLUTION, &y_resolution) &&
+			TIFFGetField(channel, TIFFTAG_RESOLUTIONUNIT, &unit)) {
+		if (unit == RESUNIT_NONE)
+			return;
+
+		// Fix aspect ratio only
+		float base = std::max(x_resolution, y_resolution);
+		x_resolution /= base;
+		y_resolution /= base;
+		return;
+	}
+
+	// Defaults according to TIFF spec
+	x_resolution = 1.0;
+	y_resolution = 1.0;
+	unit = RESUNIT_NONE;
+}
+
+bool SepSource::getResolution(uint16_t& unit, float& x_resolution, float& y_resolution)
+{
+	float channel_res_x, channel_res_y;
+	uint16_t channel_res_unit;
+	bool warning = false;
+
+	// Use the values for the c channel as baseline
+	this->getForOneChannel(this->file_c, unit, x_resolution, y_resolution);
+
+	for (auto channel : {this->file_m, this->file_y, this->file_k}) {
+		if (channel == nullptr)
+		 	continue;
+		
+		this->getForOneChannel(channel, channel_res_unit, channel_res_x, channel_res_y);
+		// check if the same as first values
+		// if not, set status flag and continue
+		warning = (channel_res_x != x_resolution) || \
+					(channel_res_y != y_resolution) || \
+					(channel_res_unit != unit);
+	}
+
+	return ! warning;
+}
+
+TransformationData::Ptr SepSource::getTransform() {
+	uint16_t unit;
+	float file_res_x, file_res_y;
+	this->getResolution(unit, file_res_x, file_res_y);
+
+	std::cout << "Resolution: " << 1 / file_res_x << " * " << 1 / file_res_y << "\n";
+
+	TransformationData::Ptr data = TransformationData::create();
+	data->setAspectRatio(1 / file_res_x, 1 / file_res_y);
+	return data;
+}
+
 void SepSource::fillSliLayer(SliLayer::Ptr sli)
 {
 	if (sli->filepath.empty())
@@ -141,6 +197,9 @@ void SepSource::fillSliLayer(SliLayer::Ptr sli)
 	auto source = SepSource::create();
 	source->setData(values);
 	source->openFiles();
+
+	uint16_t unit;
+	source->getResolution(unit, sli->Xresolution, sli->Yresolution);
 
 	auto temp = std::vector<byte>(row_width);
 	for (int y = 0; y < sli->height; y++)

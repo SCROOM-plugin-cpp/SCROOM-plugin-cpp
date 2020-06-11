@@ -2,6 +2,7 @@
 #pragma once
 
 #include <scroom/tiledbitmapinterface.hh>
+#include <scroom/transformpresentation.hh>
 #include <tiffio.h>
 
 #include "sli/slilayer.hh"
@@ -73,6 +74,12 @@ public:
 	 * @pre `openFiles` has been called.
 	 */
 	void readCombinedScanline(std::vector<byte>& out, size_t line_nr);
+
+	// Resolution stuff
+	TransformationData::Ptr getTransform();
+
+	bool getResolution(uint16_t& unit, float& x_resolution, float& y_resolution);
+	void getForOneChannel(struct tiff* channel, uint16_t& unit, float& x_resolution, float& y_resolution);
 
 	////////////////////////////////////////////////////////////////////////
 	// SourcePresentation

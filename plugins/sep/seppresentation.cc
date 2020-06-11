@@ -29,24 +29,28 @@ SepPresentation::Ptr SepPresentation::create(ScroomInterface::Ptr interface)
  */
 bool SepPresentation::load(const std::string &file_name)
 {
-	const auto file_content = SepSource::parseSep(file_name);
+	const SepFile file_content = SepSource::parseSep(file_name);
 	this->file_name = file_name;
 
 	this->width = file_content.width;
 	this->height = file_content.height;
 
 	if (this->width == 0 || this->height == 0)
-	{
 		return false;
-	}
 
 	this->sep_source->setData(file_content);
 	this->sep_source->openFiles();
+
+	this->transform = this->sep_source->getTransform();
 
 	this->tbi = createTiledBitmap(this->width, this->height, {OperationsCMYK32::create()});
 	this->tbi->setSource(this->sep_source);
 
 	return true;
+}
+
+TransformationData::Ptr SepPresentation::getTransform() {
+	return this->transform;
 }
 
 ////////////////////////////////////////////////////////////////////////

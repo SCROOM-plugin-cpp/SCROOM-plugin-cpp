@@ -28,6 +28,7 @@ private:
 
 	size_t width;
 	size_t height;
+	TransformationData::Ptr transform;
 
 	std::set<ViewInterface::WeakPtr> views;
 
@@ -53,6 +54,11 @@ public:
 	 * Load the SEP file whose filename is passed as argument.
 	 */
 	bool load(const std::string& file_name);
+
+	/**
+	 * Return the transformation data for the loaded file.
+	 */
+	TransformationData::Ptr getTransform();
 
 	/**
 	 * Is this function still needed? It has an empty implementation...
