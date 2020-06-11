@@ -22,15 +22,17 @@ public:
   /** The SliPresentation that owns this SliControlPanel */
   SliPresentationInterface::WeakPtr presentation;
 
+  boost::mutex* cacheMtx;
+
 private:
   /** Constructor */
-  SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentationInterface::WeakPtr presentation_);
+  SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentationInterface::WeakPtr presentation_, boost::mutex* cacheMtx_);
 
   virtual void create_view_and_model();
 
 public:
   /** Constructor */
-  static SliControlPanel::Ptr create(ViewInterface::WeakPtr view, SliPresentationInterface::WeakPtr presentation_);
+  static SliControlPanel::Ptr create(ViewInterface::WeakPtr view, SliPresentationInterface::WeakPtr presentation_, boost::mutex* cacheMtx_);
 
   virtual void disableInteractions();
 
