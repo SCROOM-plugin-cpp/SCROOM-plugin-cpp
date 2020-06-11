@@ -84,6 +84,12 @@ public:
 	bool getResolution(uint16_t& unit, float& x_resolution, float& y_resolution);
 	void getForOneChannel(struct tiff* channel, uint16_t& unit, float& x_resolution, float& y_resolution);
 
+	/**
+	 * Closes a tiff file and resets its pointer if the argument is not
+	 * a nullptr.
+	 */
+	static void closeIfNeeded(struct tiff*& file);
+
 	////////////////////////////////////////////////////////////////////////
 	// SourcePresentation
 	////////////////////////////////////////////////////////////////////////
@@ -91,8 +97,6 @@ public:
 
 	/**
 	 * Closes the TIFF files opened by `openFiles`.
-	 * 
-	 * @pre `openFiles` has been called.
 	 */
 	void done() override;
 };

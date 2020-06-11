@@ -331,32 +331,20 @@ void SepSource::fillTiles(int startLine, int line_count, int tileWidth, int firs
 	}
 }
 
+void SepSource::closeIfNeeded(struct tiff*& file) {
+	if (file == nullptr)
+		return;
+
+	TIFFClose(file);
+	file = nullptr;
+}
+
 void SepSource::done()
 {
 	// Close all tiff files and reset pointers
-	if (this->file_c != nullptr)
-	{
-		TIFFClose(this->file_c);
-		this->file_c = nullptr;
-	}
-	if (this->file_m != nullptr)
-	{
-		TIFFClose(this->file_m);
-		this->file_m = nullptr;
-	}
-	if (this->file_y != nullptr)
-	{
-		TIFFClose(this->file_y);
-		this->file_y = nullptr;
-	}
-	if (this->file_k != nullptr)
-	{
-		TIFFClose(this->file_k);
-		this->file_k = nullptr;
-	}
-	if (this->file_w != nullptr)
-	{
-		TIFFClose(this->file_w);
-		this->file_w = nullptr;
-	}
+	SepSource::closeIfNeeded(this->file_c);
+	SepSource::closeIfNeeded(this->file_m);
+	SepSource::closeIfNeeded(this->file_y);
+	SepSource::closeIfNeeded(this->file_k);
+	SepSource::closeIfNeeded(this->file_w);
 }
