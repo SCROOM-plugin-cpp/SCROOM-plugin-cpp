@@ -263,19 +263,19 @@ void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr)
 
 	for (size_t i = 0; i < size; i++)
 	{
-		out[4 * i + 0] = whiteInk(w_line[i], c_line[i], type);
-		out[4 * i + 1] = whiteInk(w_line[i], m_line[i], type);
-		out[4 * i + 2] = whiteInk(w_line[i], y_line[i], type);
-		out[4 * i + 3] = whiteInk(w_line[i], k_line[i], type);
+		out[4 * i + 0] = SepSource::applyWhiteInk(w_line[i], c_line[i], type);
+		out[4 * i + 1] = SepSource::applyWhiteInk(w_line[i], m_line[i], type);
+		out[4 * i + 2] = SepSource::applyWhiteInk(w_line[i], y_line[i], type);
+		out[4 * i + 3] = SepSource::applyWhiteInk(w_line[i], k_line[i], type);
 	}
 }
 
-uint8_t SepSource::whiteInk(uint8_t a, uint8_t b, int type)
+uint8_t SepSource::applyWhiteInk(uint8_t white, uint8_t color, int type)
 {
 	if (type == 1)
-		return a >= b ? 0 : b - a;
-	else
-		return a > 0 ? b / a : b;
+		return white >= color ? 0 : color - white;
+
+	return white > 0 ? color / white : color;
 }
 
 void SepSource::fillTiles(int startLine, int line_count, int tileWidth, int firstTile, std::vector<Tile::Ptr> &tiles)

@@ -66,7 +66,10 @@ public:
 	 */
 	void openFiles();
 
-	static uint8_t whiteInk(uint8_t a, uint8_t b, int type);
+	/**
+	 * Applies the effect of white ink.
+	 */
+	static uint8_t applyWhiteInk(uint8_t white, uint8_t color, int type);
 
 	/**
 	 * Retrieves a scanline from all components combined.
