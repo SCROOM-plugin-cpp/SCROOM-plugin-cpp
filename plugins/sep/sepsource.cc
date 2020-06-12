@@ -6,31 +6,17 @@
 
 #include "sepsource.hh"
 
-enum MSG_TYPE {
-	INFO,
-	WARNING,
-	ERROR
-};
-
-void ShowWarning(MSG_TYPE type, std::string message) {
-	GtkMessageType type_gtk;
-	if (type == MSG_TYPE::INFO) {
-		type_gtk = GTK_MESSAGE_INFO;
-	} else if (type == MSG_TYPE::WARNING) {
-		type_gtk = GTK_MESSAGE_WARNING;
-	} else {
-		type_gtk = GTK_MESSAGE_ERROR;
-	}
-
+int ShowWarning(std::string message, GtkMessageType type_gtk = GTK_MESSAGE_WARNING)
+{
 	// We don't have a pointer to the parent window, so
 	// we'll just supply nullptr..
-	GtkWidget* dialog = gtk_message_dialog_new(
+	GtkWidget *dialog = gtk_message_dialog_new(
 		nullptr, GTK_DIALOG_DESTROY_WITH_PARENT,
-		type_gtk, GTK_BUTTONS_CLOSE, message.c_str()
-	);
+		type_gtk, GTK_BUTTONS_CLOSE, message.c_str());
 
-	gtk_dialog_run(GTK_DIALOG(dialog));
+	int k = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
+	return k;
 }
 
 SepSource::SepSource() {}
@@ -38,6 +24,7 @@ SepSource::~SepSource() {}
 
 SepSource::Ptr SepSource::create()
 {
+	// white_ink_type = 0;
 	return Ptr(new SepSource());
 }
 
@@ -98,26 +85,50 @@ SepFile SepSource::parseSep(const std::string &file_name)
 			errors += "PANIC: One of the channels has not been provided correctly!\n";
 			continue;
 		}
-		std::cout << result[0] + "\t" << parent_dir + result[1] << std::endl;
+		// std::cout << result[0] + "\t" << parent_dir + result[1] << std::endl;
 		sep_file.files[result[0]] = parent_dir + result[1];
 	}
 
 	// Close the file
 	file.close();
 
+	sep_file.white_ink_choice = 0;
+
+	// get user choice for white ink
+	if (sep_file.files.count("W"))
+	{
+		auto white_choice = gtk_dialog_new_with_buttons("White Ink Effect",
+														nullptr,
+														GTK_DIALOG_DESTROY_WITH_PARENT,
+														"Subtractive",
+														GTK_RESPONSE_ACCEPT,
+														"Multiplicative",
+														GTK_RESPONSE_REJECT,
+														NULL);
+		// gtk_dialog_run(GTK_DIALOG(white_choice));
+		if (gtk_dialog_run(GTK_DIALOG(white_choice)) == GTK_RESPONSE_ACCEPT)
+			sep_file.white_ink_choice = 1;
+		else
+			sep_file.white_ink_choice = 2;
+
+		gtk_widget_destroy(white_choice);
+	}
+
 	if (!errors.empty())
 	{
 		std::cerr << errors;
-		ShowWarning(WARNING, errors);
+		ShowWarning(errors);
 	}
 
 	return sep_file;
 }
 
-void SepSource::getForOneChannel(struct tiff* channel, uint16_t& unit, float& x_resolution, float& y_resolution) {
+void SepSource::getForOneChannel(struct tiff *channel, uint16_t &unit, float &x_resolution, float &y_resolution)
+{
 	if (TIFFGetField(channel, TIFFTAG_XRESOLUTION, &x_resolution) &&
-			TIFFGetField(channel, TIFFTAG_YRESOLUTION, &y_resolution) &&
-			TIFFGetField(channel, TIFFTAG_RESOLUTIONUNIT, &unit)) {
+		TIFFGetField(channel, TIFFTAG_YRESOLUTION, &y_resolution) &&
+		TIFFGetField(channel, TIFFTAG_RESOLUTIONUNIT, &unit))
+	{
 		if (unit == RESUNIT_NONE)
 			return;
 
@@ -134,31 +145,33 @@ void SepSource::getForOneChannel(struct tiff* channel, uint16_t& unit, float& x_
 	unit = RESUNIT_NONE;
 }
 
-bool SepSource::getResolution(uint16_t& unit, float& x_resolution, float& y_resolution)
+bool SepSource::getResolution(uint16_t &unit, float &x_resolution, float &y_resolution)
 {
 	float channel_res_x, channel_res_y;
 	uint16_t channel_res_unit;
 	bool warning = false;
 
 	// Use the values for the c channel as baseline
-	this->getForOneChannel(this->file_c, unit, x_resolution, y_resolution);
+	this->getForOneChannel(this->channel_files[channels[0]], unit, x_resolution, y_resolution);
 
-	for (auto channel : {this->file_m, this->file_y, this->file_k}) {
+	for (auto channel : {this->channel_files[channels[1]], this->channel_files[channels[2]], this->channel_files[channels[3]]})
+	{
 		if (channel == nullptr)
-		 	continue;
-		
+			continue;
+
 		this->getForOneChannel(channel, channel_res_unit, channel_res_x, channel_res_y);
 		// check if the same as first values
 		// if not, set status flag and continue
-		warning = (channel_res_x != x_resolution) || \
-					(channel_res_y != y_resolution) || \
-					(channel_res_unit != unit);
+		warning = (channel_res_x != x_resolution) ||
+				  (channel_res_y != y_resolution) ||
+				  (channel_res_unit != unit);
 	}
 
-	return ! warning;
+	return !warning;
 }
 
-TransformationData::Ptr SepSource::getTransform() {
+TransformationData::Ptr SepSource::getTransform()
+{
 	uint16_t unit;
 	float file_res_x, file_res_y;
 	this->getResolution(unit, file_res_x, file_res_y);
@@ -212,22 +225,34 @@ void SepSource::setData(SepFile file)
 
 void SepSource::openFiles()
 {
-	if (this->file_c != nullptr && this->file_m != nullptr && this->file_y != nullptr && this->file_k != nullptr) {
-		// This return is reached when all files are already opened. This happens for example when an image
-		// has multiple tiles and its tiles are filled using multiple calls to fillTiles.
-		return;
+	for (auto c : channels)
+	{
+		if (channel_files[c] != nullptr)
+		{
+			printf("PANIC: %s file has already been initialized. Cannot open it again.\n", c.c_str());
+			return;
+		}
 	}
 
-	this->file_c = TIFFOpen(this->sep_file.files["C"].c_str(), "r");
-	this->file_m = TIFFOpen(this->sep_file.files["M"].c_str(), "r");
-	this->file_y = TIFFOpen(this->sep_file.files["Y"].c_str(), "r");
-	this->file_k = TIFFOpen(this->sep_file.files["K"].c_str(), "r");
+	bool show_warning = false;
 
-	if (this->sep_file.files.count("W") == 1)
-		this->file_w = TIFFOpen(this->sep_file.files["W"].c_str(), "r");
+	// open CMYK channels
+	for (auto c : channels)
+	{
+		channel_files[c] = TIFFOpen(this->sep_file.files[c].c_str(), "r");
 
-	if (this->file_c == nullptr || this->file_m == nullptr || this->file_y == nullptr || this->file_k == nullptr) {
-		ShowWarning(WARNING, "PANIC: One of the provided files is not valid, or could not be opened!");
+		if (channel_files[c] == nullptr)
+			show_warning = true;
+	}
+
+	// open white ink and varnish channels
+	this->white_ink = TIFFOpen(this->sep_file.files["W"].c_str(), "r");
+	this->varnish = TIFFOpen(this->sep_file.files["V"].c_str(), "r");
+	show_warning = show_warning || (sep_file.files.count("W") && white_ink == nullptr) || (sep_file.files.count("V") && varnish == nullptr);
+	if (show_warning)
+	{
+		printf("PANIC: One of the provided files is not valid, or could not be opened!");
+		ShowWarning("PANIC: One of the provided files is not valid, or could not be opened!");
 	}
 }
 
@@ -245,37 +270,35 @@ void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr)
 	size_t size = out.size() / 4;
 
 	// Create buffers for the scanlines of the individual channels.
-	auto c_line = std::vector<uint8_t>(size);
-	auto m_line = std::vector<uint8_t>(size);
-	auto y_line = std::vector<uint8_t>(size);
-	auto k_line = std::vector<uint8_t>(size);
+	std::vector<uint8_t> lines[nr_channels];
+	for (int i = 0; i < nr_channels; i++)
+	{
+		lines[i] = std::vector<uint8_t>(size);
+		TIFFReadScanline_(channel_files[channels[i]], lines[i].data(), line_nr);
+	}
+
 	auto w_line = std::vector<uint8_t>(size);
-
-	// Read scanlines of the individual channels.
-	TIFFReadScanline_(this->file_c, c_line.data(), line_nr);
-	TIFFReadScanline_(this->file_m, m_line.data(), line_nr);
-	TIFFReadScanline_(this->file_y, y_line.data(), line_nr);
-	TIFFReadScanline_(this->file_k, k_line.data(), line_nr);
-
-	int type = 1; // 1 is subtrative
-	if (this->file_w != nullptr)
-		type = 2;
+	auto v_line = std::vector<uint8_t>(size);
+	TIFFReadScanline_(white_ink, w_line.data(), line_nr);
+	TIFFReadScanline_(varnish, v_line.data(), line_nr);
 
 	for (size_t i = 0; i < size; i++)
 	{
-		out[4 * i + 0] = SepSource::applyWhiteInk(w_line[i], c_line[i], type);
-		out[4 * i + 1] = SepSource::applyWhiteInk(w_line[i], m_line[i], type);
-		out[4 * i + 2] = SepSource::applyWhiteInk(w_line[i], y_line[i], type);
-		out[4 * i + 3] = SepSource::applyWhiteInk(w_line[i], k_line[i], type);
+		for (int j = 0; j < nr_channels; j++)
+			out[4 * i + j] = applyWhiteInk(w_line[i], lines[j][i], this->sep_file.white_ink_choice);
 	}
+	// reset white_ink_type because it is static
+	// SepSource::white_ink_type = 0;
 }
 
 uint8_t SepSource::applyWhiteInk(uint8_t white, uint8_t color, int type)
 {
-	if (type == 1)
+	if (type == 1) // 1 means subtractive model
 		return white >= color ? 0 : color - white;
-
-	return white > 0 ? color / white : color;
+	else if (type == 2) // 2 means multiplicative model
+		return white > 0 ? color / white : color;
+	else // 0 means white ink is not present
+		return color;
 }
 
 void SepSource::fillTiles(int startLine, int line_count, int tileWidth, int firstTile, std::vector<Tile::Ptr> &tiles)
@@ -287,7 +310,8 @@ void SepSource::fillTiles(int startLine, int line_count, int tileWidth, int firs
 	const size_t tile_count = tiles.size();
 
 	// Open the TIFF files so we can read from them later.
-	this->openFiles();
+	// I think this is a redundant call because openFiles() is already called in load function
+	// this->openFiles();
 
 	// Buffer for the scanline to be written into
 	auto row = std::vector<byte>(bpp * this->sep_file.width);
@@ -296,7 +320,8 @@ void SepSource::fillTiles(int startLine, int line_count, int tileWidth, int firs
 	// separate vector, so we can update it to point to the
 	// start of the current row in the loop.
 	auto tile_data = std::vector<byte *>(tile_count);
-	for (size_t tile = 0; tile < tile_count; tile++) {
+	for (size_t tile = 0; tile < tile_count; tile++)
+	{
 		tile_data[tile] = tiles[tile]->data.get();
 	}
 
@@ -331,7 +356,8 @@ void SepSource::fillTiles(int startLine, int line_count, int tileWidth, int firs
 	}
 }
 
-void SepSource::closeIfNeeded(struct tiff*& file) {
+void SepSource::closeIfNeeded(struct tiff *&file)
+{
 	if (file == nullptr)
 		return;
 
@@ -342,9 +368,9 @@ void SepSource::closeIfNeeded(struct tiff*& file) {
 void SepSource::done()
 {
 	// Close all tiff files and reset pointers
-	SepSource::closeIfNeeded(this->file_c);
-	SepSource::closeIfNeeded(this->file_m);
-	SepSource::closeIfNeeded(this->file_y);
-	SepSource::closeIfNeeded(this->file_k);
-	SepSource::closeIfNeeded(this->file_w);
+	for (auto &x : this->channel_files)
+	{
+		std::cout << x.second << std::endl;
+		closeIfNeeded(x.second);
+	}
 }
