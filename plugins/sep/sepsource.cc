@@ -271,7 +271,7 @@ void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr)
 
 	// Create buffers for the scanlines of the individual channels.
 	std::vector<uint8_t> lines[nr_channels];
-	for (int i = 0; i < nr_channels; i++)
+	for (size_t i = 0; i < nr_channels; i++)
 	{
 		lines[i] = std::vector<uint8_t>(size);
 		TIFFReadScanline_(channel_files[channels[i]], lines[i].data(), line_nr);
@@ -284,7 +284,7 @@ void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr)
 
 	for (size_t i = 0; i < size; i++)
 	{
-		for (int j = 0; j < nr_channels; j++)
+		for (size_t j = 0; j < nr_channels; j++)
 			out[4 * i + j] = applyWhiteInk(w_line[i], lines[j][i], this->sep_file.white_ink_choice);
 	}
 	// reset white_ink_type because it is static
