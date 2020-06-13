@@ -73,7 +73,7 @@ void Sep::open(const std::string &fileName, ScroomInterface::Ptr const &scroomIn
 		printf("A SLI file will be opened\n");
 		SliPresentation::Ptr presentation = SliPresentation::create(scroomInterface);
 		presentation->load(fileName);
-		
+
 		TransformationData::Ptr data = presentation->transformationData;
 		if (data) {
 			PresentationInterface::Ptr result = TransformPresentation::create(presentation, data);
