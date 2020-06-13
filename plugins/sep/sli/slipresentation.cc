@@ -53,8 +53,6 @@ void SliPresentation::computeHeightWidth()
   
   total_width = layers[rightmost_l]->width + layers[rightmost_l]->xoffset;
   total_height = layers[bottommost_l]->height + layers[bottommost_l]->yoffset;
-  total_area = total_width*total_height;
-  total_area_bytes = total_area * SPP;
 }
 
 /**
@@ -70,16 +68,18 @@ bool SliPresentation::load(const std::string& fileName)
   computeHeightWidth();
   
   transformationData = TransformationData::create();
-  float base = std::max(Xresolution, Yresolution);
-  transformationData->setAspectRatio(base / Xresolution, base / Yresolution);
+  float xAspect = Xresolution / std::max(Xresolution, Yresolution);
+  float yAspect = Yresolution / std::max(Xresolution, Yresolution);
+  transformationData->setAspectRatio(1 / xAspect, 1 / yAspect);
 
+  // Check if the aspect ratios align
   for (SliLayer::Ptr layer: layers)
   {
-    if (std::abs(layer->Xresolution - Xresolution) > 1e-2 || std::abs(layer->Yresolution - Yresolution) > 1e-2)
+    if (std::abs((layer->xAspect / layer->yAspect) - (xAspect / yAspect)) > 1e-3)
     {
-      printf("WARNING: Resolution mismatch - SLI file defines Xresolution=%.2f and Yresolution=%.2f "
-             "but layer %s has Xresolution=%.2f and Yresolution=%.2f\n", 
-             Xresolution, Yresolution, layer->name.c_str(), layer->Xresolution, layer->Yresolution);
+      printf("Warning: Aspect ratio mismatch - SLI file defines xAspect=%.3f and yAspect=%.3f "
+             "but layer %s has xAspect=%.3f and yAspect=%.3f\n", 
+             xAspect, yAspect, layer->name.c_str(), layer->xAspect, layer->yAspect);
     }
   }
   return true;
@@ -172,7 +172,7 @@ void SliPresentation::fillCache(int zoom)
 
   if (!rgbCache.count(0) || rgbCache[0]->clear)
   {
-    cacheBottomZoomLevelRgb();
+    computeRgb();
   }
   if (zoom < 0)
   {
@@ -180,7 +180,7 @@ void SliPresentation::fillCache(int zoom)
     {
       if (!rgbCache.count(i))
       {
-        cacheZoomLevelRgb(i);
+        reduceRgb(i);
       }
     }
   }
@@ -189,7 +189,7 @@ void SliPresentation::fillCache(int zoom)
   triggerRedraw();
 }
 
-void SliPresentation::cacheZoomLevelRgb(int zoom)
+void SliPresentation::reduceRgb(int zoom)
 {
   printf("Computing for zoom %d\n", zoom);
 
@@ -246,7 +246,7 @@ void SliPresentation::cacheZoomLevelRgb(int zoom)
   rgbCache[zoom] = targetSurface;
 }
 
-void SliPresentation::cacheBottomZoomLevelRgb()
+void SliPresentation::computeRgb()
 {
   SurfaceWrapper::Ptr surface = SurfaceWrapper::create();
   
@@ -343,8 +343,8 @@ void SliPresentation::cacheBottomZoomLevelRgb()
     G = 255 * (1 - M / 255.0) * black;
     B = 255 * (1 - Y / 255.0) * black;
 
-    target_begin[i / SPP] = (A << 24) | (R << 16) | (G << 8) | B;
-    i += SPP;
+    target_begin[i / 4] = (A << 24) | (R << 16) | (G << 8) | B;
+    i += 4;
 
     // we are past the image bounds; go to the next next line
     if (i % stride == imageBound)

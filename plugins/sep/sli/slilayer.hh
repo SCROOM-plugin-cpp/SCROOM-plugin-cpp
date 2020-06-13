@@ -2,10 +2,6 @@
 
 #include <scroom/scroominterface.hh>
 
-// Keep it simple for now and hardcode the allowed parameters
-#define BPS 8
-#define SPP 4
-
 class SliLayer : public virtual Scroom::Utils::Base
 {
 public:
@@ -18,16 +14,16 @@ public:
   int width;
   
   /** Samples per pixel */
-  unsigned int spp;
+  unsigned int spp = 0;
 
   /** Bits per sample */
-  unsigned int bps;
+  unsigned int bps = 0;
 
-  /** The number of pixels per ResolutionUnit in the ImageWidth direction */
-  float Xresolution=0;
+  /** The 'x' part of the aspect ratio x:y */
+  float xAspect=0;
 
-  /** The number of pixels per ResolutionUnit in the ImageLength direction */
-  float Yresolution=0;
+  /** The 'y' part of the aspect ratio x:y */
+  float yAspect=0;
 
   /** Horizontal offset from the top-left point of the canvas (in pixels) */
   int xoffset;

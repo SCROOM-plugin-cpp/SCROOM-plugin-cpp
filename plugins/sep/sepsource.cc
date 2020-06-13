@@ -193,7 +193,7 @@ void SepSource::fillSliLayer(SliLayer::Ptr sli)
 	source->openFiles();
 
 	uint16_t unit;
-	source->getResolution(unit, sli->Xresolution, sli->Yresolution);
+	source->getResolution(unit, sli->xAspect, sli->yAspect);
 
 	auto temp = std::vector<byte>(row_width);
 	for (int y = 0; y < sli->height; y++)

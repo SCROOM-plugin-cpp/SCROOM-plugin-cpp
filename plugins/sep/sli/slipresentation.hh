@@ -43,12 +43,6 @@ private:
   /** Height of all layers combined */
   int total_height = 0;
 
-  /** Area of all layers and offsets combined */
-  int total_area;
-
-  /** Area of all layers and offsets combined in bytes */
-  int total_area_bytes;
-
   /** The number of pixels per ResolutionUnit in the ImageWidth direction */
   float Xresolution;
 
@@ -67,25 +61,28 @@ private:
   /** The thread queue into which caching jobs are enqueued */
   ThreadPool::Queue::Ptr threadQueue;
 
-  /** Must be acquired by a thread before writing to the cached bitmaps */
+  /** Must be acquired by a thread before writing to the cached surfaces */
   boost::mutex mtx;
-
 
 private:
   /** Constructor */
   SliPresentation(ScroomInterface::Ptr scroomInterface);
 
   /**
-   * Computes the RGB bitmap of the bottommost layer (zoom=0) without any reductions
+   * Computes the complete RGB bitmap from the CMYK bitmap and caches the result
    */
-  virtual void cacheBottomZoomLevelRgb();
+  virtual void computeRgb();
 
   /**
-   * Computes the RGB bitmap for the zoom level from the zoom level bitmap below it, 
-   * reducing it in the process. Reductions must only happen if zoom < 0
+   * Reduces the RGB bitmap and caches the result. 
+   * 2x2 pixels of the zoom+1 bitmap are combined into one pixel of the zoom bitmap
    */
-  virtual void cacheZoomLevelRgb(int zoom);
+  virtual void reduceRgb(int zoom);
 
+  /** 
+   * Checks if the bitmap required for displaying the zoom level is present. If not, it is computed.
+   * Is potentially very computationally expensive, hence run outside of the UI thread.
+   */
   virtual void fillCache(int zoom);
 
 public:

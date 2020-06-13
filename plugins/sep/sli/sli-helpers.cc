@@ -93,6 +93,9 @@ SurfaceWrapper::~SurfaceWrapper()
 // TODO set the instance bps, spp values too at some point
 void fillFromTiff(SliLayer::Ptr layer)
 {
+  // We only support simple CMYK Tiffs with 4 SPP and 8 BPS
+  const uint16 allowedSpp = 4;
+  const uint16 allowedBps = 8; 
   try
   {
     TIFF *tif = TIFFOpen(layer->filepath.c_str(), "r");
@@ -102,20 +105,18 @@ void fillFromTiff(SliLayer::Ptr layer)
       return;
     }
 
-    uint16 spp_ = 0;
-    if (1 != TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &spp_))
-      spp_ = 1; // Default value, according to tiff spec
-    if (spp_ != SPP)
+    if (1 != TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &layer->spp))
+      layer->spp = 1; // Default value, according to tiff spec
+    if (layer->spp != allowedSpp)
     {
-      printf("PANIC: Samples per pixel is not %d, but %d. Giving up\n", SPP, spp_);
+      printf("PANIC: Samples per pixel is not %d, but %d. Giving up\n", allowedSpp, layer->spp);
       return;
     }
 
-    uint16 bps_ = 0;
-    TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bps_);
-    if (bps_ != BPS)
+    TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &layer->bps);
+    if (layer->bps != allowedBps)
     {
-      printf("PANIC: Bits per sample is not %d, but %d. Giving up\n", BPS, bps_);
+      printf("PANIC: Bits per sample is not %d, but %d. Giving up\n", allowedBps, layer->bps);
       return;
     }
 
@@ -131,26 +132,26 @@ void fillFromTiff(SliLayer::Ptr layer)
       {
         // Fix aspect ratio only
         float base = std::max(resolutionX, resolutionY);
-        resolutionX = resolutionX / base;
-        resolutionY = resolutionY / base;
+        layer->xAspect = base / resolutionX;
+        layer->yAspect = base / resolutionY;
       }
     }
     else
     {
-      resolutionX = 1;
-      resolutionY = 1;
+      layer->xAspect = 1.0;
+      layer->yAspect = 1.0;
     }
 
     TIFFGetFieldChecked(tif, TIFFTAG_IMAGEWIDTH, &layer->width);
     TIFFGetFieldChecked(tif, TIFFTAG_IMAGELENGTH, &layer->height);
     printf("This bitmap has size %d*%d, aspect ratio %.1f*%.1f\n",
-           layer->width, layer->height, 1 / resolutionX, 1 / resolutionY);
+           layer->width, layer->height, layer->xAspect, layer->yAspect);
 
     // create sli bitmap ------------------------------------
     // Could just use the width here but we don't want to make overflows too easy, right ;)
     int byteWidth = TIFFScanlineSize(tif);
     layer->bitmap = static_cast<uint8_t*>(malloc(byteWidth * layer->height));
-    int stride = layer->width*SPP;
+    int stride = layer->width * layer->spp;
 
     // Iterate over the rows and copy the bitmap data to newly allocated memory pointed to by currentBitmap
     for (int row = 0; row < layer->height; row++)
