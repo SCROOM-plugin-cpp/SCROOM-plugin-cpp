@@ -54,7 +54,7 @@ private:
   std::string varnishFile;
 
   /** (Optional) Varnish presentation interface, used for overlays */
-  PresentationInterface::Ptr varnishPI;
+  SliLayer::Ptr varnishLayer;
 
   /** Bitmap representing the indexes of the currently visible layers (little-endian) */
   boost::dynamic_bitset<> visible {0};

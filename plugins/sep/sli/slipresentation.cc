@@ -125,9 +125,10 @@ void SliPresentation::parseSli(const std::string &sliFileName)
         if (fs::exists(imagePath)) {
           printf("varnish file exists.\n");
           // Load the varnish file as a presentationInterface
-          varnishPI = scroomInterface->loadPresentation(imagePath.string());
+          varnishLayer = SliLayer::create(imagePath.string(), varnishFile, 0, 0);
+          fillVarnishOverlay(varnishLayer);
         } else {
-          printf("[uh-oh] varnish file not found: %s\n", imagePath.c_str());
+          printf("[PANIC] varnish file not found: %s\n", imagePath.c_str());
         }
       }
       else if (fs::exists(fs::path(dirPath) /= firstToken))
@@ -514,14 +515,10 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
   cairo_paint(cr);
   cairo_restore(cr);
 
-  /*
-  TODO; Move this stuff to it's own helper function.
-  Declaring everything here makes the code super unreadable.
-  */  
-  redrawVarnishOverlay(varnishPI, vi, cr, presentationArea, zoom);
-
   /* --> Draw The varnish overlay if it exists */
-
+  if (varnishLayer /*TODO; and enabled (button) */) {
+    redrawVarnishOverlay(varnishLayer, vi, cr, presentationArea, zoom);
+  }
 }
 
 bool SliPresentation::getProperty(const std::string& name, std::string& value)
@@ -559,17 +556,11 @@ void SliPresentation::viewAdded(ViewInterface::WeakPtr vi)
 {
   controlPanel = SliControlPanel::create(vi, weakPtrToThis);
   views.insert(vi);
-  if (varnishPI) {
-    varnishPI->open(vi);
-  }
 }
 
 void SliPresentation::viewRemoved(ViewInterface::WeakPtr vi)
 {
   views.erase(vi);
-  if (varnishPI) {
-    varnishPI->close(vi);
-  }
 }
 
 std::set<ViewInterface::WeakPtr> SliPresentation::getViews()
