@@ -1,5 +1,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
+#include <boost/dynamic_bitset.hpp>
 
 #include "slilayer.hh"
 
@@ -14,8 +15,10 @@ public:
 
   virtual void wipeCache()=0;
   virtual void triggerRedraw()=0;
-  virtual void setLastToggled(int)=0;
-
+  virtual boost::dynamic_bitset<> getToggled()=0;
+  virtual boost::dynamic_bitset<> getVisible()=0;
+  virtual void setToggled(boost::dynamic_bitset<> bitmap)=0;
+  virtual void setVisible(boost::dynamic_bitset<> bitmap)=0;
   virtual std::vector<SliLayer::Ptr>& getLayers()=0;
 
 };

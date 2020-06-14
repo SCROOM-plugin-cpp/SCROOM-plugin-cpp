@@ -30,7 +30,7 @@ Scroom::Utils::Rectangle<int> SliLayer::toRectangle()
 
 Scroom::Utils::Rectangle<int> SliLayer::toBytesRectangle()
 {
-  Scroom::Utils::Rectangle<int> rect {xoffset*spp, yoffset, width*spp, height};
+  Scroom::Utils::Rectangle<int> rect {xoffset*(int)spp, yoffset, width*(int)spp, height};
   
   return rect;
 }

@@ -6,6 +6,7 @@
 #include <scroom/scroominterface.hh>
 #include <scroom/threadpool.hh>
 #include <scroom/transformpresentation.hh>
+#include <boost/dynamic_bitset.hpp>
 
 #include "slilayer.hh"
 #include "slicontrolpanel.hh"
@@ -49,8 +50,11 @@ private:
   /** The number of pixels per ResolutionUnit in the ImageLength direction */
   float Yresolution;
 
-  /** Index of the last toggled layer */
-  int lastToggledLayer = -1;
+  /** Bitmap representing the indexes of the currently visible layers (little-endian) */
+  boost::dynamic_bitset<> visible {0};
+
+  /** Bitmask representing the indexes of the layers that need to be toggled (little-endian) */
+  boost::dynamic_bitset<> toggled {0};
 
   /** 
    * Contains the cached bitmaps for the different zoom levels. 
@@ -125,8 +129,10 @@ public:
   /** Causes the complete canvas to be redrawn */
   virtual void triggerRedraw();
   
-  /** Sets the index of the last toggled layer */
-  virtual void setLastToggled(int index);
+  virtual boost::dynamic_bitset<> getToggled();
+  virtual boost::dynamic_bitset<> getVisible();
+  virtual void setToggled(boost::dynamic_bitset<> bitmap);
+  virtual void setVisible(boost::dynamic_bitset<> bitmap);
 
   ////////////////////////////////////////////////////////////////////////
   // PresentationInterface

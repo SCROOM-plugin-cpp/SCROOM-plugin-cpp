@@ -41,7 +41,7 @@ public:
   uint8_t* bitmap;
 
   /** Whether or not the layer is toggled to be visible */
-  bool visible;
+  bool visible; // TODO can be removed
 
 private:
   SliLayer();

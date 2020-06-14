@@ -1,190 +1,191 @@
 #include <scroom/unused.hh>
+#include <boost/dynamic_bitset.hpp>
 
 #include "slicontrolpanel.hh"
 #include "slilayer.hh"
 
-enum
+
+/* Check whether the constraint defined by the sliders' bounds are respected */
+gboolean check_constraints(gdouble old_low, gdouble old_high, SliControlPanel *cPanel)
 {
-  COL_VISIBILITY = 0,
-  COL_ID,
-  NUM_COLS
-};
+  auto presPtr = cPanel->presentation.lock();
+  auto toggled = presPtr->getToggled().reset();
+  auto visible = presPtr->getVisible();
 
-static void update_layers_upper(GtkRange *this_range,
-                                SliControlPanel *controlPanel)
+  for (size_t i = old_low; i <= old_high; i++)
+    toggled.set(i);
+
+  if (toggled == visible)
+    return TRUE;
+
+  return FALSE;
+}
+
+/* Toggle the layers and trigger a redraw */
+void toggle_and_redraw(double old_value, double new_value, double other_value,
+                       GtkWidget *widget, SliControlPanel *cPanel)
 {
-  GtkTreeIter iter;
-  GtkTreeModel *model;
-  gchar *path;
+  auto presPtr = cPanel->presentation.lock();
+  auto toggled = presPtr->getToggled().reset();
+  auto visible = presPtr->getVisible();
+  int start = std::min(old_value, new_value);
+  int finish = std::max(old_value, new_value);
 
-  GtkAdjustment *adj_range_low = gtk_range_get_adjustment(controlPanel->range_low);
-  model = gtk_tree_view_get_model(GTK_TREE_VIEW(controlPanel->treeview));
-  int high = gtk_adjustment_get_upper(adj_range_low);
-  int low = gtk_adjustment_get_lower(adj_range_low);
-  int other_value = gtk_adjustment_get_value(adj_range_low);
-  int this_value = gtk_range_get_value(this_range);
-  SliPresentationInterface::Ptr presPtr = controlPanel->presentation.lock();
-  std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
-  int toggledCount = 0;
-
-  for (int i = low; i <= high; i++)
+  if (widget == cPanel->widgets[SLIDER_LOW])
   {
-    path = g_strdup_printf("%i", i);
-    if (gtk_tree_model_get_iter_from_string(model, &iter, path))
+    if (!check_constraints(old_value, other_value, cPanel))
     {
-      if (i <= this_value && i >= other_value)
-      {
-        gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, TRUE, -1);
-        if (!layers[i]->visible)
-        {
-          layers[i]->visible = true;
-          presPtr->setLastToggled(i);
-          toggledCount++;
-        }
-      }
-      else
-      {
-        gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, FALSE, -1);
-        if (layers[i]->visible)
-        {
-          layers[i]->visible = false;
-          presPtr->setLastToggled(i);
-          toggledCount++;
-        }
-      }
+      for (int i = new_value; i <= other_value; i++)
+        toggled.set(i);
+
+      auto tot_toggled = toggled | visible;
+      visible = toggled ^ tot_toggled;
+      toggled = tot_toggled;
+    }
+    else
+    {
+      for (size_t i = start; i < (size_t)finish; i++)
+        toggled.set(i);
+    }
+  }
+  else if (widget == cPanel->widgets[SLIDER_HIGH])
+  {
+    if (!check_constraints(other_value, old_value, cPanel))
+    {
+      for (int i = other_value; i <= new_value; i++)
+        toggled.set(i);
+
+      auto tot_toggled = toggled | visible;
+      visible = toggled ^ tot_toggled;
+      toggled = tot_toggled;
+    }
+    else
+    {
+      for (size_t i = start + 1; i <= (size_t)finish; i++)
+        toggled.set(i);
     }
   }
 
-  if (toggledCount > 1)
-  {
-    presPtr->setLastToggled(-1);
-  }
+  presPtr->setToggled(toggled);
+  presPtr->setVisible(visible);
   presPtr->wipeCache();
   presPtr->triggerRedraw();
 }
 
-void update_layers_lower(GtkRange *this_range,
-                         SliControlPanel *controlPanel)
+/* Update the Tree Model according to the new sliders' bounds */
+void update_tree_model(GtkTreeView *treeview, int min, int max, int low, int high)
 {
   GtkTreeIter iter;
-  GtkTreeModel *model;
   gchar *path;
+  GtkTreeModel *model = gtk_tree_view_get_model(treeview);
 
-  GtkAdjustment *adj_range_high = gtk_range_get_adjustment(controlPanel->range_high);
-  model = gtk_tree_view_get_model(GTK_TREE_VIEW(controlPanel->treeview));
-  int high = gtk_adjustment_get_upper(adj_range_high);
-  int low = gtk_adjustment_get_lower(adj_range_high);
-  int other_value = gtk_adjustment_get_value(adj_range_high);
-  int this_value = gtk_range_get_value(this_range);
-  SliPresentationInterface::Ptr presPtr = controlPanel->presentation.lock();
-  std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
-  int toggledCount = 0;
-
-  for (int i = low; i <= high; i++)
+  for (int i = min; i <= max; i++)
   {
     path = g_strdup_printf("%i", i);
     if (gtk_tree_model_get_iter_from_string(model, &iter, path))
     {
-      if (i >= this_value && i <= other_value)
+      if (i >= low && i <= high)
       {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, TRUE, -1);
-        if (!layers[i]->visible)
-        {
-          layers[i]->visible = true;
-          presPtr->setLastToggled(i);
-          toggledCount++;
-        }
       }
       else
       {
         gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, FALSE, -1);
-        if (layers[i]->visible)
-        {
-          layers[i]->visible = false;
-          presPtr->setLastToggled(i);
-          toggledCount++;
-        }
       }
     }
   }
-
-  if (toggledCount > 1)
-  {
-    presPtr->setLastToggled(-1);
-  }
-  presPtr->wipeCache();
-  presPtr->triggerRedraw();
 }
 
-static gboolean on_change_value_upper(GtkRange *this_range,
-                                      GtkScrollType scroll,
-                                      gdouble this_value,
-                                      GtkRange *other_range)
+// TODO Change buffer color
+/* Takes care of all focus-out, button-press, and key-release events */
+gboolean slider_event_handler(GtkWidget *widget, GdkEvent *event, SliControlPanel *cPanel)
 {
-  UNUSED(this_range);
+  UNUSED(event);
+
+  if (widget == cPanel->widgets[SLIDER_LOW])
+  {
+    GtkAdjustment *adj_other = gtk_range_get_adjustment((GtkRange *)cPanel->widgets[SLIDER_HIGH]);
+    int max = gtk_adjustment_get_upper(adj_other);
+    int min = gtk_adjustment_get_lower(adj_other);
+    gdouble other_value = gtk_adjustment_get_value(adj_other);
+    gdouble this_old_value = cPanel->oldValue[SLIDER_LOW];
+    gdouble this_new_value = gtk_range_get_value((GtkRange *)widget);
+
+    if (abs(this_old_value - this_new_value) > 0)
+    {
+      cPanel->lastFocused = SLIDER_LOW;
+      cPanel->oldValue[SLIDER_LOW] = this_new_value;
+      update_tree_model((GtkTreeView *)cPanel->widgets[TREEVIEW], min, max, this_new_value, other_value);
+      toggle_and_redraw(this_old_value, this_new_value, other_value, widget, cPanel);
+    }
+  }
+  else if (widget == cPanel->widgets[SLIDER_HIGH])
+  {
+    GtkAdjustment *adj_other = gtk_range_get_adjustment((GtkRange *)cPanel->widgets[SLIDER_LOW]);
+    int max = gtk_adjustment_get_upper(adj_other);
+    int min = gtk_adjustment_get_lower(adj_other);
+    gdouble other_value = gtk_adjustment_get_value(adj_other);
+    gdouble this_old_value = cPanel->oldValue[SLIDER_HIGH];
+    gdouble this_new_value = gtk_range_get_value((GtkRange *)widget);
+
+    if (abs(this_old_value - this_new_value) > 0)
+    {
+      cPanel->lastFocused = SLIDER_HIGH;
+      cPanel->oldValue[SLIDER_HIGH] = this_new_value;
+      update_tree_model((GtkTreeView *)cPanel->widgets[TREEVIEW], min, max, other_value, this_new_value);
+      toggle_and_redraw(this_old_value, this_new_value, other_value, widget, cPanel);
+    }
+  }
+  return FALSE;
+}
+
+/* Makes sure a slider can't go above or below the other slider's value */
+static gboolean change_value(GtkRange *range,
+                             GtkScrollType scroll,
+                             gdouble this_value,
+                             SliControlPanel *cPanel)
+{
+  UNUSED(range);
   UNUSED(scroll);
 
-  int other_value, this_old_value;
-  other_value = gtk_range_get_value(other_range);
-  this_old_value = gtk_range_get_value(this_range);
-
-  if (abs(this_value - this_old_value) > 1)
+  if (range == (GtkRange *)cPanel->widgets[SLIDER_LOW])
   {
-    return TRUE;
+    gdouble other_value = gtk_range_get_value((GtkRange *)cPanel->widgets[SLIDER_HIGH]);
+    if (other_value - this_value < 0)
+      return TRUE;
   }
-
-  if (this_value - other_value <= 0)
+  else if (range == (GtkRange *)cPanel->widgets[SLIDER_HIGH])
   {
-    return TRUE;
+    gdouble other_value = gtk_range_get_value((GtkRange *)cPanel->widgets[SLIDER_LOW]);
+    if (this_value - other_value < 0)
+      return TRUE;
   }
 
   return FALSE;
 }
 
-static gboolean on_change_value_lower(GtkRange *this_range,
-                                      GtkScrollType scroll,
-                                      gdouble this_value,
-                                      GtkRange *other_range)
-{
-  UNUSED(this_range);
-  UNUSED(scroll);
-
-  int other_value, this_old_value;
-  other_value = gtk_range_get_value(other_range);
-  this_old_value = gtk_range_get_value(this_range);
-
-  if (abs(this_value - this_old_value) > 1)
-  {
-    return TRUE;
-  }
-
-  if (other_value - this_value <= 0)
-  {
-    return TRUE;
-  }
-
-  return FALSE;
-}
-
-// Toggle callback
-static void on_toggle(GtkCellRendererToggle *renderer, gchar *path, SliControlPanel *controlPanel)
+/* Updates the Tree Model and triggers a redraw when a checkmark is toggled */
+static void on_toggle(GtkCellRendererToggle *renderer, gchar *path, SliControlPanel *cPanel)
 {
   UNUSED(renderer);
   GtkTreeModel *model;
   GtkTreeIter iter;
   gboolean state;
 
-  SliPresentationInterface::Ptr presPtr = controlPanel->presentation.lock();
+  SliPresentationInterface::Ptr presPtr = cPanel->presentation.lock();
   std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
+  auto toggled = presPtr->getToggled();
+  toggled.reset();
 
-  model = gtk_tree_view_get_model(GTK_TREE_VIEW(controlPanel->treeview));
+  model = gtk_tree_view_get_model(GTK_TREE_VIEW(cPanel->widgets[TREEVIEW]));
 
   if (gtk_tree_model_get_iter_from_string(model, &iter, path))
   {
     gtk_tree_model_get(model, &iter, COL_VISIBILITY, &state, -1);
     gtk_list_store_set(GTK_LIST_STORE(model), &iter, COL_VISIBILITY, !state, -1);
-    layers[atoi(path)]->visible = !state;
-    presPtr->setLastToggled(atoi(path));
+    cPanel->lastFocused = TREEVIEW;
+    toggled.set(atoi(path));
+    presPtr->setToggled(toggled);
     presPtr->wipeCache();
     presPtr->triggerRedraw();
   }
@@ -199,7 +200,7 @@ void SliControlPanel::create_view_and_model()
   renderer = gtk_cell_renderer_toggle_new();
   gtk_cell_renderer_toggle_set_activatable(GTK_CELL_RENDERER_TOGGLE(renderer), TRUE);
   g_signal_connect(G_OBJECT(renderer), "toggled", G_CALLBACK(on_toggle), this);
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widgets[TREEVIEW]),
                                               -1,
                                               "Show",
                                               renderer,
@@ -208,7 +209,7 @@ void SliControlPanel::create_view_and_model()
 
   /* --- Column ID --- */
   renderer = gtk_cell_renderer_text_new();
-  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
+  gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(widgets[TREEVIEW]),
                                               -1,
                                               "Layer",
                                               renderer,
@@ -234,7 +235,7 @@ void SliControlPanel::create_view_and_model()
   }
 
   // Wrap up ----------------------------------------
-  gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), GTK_TREE_MODEL(list_store));
+  gtk_tree_view_set_model(GTK_TREE_VIEW(widgets[TREEVIEW]), GTK_TREE_MODEL(list_store));
 
   /* The tree view has acquired its own reference to the
   *  model, so we can drop ours. That way the model will
@@ -242,6 +243,7 @@ void SliControlPanel::create_view_and_model()
   g_object_unref(list_store);
 }
 
+// TODO remove all layers references and unused slipresentationinterface methods
 SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentationInterface::WeakPtr presentation_) : presentation(presentation_)
 {
   printf("Multilayer control panel has been created\n");
@@ -253,8 +255,8 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
 
   GtkWidget *hbox = gtk_hbox_new(false, 10);
 
-  treeview = gtk_tree_view_new();
-  widgets.push_back(treeview);
+  GtkWidget* treeview = gtk_tree_view_new();
+  widgets[TREEVIEW] = treeview;
   create_view_and_model();
   gtk_box_pack_start(GTK_BOX(hbox), treeview, false, false, 0);
 
@@ -262,26 +264,27 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
   {
     GtkWidget *slider_low = gtk_vscale_new_with_range(0, n_layers - 1, 1);
     GtkWidget *slider_high = gtk_vscale_new_with_range(0, n_layers - 1, 1);
-    widgets.push_back(slider_low);
-    widgets.push_back(slider_high);
-    range_low = GTK_RANGE(slider_low);
-    range_high = GTK_RANGE(slider_high);
+    widgets[SLIDER_LOW] = slider_low;
+    widgets[SLIDER_HIGH] = slider_high;
 
     // Initially display all layers
     gtk_range_set_value(GTK_RANGE(slider_low), 0);
     gtk_range_set_value(GTK_RANGE(slider_high), n_layers - 1);
-    gtk_widget_set_can_focus(slider_low, FALSE);
-    gtk_widget_set_can_focus(slider_high, FALSE);
+    oldValue[SLIDER_LOW] = 0;
+    oldValue[SLIDER_HIGH] = n_layers - 1;
+    // gtk_widget_set_can_focus(slider_low, TRUE);
+    // gtk_widget_set_can_focus(slider_high, TRUE);
 
     // Connect the callbacks
-    g_signal_connect(GTK_RANGE(slider_high), "change-value",
-                     G_CALLBACK(on_change_value_upper), GTK_RANGE(slider_low));
-    g_signal_connect(G_OBJECT(slider_high), "value-changed",
-                     G_CALLBACK(update_layers_upper), this);
-    g_signal_connect(GTK_RANGE(slider_low), "change-value",
-                     G_CALLBACK(on_change_value_lower), GTK_RANGE(slider_high));
-    g_signal_connect(G_OBJECT(slider_low), "value-changed",
-                     G_CALLBACK(update_layers_lower), this);
+    g_signal_connect(slider_low, "change-value", G_CALLBACK(change_value), this);
+    g_signal_connect(slider_low, "button-release-event", G_CALLBACK(slider_event_handler), this);
+    g_signal_connect(slider_low, "focus-out-event", G_CALLBACK(slider_event_handler), this);
+    g_signal_connect(slider_low, "key-release-event", G_CALLBACK(slider_event_handler), this);
+
+    g_signal_connect(slider_high, "change-value", G_CALLBACK(change_value), this);
+    g_signal_connect(slider_high, "button-release-event", G_CALLBACK(slider_event_handler), this);
+    g_signal_connect(slider_high, "focus-out-event", G_CALLBACK(slider_event_handler), this);
+    g_signal_connect(slider_high, "key-release-event", G_CALLBACK(slider_event_handler), this);
 
     // Set the number of decimal places to display for each widget.
     gtk_scale_set_digits(GTK_SCALE(slider_low), 0);
@@ -307,9 +310,9 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
 void SliControlPanel::disableInteractions()
 {
   gdk_threads_enter();
-  for (GtkWidget *widget : widgets)
+  for (auto widget : widgets)
   {
-    gtk_widget_set_sensitive(widget, false);
+    gtk_widget_set_sensitive(widget.second, false);
   }
   gdk_threads_leave();
 }
@@ -317,10 +320,11 @@ void SliControlPanel::disableInteractions()
 void SliControlPanel::enableInteractions()
 {
   gdk_threads_enter();
-  for (GtkWidget *widget : widgets)
+  for (auto widget : widgets)
   {
-    gtk_widget_set_sensitive(widget, true);
+    gtk_widget_set_sensitive(widget.second, true);
   }
+  gtk_widget_grab_focus(widgets[lastFocused]);
   gdk_threads_leave();
 }
 

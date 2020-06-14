@@ -66,6 +66,8 @@ bool SliPresentation::load(const std::string& fileName)
 {
   parseSli(fileName);
   computeHeightWidth();
+  visible.resize(layers.size(), false);
+  toggled.resize(layers.size(), true);
   
   transformationData = TransformationData::create();
   float xAspect = Xresolution / std::max(Xresolution, Yresolution);
@@ -146,21 +148,38 @@ void SliPresentation::parseSli(const std::string &sliFileName)
 
 void SliPresentation::clearBottomSurface()
 {
+  if (toggled.none())
+    return;
 
-  if (lastToggledLayer < 0 && rgbCache.count(0))
+  if (toggled.all() && rgbCache.count(0))
   {
     rgbCache[0]->clearSurface();
     printf("Complete redraw!\n");
   }
   else
   {
-    auto layer = layers[lastToggledLayer];
-    auto rect = layer->toRectangle();
+    // TODO ask Luke how to improve this
+    Scroom::Utils::Rectangle<int> toggledRect;
+    size_t i = 0;
+    for (; i < toggled.size(); i++)
+    {
+      if (toggled[i])
+      {
+        toggledRect = layers[i]->toRectangle();
+        i++;
+        break;
+      }
+    }
+    for (; i < toggled.size(); i++)
+    {
+      if (toggled[i])
+        toggledRect = spannedRectangle(toggledRect, layers[i]->toRectangle());
+    }
 
     if (rgbCache.count(0))
     {
-      rgbCache[0]->clearSurface(rect);
-      printf("Partial redraw!\n");
+      rgbCache[0]->clearSurface(toggledRect);
+      printf("Partial redraw! Area: %d\n", getArea(toggledRect));
     }
   }
 }
@@ -191,7 +210,7 @@ void SliPresentation::fillCache(int zoom)
 
 void SliPresentation::reduceRgb(int zoom)
 {
-  printf("Computing for zoom %d\n", zoom);
+  // printf("Computing for zoom %d\n", zoom);
 
   const int sourceWidth = total_width / pow(2, -zoom - 1);
   const int sourceHeight = total_height / pow(2, -zoom - 1);
@@ -248,8 +267,12 @@ void SliPresentation::reduceRgb(int zoom)
 
 void SliPresentation::computeRgb()
 {
+  // Update the visibility of all layers according to the toggled ones
+  visible ^= toggled;
+
+
   SurfaceWrapper::Ptr surface = SurfaceWrapper::create();
-  
+
   // Check if cache surface exists first
   if (rgbCache.count(0))
   {
@@ -259,35 +282,41 @@ void SliPresentation::computeRgb()
   {
     surface = SurfaceWrapper::create(total_width, total_height, CAIRO_FORMAT_ARGB32);
   }
-
-  // Rectangle area (in bytes) of the last toggled layer
-  Scroom::Utils::Rectangle<int> toggledRect;
-
   const int stride = surface->getStride();
-
-  if (lastToggledLayer < 0) // first redraw: entire canvas
-  {
-    toggledRect = surface->toBytesRectangle();
-  }
-  else
-  {
-    SliLayer::Ptr layer = layers[lastToggledLayer];
-    toggledRect = layer->toBytesRectangle();
-  }
-
+  cairo_surface_flush(surface->surface);
   uint8_t *surface_begin = cairo_image_surface_get_data(surface->surface);
   uint32_t *target_begin = reinterpret_cast<uint32_t *>(surface_begin);
   uint8_t *current_surface_byte = surface_begin;
-  
-  cairo_surface_flush(surface->surface);
-  for (auto layer : layers)
+
+  // Rectangle (in bytes) of the toggled area
+  Scroom::Utils::Rectangle<int> toggledRect;
+
+  // TODO slightly duplicate code
+  // Find the total rectangle spanned by all toggled layers
+  size_t i = 0;
+  for (; i < toggled.size(); i++)
   {
-    if (!layer->visible)
+    if (toggled[i])
+    {
+      toggledRect = layers[i]->toBytesRectangle();
+      i++;
+      break;
+    }
+  }
+  for (; i < toggled.size(); i++)
+  {
+    if (toggled[i])
+      toggledRect = spannedRectangle(toggledRect, layers[i]->toBytesRectangle());
+  }
+
+  for (size_t j = 0; j < layers.size(); j++)
+  {
+    if (!visible[j])
       continue;
 
-    // Rectangle area (in bytes) of the current layer
-    Scroom::Utils::Rectangle<int> layerRect = layer->toBytesRectangle();
+    auto layer = layers[j];
     auto bitmap = layer->bitmap;
+    Scroom::Utils::Rectangle<int> layerRect = layer->toBytesRectangle();
 
     if (!layerRect.intersects(toggledRect))
       continue;
@@ -302,10 +331,10 @@ void SliPresentation::computeRgb()
     int surface_pointer_offset = pointToOffset(intersectRect.getTopLeft(), stride);
     current_surface_byte = surface_begin + surface_pointer_offset;
 
-
     // TODO maybe do this 32 bits at a time and move calculations out of the loops
-    int layerBound = std::min(intersectRect.getRight() - layerRect.getLeft(), 
-                    layerRect.getRight() - layerRect.getLeft()) % layerRect.getWidth();
+    int layerBound = std::min(intersectRect.getRight() - layerRect.getLeft(),
+                              layerRect.getRight() - layerRect.getLeft()) %
+                     layerRect.getWidth();
     for (int i = bitmap_start; i < bitmap_start + bitmap_offset;)
     {
       // increment the value of the current surface byte
@@ -324,11 +353,11 @@ void SliPresentation::computeRgb()
     }
   }
 
-  uint8_t C, M, Y, K, A, R, G, B;
   double black;
+  uint8_t C, M, Y, K, A, R, G, B;
 
   int topLeftOffset = pointToOffset(toggledRect.getTopLeft(), stride);
-  int bottomRightOffset = pointToOffset(toggledRect.getBottomRight(), stride) - stride; // TODO weird
+  int bottomRightOffset = pointToOffset(toggledRect.getBottomRight(), stride) - stride;
   int imageBound = toggledRect.getRight() % stride;
   for (int i = topLeftOffset; i < bottomRightOffset;)
   {
@@ -352,8 +381,9 @@ void SliPresentation::computeRgb()
       i += stride - toggledRect.getWidth();
     }
   }
-  cairo_surface_mark_dirty(surface->surface);
 
+  cairo_surface_mark_dirty(surface->surface);
+  toggled.reset();
   // Make the cached bitmap available to the main thread
   if (!rgbCache.count(0))
     rgbCache[0] = surface;
@@ -398,9 +428,24 @@ void SliPresentation::triggerRedraw()
   }
 }
 
-void SliPresentation::setLastToggled(int index)
+boost::dynamic_bitset<> SliPresentation::getToggled()
 {
-  lastToggledLayer = index;
+  return toggled;
+}
+
+boost::dynamic_bitset<> SliPresentation::getVisible()
+{
+  return visible;
+}
+
+void SliPresentation::setToggled(boost::dynamic_bitset<> bitmap)
+{
+  toggled = bitmap;
+}
+
+void SliPresentation::setVisible(boost::dynamic_bitset<> bitmap)
+{
+  visible = bitmap;
 }
 
 ////////////////////////////////////////////////////////////////////////
