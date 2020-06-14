@@ -4,6 +4,14 @@
 #include "slicontrolpanel.hh"
 #include "slilayer.hh"
 
+/* Ignore scroll events on both sliders */
+gboolean scroll_event (GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  UNUSED(widget);
+  UNUSED(event);
+  UNUSED(user_data);
+  return TRUE;
+}
 
 /* Check whether the constraint defined by the sliders' bounds are respected */
 gboolean check_constraints(gdouble old_low, gdouble old_high, SliControlPanel *cPanel)
@@ -272,19 +280,19 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
     gtk_range_set_value(GTK_RANGE(slider_high), n_layers - 1);
     oldValue[SLIDER_LOW] = 0;
     oldValue[SLIDER_HIGH] = n_layers - 1;
-    // gtk_widget_set_can_focus(slider_low, TRUE);
-    // gtk_widget_set_can_focus(slider_high, TRUE);
 
     // Connect the callbacks
     g_signal_connect(slider_low, "change-value", G_CALLBACK(change_value), this);
     g_signal_connect(slider_low, "button-release-event", G_CALLBACK(slider_event_handler), this);
     g_signal_connect(slider_low, "focus-out-event", G_CALLBACK(slider_event_handler), this);
     g_signal_connect(slider_low, "key-release-event", G_CALLBACK(slider_event_handler), this);
+    g_signal_connect(slider_low, "scroll-event", G_CALLBACK(scroll_event), NULL);
 
     g_signal_connect(slider_high, "change-value", G_CALLBACK(change_value), this);
     g_signal_connect(slider_high, "button-release-event", G_CALLBACK(slider_event_handler), this);
     g_signal_connect(slider_high, "focus-out-event", G_CALLBACK(slider_event_handler), this);
     g_signal_connect(slider_high, "key-release-event", G_CALLBACK(slider_event_handler), this);
+    g_signal_connect(slider_high, "scroll-event", G_CALLBACK(scroll_event), NULL);
 
     // Set the number of decimal places to display for each widget.
     gtk_scale_set_digits(GTK_SCALE(slider_low), 0);
