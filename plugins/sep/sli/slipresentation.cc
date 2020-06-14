@@ -1,6 +1,8 @@
 #include "slipresentation.hh"
 #include "../sepsource.hh"
 
+#include "../varnish/varnish-helpers.hh"
+
 #include <regex>
 #include <boost/filesystem.hpp>
 
@@ -119,8 +121,13 @@ void SliPresentation::parseSli(const std::string &sliFileName)
       {
         varnishFile = std::string(*i++);
         printf("varnish_file: %s\n", varnishFile.c_str());
-        if (fs::exists(fs::path(dirPath) /= varnishFile)) {
+        fs::path imagePath = fs::path(dirPath) /= varnishFile;
+        if (fs::exists(imagePath)) {
           printf("varnish file exists.\n");
+          // Load the varnish file as a presentationInterface
+          varnishPI = scroomInterface->loadPresentation(imagePath.string());
+        } else {
+          printf("[uh-oh] varnish file not found: %s\n", imagePath.c_str());
         }
       }
       else if (fs::exists(fs::path(dirPath) /= firstToken))
@@ -506,6 +513,15 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
   }
   cairo_paint(cr);
   cairo_restore(cr);
+
+  /*
+  TODO; Move this stuff to it's own helper function.
+  Declaring everything here makes the code super unreadable.
+  */  
+  redrawVarnishOverlay(varnishPI, vi, cr, presentationArea, zoom);
+
+  /* --> Draw The varnish overlay if it exists */
+
 }
 
 bool SliPresentation::getProperty(const std::string& name, std::string& value)
@@ -539,15 +555,21 @@ std::string SliPresentation::getTitle()
 ////////////////////////////////////////////////////////////////////////
 // PresentationBase
 
-void SliPresentation::viewAdded(ViewInterface::WeakPtr viewInterface)
+void SliPresentation::viewAdded(ViewInterface::WeakPtr vi)
 {
-  controlPanel = SliControlPanel::create(viewInterface, weakPtrToThis);
-  views.insert(viewInterface);
+  controlPanel = SliControlPanel::create(vi, weakPtrToThis);
+  views.insert(vi);
+  if (varnishPI) {
+    varnishPI->open(vi);
+  }
 }
 
 void SliPresentation::viewRemoved(ViewInterface::WeakPtr vi)
 {
   views.erase(vi);
+  if (varnishPI) {
+    varnishPI->close(vi);
+  }
 }
 
 std::set<ViewInterface::WeakPtr> SliPresentation::getViews()

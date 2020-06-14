@@ -53,6 +53,9 @@ private:
   /** (Optional) A file that specifies the varnish mask */
   std::string varnishFile;
 
+  /** (Optional) Varnish presentation interface, used for overlays */
+  PresentationInterface::Ptr varnishPI;
+
   /** Bitmap representing the indexes of the currently visible layers (little-endian) */
   boost::dynamic_bitset<> visible {0};
 
@@ -151,7 +154,7 @@ public:
   // PresentationBase
   ////////////////////////////////////////////////////////////////////////
 
-  virtual void viewAdded(ViewInterface::WeakPtr viewInterface);
+  virtual void viewAdded(ViewInterface::WeakPtr vi);
   virtual void viewRemoved(ViewInterface::WeakPtr vi);
   virtual std::set<ViewInterface::WeakPtr> getViews();
   
