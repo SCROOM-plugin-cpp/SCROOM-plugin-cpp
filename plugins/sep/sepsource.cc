@@ -205,7 +205,7 @@ void SepSource::openFiles() {
     // open CMYK channels
     for (auto c : channels) {
         channel_files[c] = TIFFOpen(this->sep_file.files[c].c_str(), "r");
-        show_warning = channel_files[c] == nullptr;
+        show_warning |= channel_files[c] == nullptr;
     }
 
     // open white ink and varnish channels
