@@ -59,6 +59,7 @@ void SliPresentation::computeHeightWidth()
  * Create a file *.sli containing for example:
  * Xresolution: 900
  * Yresolution: 600
+ * varnish_file: varnish.tif
  * cmyktif1.tif : 0 0
  * cmyktif2.tif : 0 11
  */
@@ -113,6 +114,14 @@ void SliPresentation::parseSli(const std::string &sliFileName)
       {
         Yresolution = std::stof(*i++);
         printf("yresolution: %f\n", Yresolution);
+      }
+      else if (firstToken == "varnish_file:")
+      {
+        varnishFile = std::string(*i++);
+        printf("varnish_file: %s\n", varnishFile.c_str());
+        if (fs::exists(fs::path(dirPath) /= varnishFile)) {
+          printf("varnish file exists.\n");
+        }
       }
       else if (fs::exists(fs::path(dirPath) /= firstToken))
       {

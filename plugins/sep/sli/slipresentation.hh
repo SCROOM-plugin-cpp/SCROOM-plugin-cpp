@@ -50,6 +50,9 @@ private:
   /** The number of pixels per ResolutionUnit in the ImageLength direction */
   float Yresolution;
 
+  /** (Optional) A file that specifies the varnish mask */
+  std::string varnishFile;
+
   /** Bitmap representing the indexes of the currently visible layers (little-endian) */
   boost::dynamic_bitset<> visible {0};
 
