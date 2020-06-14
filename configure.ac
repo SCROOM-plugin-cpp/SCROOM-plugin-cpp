@@ -23,7 +23,7 @@ esac
 AM_CONDITIONAL([LINUX], [test "$build_linux" = "yes"])
 AM_CONDITIONAL([WINDOWS], [test "$build_windows" = "yes"])
 
-AM_INIT_AUTOMAKE([-Wall -Werror foreign silent-rules subdir-objects])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign silent-rules subdir-objects serial-tests])
 AM_SILENT_RULES([yes])
 AM_PROG_AR
 LT_PREREQ([2.2])
