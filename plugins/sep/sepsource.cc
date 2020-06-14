@@ -204,18 +204,18 @@ void SepSource::openFiles() {
 
     // open CMYK channels
     for (auto c : channels) {
-        channel_files[c] = TIFFOpen(this->sep_file.files[c].c_str(), "r");
+        channel_files[c] = TIFFOpen(this->sep_file.files[c].string().c_str(), "r");
         show_warning |= channel_files[c] == nullptr;
     }
 
     // open white ink and varnish channels
     if (sep_file.files.count("W") == 1) {
-        this->white_ink = TIFFOpen(this->sep_file.files["W"].c_str(), "r");
+        this->white_ink = TIFFOpen(this->sep_file.files["W"].string().c_str(), "r");
         show_warning = show_warning || (this->white_ink == NULL);
     }
 
     if (sep_file.files.count("V") == 1) {
-        this->varnish = TIFFOpen(this->sep_file.files["V"].c_str(), "r");
+        this->varnish = TIFFOpen(this->sep_file.files["V"].string().c_str(), "r");
         show_warning = show_warning || (this->varnish == NULL);
     }
 
