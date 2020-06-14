@@ -2,7 +2,7 @@
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
-#include <boost/filesystem.hpp>
+
 #include <fstream>
 #include <iostream>
 
@@ -29,9 +29,8 @@ SepSource::Ptr SepSource::create() {
  * SEP file only defines the name of the file, that is in the 
  * same directory, hence we have to find the parent directory.
  */
-std::string SepSource::findPath(const std::string &sep_directory) {
-    // hardcoding forward slash is fine since windows accepts it
-    return boost::filesystem::path{sep_directory}.parent_path().string() + "/";
+boost::filesystem::path SepSource::findPath(const std::string &sep_directory) {
+    return boost::filesystem::path{sep_directory}.parent_path();
 }
 
 /**
@@ -42,7 +41,7 @@ std::string SepSource::findPath(const std::string &sep_directory) {
  */
 SepFile SepSource::parseSep(const std::string &file_name) {
     std::ifstream file(file_name);
-    const std::string parent_dir = SepSource::findPath(file_name);
+    const auto parent_dir = SepSource::findPath(file_name);
 
     SepFile sep_file;
     std::string str;
@@ -72,7 +71,7 @@ SepFile SepSource::parseSep(const std::string &file_name) {
             errors += "PANIC: One of the channels has not been provided correctly!\n";
             continue;
         }
-        sep_file.files[result[0]] = parent_dir + result[1];
+        sep_file.files[result[0]] = parent_dir / result[1];
     }
 
     file.close();  // Close the file

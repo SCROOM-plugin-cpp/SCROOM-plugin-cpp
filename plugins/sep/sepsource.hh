@@ -5,6 +5,7 @@
 
 #include <scroom/tiledbitmapinterface.hh>
 #include <scroom/transformpresentation.hh>
+#include <boost/filesystem.hpp>
 
 #include "sli/slilayer.hh"
 
@@ -12,7 +13,7 @@ struct SepFile {
     size_t width;
     size_t height;
     int white_ink_choice;
-    std::map<std::string, std::string> files;
+    std::map<std::string, boost::filesystem::path> files;
 };
 
 /**
@@ -57,7 +58,7 @@ class SepSource : public SourcePresentation {
     /**
 	 * Hepler functions to parseSep().
 	 */
-    static std::string findPath(const std::string &sep_directory);
+    static boost::filesystem::path findPath(const std::string &sep_directory);
     static bool checkFile(const SepFile content);
     /**
 	 * Parse the file into a struct.
