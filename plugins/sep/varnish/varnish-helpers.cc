@@ -9,28 +9,24 @@
 void redrawVarnishOverlay(SliLayer::Ptr layer, ViewInterface::Ptr const &vi, cairo_t *cr,
               Scroom::Utils::Rectangle<double> presentationArea, int zoom)
 {
-  int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, layer->width);
-  cairo_surface_t* varnishSurface = cairo_image_surface_create_for_data(layer->bitmap, CAIRO_FORMAT_ARGB32, 
+  int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, layer->width);
+  cairo_surface_t* varnishSurface = cairo_image_surface_create_for_data(layer->bitmap, CAIRO_FORMAT_A8, 
                                                                     layer->width, layer->height, stride);
   double pixelSize = pixelSizeFromZoom(zoom);
   GdkRectangle GTKPresArea = presentationArea.toGdkRectangle();
   cairo_save(cr);
-  /* TODO;  this line causes segfaults when rapidly panning. not sure why 
-            Could also be a timing issue?
-  */
   cairo_translate(cr, -GTKPresArea.x*pixelSize,-GTKPresArea.y*pixelSize);
   if(zoom >= 0)
   {
     cairo_scale(cr, 1<<zoom, 1<<zoom);
   } else {
-    cairo_scale(cr, 1<<-zoom, 1<<-zoom);
+    cairo_scale(cr, pow(2.0, zoom), pow(2.0, zoom));
   }
   cairo_set_source_surface(cr, varnishSurface, 0, 0);
-  cairo_paint_with_alpha(cr, 0.6); // Should be set to 1 when background is properly set
+  cairo_paint(cr);
   cairo_surface_destroy(varnishSurface);
   cairo_restore(cr);
 }
-
 
 /*
     TODO; This copies quite a lot of code from sli-helpers.
