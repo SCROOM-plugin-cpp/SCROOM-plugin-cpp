@@ -7,15 +7,15 @@ script:
   echo SHELL=$SHELL
 - pushd /tmp
 - git clone --depth 200 https://github.com/kees-jan/scroom.git
-- ( cd scroom && autoreconf -i )
-- ( mkdir scroom-build && cd scroom-build && ../scroom/configure --prefix /tmp/scroom-installed && make -k -j2 install )
+- $prefix ( cd scroom && autoreconf -i )
+- $prefix ( mkdir scroom-build && cd scroom-build && ../scroom/configure --prefix /tmp/scroom-installed && make -k -j2 install )
 - popd
-- autoreconf -i
+- $prefix autoreconf -i
 - mkdir cpp-plugins-build
 - cd cpp-plugins-build
-- ../configure CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"
-- make -k -j2 check
-## - make -k -j2 distcheck DISTCHECK_CONFIGURE_FLAGS='CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"'
+- $prefix ../configure CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"
+- $prefix make -k -j2 check
+## - $prefix make -k -j2 distcheck DISTCHECK_CONFIGURE_FLAGS='CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"'
 os:
 - linux
 - windows
