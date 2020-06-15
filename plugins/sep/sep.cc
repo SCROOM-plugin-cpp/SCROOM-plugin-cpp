@@ -59,7 +59,12 @@ void Sep::open(const std::string &fileName, ScroomInterface::Ptr const &scroomIn
     if (boost::filesystem::path(fileName).extension() == ".sep") {
         SepPresentation::Ptr presentation = SepPresentation::create(scroomInterface);
         presentation->load(fileName);
-        scroomInterface->showPresentation(presentation);
+
+        TransformationData::Ptr data = presentation->getTransform();
+        if (data) {
+            PresentationInterface::Ptr result = TransformPresentation::create(presentation, data);
+            scroomInterface->showPresentation(result);
+        }
     } else {
         printf("A SLI file will be opened\n");
         SliPresentation::Ptr presentation = SliPresentation::create(scroomInterface);
