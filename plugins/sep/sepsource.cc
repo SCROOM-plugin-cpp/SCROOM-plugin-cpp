@@ -35,17 +35,20 @@ boost::filesystem::path SepSource::findParentDir(const std::string &file_path) {
  */
 SepFile SepSource::parseSep(const std::string &file_name) {
     std::ifstream file(file_name);
-    std::string str;
+    std::string line;
 
     SepFile sep_file;
     std::string errors = "";
     const auto parent_dir = SepSource::findParentDir(file_name);
 
+    // Read the first two lines of the file seperately, since they follow
+    // a slightly different format (i.e. don't have a colon) and are to be
+    // interpreted as integers defining the width and height of the image.
     try {
-        std::getline(file, str);
-        sep_file.width = std::stoul(str);
-        std::getline(file, str);
-        sep_file.height = std::stoul(str);
+        std::getline(file, line);
+        sep_file.width = std::stoul(line);
+        std::getline(file, line);
+        sep_file.height = std::stoul(line);
     } catch (const std::exception &e) {
         sep_file.height = 0;  // to trigger the error case in SepPresention::load()
         errors += "PANIC: Width or height have not been provided correctly!\n";
@@ -56,9 +59,9 @@ SepFile SepSource::parseSep(const std::string &file_name) {
     sep_file.files = {{"C", ""}, {"M", ""}, {"Y", ""}, {"K", ""}};
 
     // read lines of the file
-    while (std::getline(file, str)) {
+    while (std::getline(file, line)) {
         std::vector<std::string> result;
-        boost::split(result, str, boost::is_any_of(":"));
+        boost::split(result, line, boost::is_any_of(":"));
         boost::algorithm::trim(result[0]);
         boost::algorithm::trim(result[1]);
 
@@ -71,23 +74,26 @@ SepFile SepSource::parseSep(const std::string &file_name) {
         sep_file.files[result[0]] = parent_dir / result[1];
     }
 
-    file.close();  // Close the file
+    // We no longer need to read from the file, so we
+    // can safely close it.
+    file.close();
 
-    // get user's choice for white ink effect
+    // Ask the user how to interpret the white ink values
+    // if a white ink channel is given.
     sep_file.white_ink_choice = 0;
     if (sep_file.files.count("W") == 1) {
-        auto white_choice = gtk_dialog_new_with_buttons("White Ink Effect",
-                                                        nullptr,
-                                                        GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                        "Subtractive",
-                                                        GTK_RESPONSE_ACCEPT,
-                                                        "Multiplicative",
-                                                        GTK_RESPONSE_REJECT,
-                                                        NULL);
+        auto choice_dialog = gtk_dialog_new_with_buttons(
+            "White Ink Effect",  // i reverted this back because the one you wrote was too long for the window
+            nullptr,
+            GTK_DIALOG_DESTROY_WITH_PARENT,
+            "Subtractive", GTK_RESPONSE_ACCEPT,
+            "Multiplicative", GTK_RESPONSE_REJECT,
+            nullptr);
 
-        sep_file.white_ink_choice = gtk_dialog_run(GTK_DIALOG(white_choice)) == GTK_RESPONSE_ACCEPT ? 1 : 2;
+        auto choice = gtk_dialog_run(GTK_DIALOG(choice_dialog));
+        sep_file.white_ink_choice = choice == GTK_RESPONSE_ACCEPT ? 1 : 2;
 
-        gtk_widget_destroy(white_choice);
+        gtk_widget_destroy(choice_dialog);
     }
 
     // show errors if there are any
@@ -103,17 +109,20 @@ void SepSource::getForOneChannel(struct tiff *channel, uint16_t &unit, float &x_
     if (TIFFGetField(channel, TIFFTAG_XRESOLUTION, &x_resolution) &&
         TIFFGetField(channel, TIFFTAG_YRESOLUTION, &y_resolution) &&
         TIFFGetField(channel, TIFFTAG_RESOLUTIONUNIT, &unit)) {
-        if (unit == RESUNIT_NONE)
+        if (unit == RESUNIT_NONE) {
             return;
+        }
 
-        // Fix aspect ratio only
+        // Reduce the x and y resolution so they are both at most 1 and
+        // leave the unit unchanged.
         float base = std::max(x_resolution, y_resolution);
         x_resolution /= base;
         y_resolution /= base;
         return;
     }
 
-    // Defaults according to TIFF spec
+    // No resolution was provided in the input file, so set the to their
+    // default values according to the TIFF specification.
     x_resolution = 1.0;
     y_resolution = 1.0;
     unit = RESUNIT_NONE;
@@ -128,15 +137,16 @@ bool SepSource::getResolution(uint16_t &unit, float &x_resolution, float &y_reso
     this->getForOneChannel(this->channel_files[channels[0]], unit, x_resolution, y_resolution);
 
     for (auto channel : {this->channel_files[channels[1]], this->channel_files[channels[2]], this->channel_files[channels[3]]}) {
-        if (channel == nullptr)
+        if (channel == nullptr) {
             continue;
+        }
 
         this->getForOneChannel(channel, channel_res_unit, channel_res_x, channel_res_y);
         // check if the same as first values
         // if not, set status flag and continue
-        warning = (channel_res_x != x_resolution) ||
-                  (channel_res_y != y_resolution) ||
-                  (channel_res_unit != unit);
+        warning |= (channel_res_x != x_resolution) ||
+                   (channel_res_y != y_resolution) ||
+                   (channel_res_unit != unit);
     }
 
     return !warning;
@@ -245,7 +255,7 @@ void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr) {
 
     for (size_t i = 0; i < size; i++) {
         for (size_t j = 0; j < nr_channels; j++) {
-            out[4 * i + j] = applyWhiteInk(w_line[i], lines[j][i], this->sep_file.white_ink_choice);
+            out[4 * i + j] = SepSource::applyWhiteInk(w_line[i], lines[j][i], this->sep_file.white_ink_choice);
         }
     }
 }
@@ -317,7 +327,6 @@ void SepSource::closeIfNeeded(struct tiff *&file) {
 void SepSource::done() {
     // Close all tiff files and reset pointers
     for (auto &x : this->channel_files) {
-        std::cout << x.second << std::endl;
-        closeIfNeeded(x.second);
+        SepSource::closeIfNeeded(x.second);
     }
 }
