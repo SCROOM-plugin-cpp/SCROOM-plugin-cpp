@@ -1,23 +1,26 @@
-#include "gtk/gtk.hh"
+#ifndef _varnish_HH
+#define _varnish_HH
+#include <gtk/gtk.h>
+#include "../sli/slilayer.hh"
 
 class Varnish
 {
 public:
-  typedef boost::shared_ptr<SliLayer> Ptr;
+  typedef boost::shared_ptr<Varnish> Ptr;
 
 private:
-  Varnish(uint8_t* bitmap, int width, int height, ViewInterface::WeakPtr view);
-  GtkWidget * varnishToggle;
+  Varnish(SliLayer::Ptr layer);
+  GtkWidget *varnishToggle;
   void registerButton(ViewInterface::WeakPtr view);
-
-  int height;
-  int width;
-  uint8_t* bitmap;
+  SliLayer::Ptr layer;
 
 public:
-  static Ptr create(uint8_t* bitmap, int width, int height, ViewInterface::WeakPtr view);
+  static Ptr create(SliLayer::Ptr layer);
+  void setView(ViewInterface::WeakPtr view);
 
   ~Varnish();
   void drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
               Scroom::Utils::Rectangle<double> presentationArea, int zoom);
 };
+
+#endif

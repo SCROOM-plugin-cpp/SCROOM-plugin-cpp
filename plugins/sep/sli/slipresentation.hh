@@ -4,13 +4,13 @@
 
 #include <scroom/presentationinterface.hh>
 #include <scroom/scroominterface.hh>
-#include <scroom/threadpool.hh>
 #include <scroom/transformpresentation.hh>
-#include <boost/dynamic_bitset.hpp>
 
 #include "slilayer.hh"
 #include "slicontrolpanel.hh"
 #include "sli-helpers.hh"
+#include "slisource.hh"
+#include "../varnish/varnish.hh"
 
 
 class SliPresentation : public PresentationBase,
@@ -20,29 +20,31 @@ class SliPresentation : public PresentationBase,
 public:
   typedef boost::shared_ptr<SliPresentation> Ptr;
   typedef boost::weak_ptr<SliPresentation> WeakPtr;
+
+  /** Contains information on the aspect ratio and is used to scale the presentation accordingly */
   TransformationData::Ptr transformationData;
 
 private:
+  /** The properties defined for this presentation*/
   std::map<std::string, std::string> properties;
-  std::set<ViewInterface::WeakPtr> views;
 
-  /** The SliLayers that are part of the presentation */
-  std::vector<SliLayer::Ptr> layers;
+  /** The views associated with this presentation */
+  std::set<ViewInterface::WeakPtr> views;
 
   /** Reference to the ScroomInterface, needed for showing presentation */
   ScroomInterface::Ptr scroomInterface;
 
   /** Reference to the associated SliControlPanel */
   SliControlPanel::Ptr controlPanel;
+  
+  /** Contains and manages all the bitmap data of this presentation */
+  SliSource::Ptr source;
+
+  /** Callback to the own triggerRedraw function. Is passed to other classes to allow them to redraw. */
+  boost::function<void()> triggerRedrawFunc;
 
   /** Weak pointer to this. Needed for passing a reference to SliControlPanel */
   static SliPresentationInterface::WeakPtr weakPtrToThis;
-
-  /** Width of all layers combined */
-  int total_width = 0;
-
-  /** Height of all layers combined */
-  int total_height = 0;
 
   /** The number of pixels per ResolutionUnit in the ImageWidth direction */
   float Xresolution;
@@ -50,50 +52,12 @@ private:
   /** The number of pixels per ResolutionUnit in the ImageLength direction */
   float Yresolution;
 
-  /** (Optional) A file that specifies the varnish mask */
-  std::string varnishFile;
-
-  /** (Optional) Varnish presentation interface, used for overlays */
-  SliLayer::Ptr varnishLayer;
-
-  /** Bitmap representing the indexes of the currently visible layers (little-endian) */
-  boost::dynamic_bitset<> visible {0};
-
-  /** Bitmask representing the indexes of the layers that need to be toggled (little-endian) */
-  boost::dynamic_bitset<> toggled {0};
-
-  /** 
-   * Contains the cached bitmaps for the different zoom levels. 
-   * The zoom level is the key, the pointer to the bitmap the value.
-   */
-  std::map<int, SurfaceWrapper::Ptr> rgbCache;
-
-  /** The thread queue into which caching jobs are enqueued */
-  ThreadPool::Queue::Ptr threadQueue;
-
-  /** Must be acquired by a thread before writing to the cached surfaces */
-  boost::mutex mtx;
+  /** (Optional) the object used to draw the varnish overlay */
+  Varnish::Ptr varnish;
 
 private:
   /** Constructor */
   SliPresentation(ScroomInterface::Ptr scroomInterface);
-
-  /**
-   * Computes the complete RGB bitmap from the CMYK bitmap and caches the result
-   */
-  virtual void computeRgb();
-
-  /**
-   * Reduces the RGB bitmap and caches the result. 
-   * 2x2 pixels of the zoom+1 bitmap are combined into one pixel of the zoom bitmap
-   */
-  virtual void reduceRgb(int zoom);
-
-  /** 
-   * Checks if the bitmap required for displaying the zoom level is present. If not, it is computed.
-   * Is potentially very computationally expensive, hence run outside of the UI thread.
-   */
-  virtual void fillCache(int zoom);
 
 public:
   /** Destructor */
@@ -114,16 +78,8 @@ public:
    */
   virtual void parseSli(const std::string &fileName);
 
-  /** Compute the overall width and height of the SLi file (over all layers) */
-  virtual void computeHeightWidth();
-
   /** Getter for the layers that the presentation consists of */
-  std::vector<SliLayer::Ptr>& getLayers() {return layers;};
-
-  /** Clear the last modified area of the bottom surface */
-  virtual void clearBottomSurface();
-
-  TransformationData::Ptr getTransformationData() const;
+  std::vector<SliLayer::Ptr>& getLayers() {return source->layers;};
 
   ////////////////////////////////////////////////////////////////////////
   // SliPresentationInterface

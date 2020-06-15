@@ -11,8 +11,5 @@
 
 #include "../sli/slilayer.hh"
 
-void redrawVarnishOverlay(SliLayer::Ptr layer, ViewInterface::Ptr const &vi, cairo_t *cr,
-                              Scroom::Utils::Rectangle<double> presentationArea, int zoom);
-
 void fillVarnishOverlay(SliLayer::Ptr layer);
 #endif

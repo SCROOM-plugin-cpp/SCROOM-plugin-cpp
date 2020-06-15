@@ -1,48 +1,57 @@
 #include "varnish.hh"
 #include <scroom/viewinterface.hh>
+#include <scroom/cairo-helpers.hh>
 
-Varnish::Varnish(uint8_t* bitmap, int width, int height, ViewInterface::WeakPtr view)
+Varnish::Varnish(SliLayer::Ptr layer)
 {
-  this->bitmap = bitmap;
-  this->width = width;
-  this->heigth = height;
-  registerButton(view);
+  this->layer = layer;
 }
 
-Varnish::Ptr Varnish::create(uint8_t* bitmap, int width, int height, ViewInterface::WeakPtr view)
+Varnish::Ptr Varnish::create(SliLayer::Ptr layer)
 {
-  Varnish::Ptr result = Ptr(new Varnish(bitmap, width, height, view));
+  Varnish::Ptr result = Ptr(new Varnish(layer));
   return result;
-
 }
 
 Varnish::~Varnish()
 {
-  free(bitmap);
+  free(layer->bitmap);
 }
 
-Varnish::registerButton(ViewInterface::WeakPtr viewWeak)
+void Varnish::setView(ViewInterface::WeakPtr viewWeak)
 {
-  GTKWidget *varnishToggle = gtk_toggle_button_new_with_label("Varnish");
+  registerButton(viewWeak);
+}
+
+static void varnish_toggled(GtkToggleButton* button, gpointer data)
+{
+  // Force a redraw when varnish is toggled.
+  static_cast<ViewInterface*>(data)->invalidate();
+}
+
+void Varnish::registerButton(ViewInterface::WeakPtr viewWeak)
+{
+  varnishToggle = gtk_toggle_button_new_with_label("Varnish");
+  ViewInterface::Ptr view(viewWeak);
+  g_signal_connect(static_cast<gpointer>(varnishToggle), "toggled", G_CALLBACK(varnish_toggled), view.get());
 
   // Add everything to the sidebar
-  ViewInterface::Ptr view(viewWeak);
   gdk_threads_enter();
   view->addSideWidget("Varnish", varnishToggle);
   gdk_threads_leave();
 }
 
-Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
+void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
               Scroom::Utils::Rectangle<double> presentationArea, int zoom)
 {
-  if (!gtk_toggle_button_get_mode(varnishToggle))
+  if (!GTK_TOGGLE_BUTTON(varnishToggle)->active)
   {
     // if the varnish toggle button is disabled, return without drawing anything.
     return;
   }
-  int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, width);
-  cairo_surface_t* varnishSurface = cairo_image_surface_create_for_data(bitmap, CAIRO_FORMAT_A8, 
-                                                                    width, height, stride);
+  int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, layer->width);
+  cairo_surface_t* varnishSurface = cairo_image_surface_create_for_data(layer->bitmap, CAIRO_FORMAT_A8, 
+                                                                    layer->width, layer->height, stride);
   double pixelSize = pixelSizeFromZoom(zoom);
   GdkRectangle GTKPresArea = presentationArea.toGdkRectangle();
   cairo_save(cr);

@@ -6,35 +6,6 @@
   if (1 != TIFFGetField(file, field, ##__VA_ARGS__)) \
     throw std::invalid_argument("Field not present in tiff file: " #field)
 
-void redrawVarnishOverlay(SliLayer::Ptr layer, ViewInterface::Ptr const &vi, cairo_t *cr,
-              Scroom::Utils::Rectangle<double> presentationArea, int zoom)
-{
-  int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, layer->width);
-  cairo_surface_t* varnishSurface = cairo_image_surface_create_for_data(layer->bitmap, CAIRO_FORMAT_A8, 
-                                                                    layer->width, layer->height, stride);
-  double pixelSize = pixelSizeFromZoom(zoom);
-  GdkRectangle GTKPresArea = presentationArea.toGdkRectangle();
-  cairo_save(cr);
-  cairo_translate(cr, -GTKPresArea.x*pixelSize,-GTKPresArea.y*pixelSize);
-  if(zoom >= 0)
-  {
-    cairo_scale(cr, 1<<zoom, 1<<zoom);
-  } else {
-    cairo_scale(cr, pow(2.0, zoom), pow(2.0, zoom));
-  }
-  cairo_set_source_surface(cr, varnishSurface, 0, 0);
-  cairo_paint(cr);
-  cairo_surface_destroy(varnishSurface);
-  cairo_restore(cr);
-}
-
-/*
-    TODO; This copies quite a lot of code from sli-helpers.
-    In theory, we only need to change 3 things here:
-        * allowedSpp
-        * allowedBps
-        * How bits are modified before they are saved
-*/
 void fillVarnishOverlay(SliLayer::Ptr layer)
 {
   // We only support simple K Tiffs with 1 SPP and 8 BPS
