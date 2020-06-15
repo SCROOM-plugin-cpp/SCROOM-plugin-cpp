@@ -7,8 +7,12 @@ script:
   echo SHELL=$SHELL
 - pushd /tmp
 - git clone --depth 200 https://github.com/kees-jan/scroom.git
-- $prefix ( cd scroom && autoreconf -i )
-- $prefix ( mkdir scroom-build && cd scroom-build && ../scroom/configure --prefix /tmp/scroom-installed && make -k -j2 install )
+- cd scroom
+- $prefix autoreconf -i
+- mkdir scroom-build
+- cd scroom-build
+- $prefix ../scroom/configure --prefix /tmp/scroom-installed
+- $prefix make -k -j2 install
 - popd
 - $prefix autoreconf -i
 - mkdir cpp-plugins-build
