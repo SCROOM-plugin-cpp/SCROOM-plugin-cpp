@@ -41,6 +41,8 @@ plugins_sep_src_libspsep_la_SOURCES = \
 	plugins/sep/sepsource.hh \
 	plugins/sep/sli/slipresentation.cc \
 	plugins/sep/sli/slipresentation.hh \
+	plugins/sep/sli/slisource.cc \
+	plugins/sep/sli/slisource.hh \
 	plugins/sep/sli/slicontrolpanel.cc \
 	plugins/sep/sli/slicontrolpanel.hh \
 	plugins/sep/sli/slilayer.cc \
