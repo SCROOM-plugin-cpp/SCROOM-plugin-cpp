@@ -218,12 +218,12 @@ void SepSource::openFiles() {
     // open white ink and varnish channels
     if (sep_file.files.count("W") == 1) {
         this->white_ink = TIFFOpen(this->sep_file.files["W"].string().c_str(), "r");
-        show_warning |= (this->white_ink == NULL);
+        show_warning |= (this->white_ink == nullptr);
     }
 
     if (sep_file.files.count("V") == 1) {
         this->varnish = TIFFOpen(this->sep_file.files["V"].string().c_str(), "r");
-        show_warning |= (this->varnish == NULL);
+        show_warning |= (this->varnish == nullptr);
     }
 
     if (show_warning) {
