@@ -43,7 +43,7 @@ addons:
     - graphviz
 git:
   depth: 200
-  before_install:
+before_install:
 - |-
     case $TRAVIS_OS_NAME in
       windows)
