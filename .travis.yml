@@ -5,19 +5,35 @@ script:
   echo TRAVIS_BRANCH=${TRAVIS_BRANCH} &&
   echo TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST} &&
   echo SHELL=$SHELL
-- pushd /tmp
+- pushd ..
 - git clone --depth 200 https://github.com/kees-jan/scroom.git
 - cd scroom
 - $prefix autoreconf -i
 - mkdir scroom-build
 - cd scroom-build
-- $prefix ../scroom/configure --prefix /tmp/scroom-installed
+- |-
+    case $TRAVIS_OS_NAME in
+      windows)
+        $prefix ../scroom/configure --prefix /c/scroom-installed
+        ;;
+      *)
+        ../scroom/configure --prefix /tmp/scroom-installed
+        ;;
+    esac
 - $prefix make -k -j2 install
 - popd
 - $prefix autoreconf -i
 - mkdir cpp-plugins-build
 - cd cpp-plugins-build
-- $prefix ../configure CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"
+- |-
+    case $TRAVIS_OS_NAME in
+      windows)
+        $prefix ../configure CPPFLAGS=-I/c/scroom-installed/include/ LDFLAGS="-L/c/scroom-installed/lib -Wl,-z,defs"
+        ;;
+      *)
+        ../configure CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"
+        ;;
+    esac
 - $prefix make -k -j2 check
 ## - $prefix make -k -j2 distcheck DISTCHECK_CONFIGURE_FLAGS='CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"'
 os:
