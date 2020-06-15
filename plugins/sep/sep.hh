@@ -7,27 +7,27 @@
 class Sep : public PluginInformationInterface, public OpenInterface, virtual public Scroom::Utils::Base
 {
 public:
-	typedef boost::shared_ptr<Sep> Ptr;
+    typedef boost::shared_ptr<Sep> Ptr;
 
 private:
-	Sep();
+    Sep();
 
 public:
-	static Ptr create();
+    static Ptr create();
 
 public:
-	virtual ~Sep();
+    virtual ~Sep();
 
-	////////////////////////////////////////////////////////////////////////
-	// PluginInformationInterface
+    ////////////////////////////////////////////////////////////////////////
+    // PluginInformationInterface
 
-	virtual std::string getPluginName();
-	virtual std::string getPluginVersion();
-	virtual void registerCapabilities(ScroomPluginInterface::Ptr host);
+    virtual std::string getPluginName();
+    virtual std::string getPluginVersion();
+    virtual void registerCapabilities(ScroomPluginInterface::Ptr host);
 
-	////////////////////////////////////////////////////////////////////////
-	// OpenPresentationInterface
+    ////////////////////////////////////////////////////////////////////////
+    // OpenPresentationInterface
 
-	virtual std::list<GtkFileFilter *> getFilters();
-	virtual void open(const std::string &fileName, ScroomInterface::Ptr const &scroomInterface);
+    virtual std::list<GtkFileFilter *> getFilters();
+    virtual void open(const std::string &fileName, ScroomInterface::Ptr const &scroomInterface);
 };
