@@ -29,7 +29,7 @@ script:
 - |-
     case $TRAVIS_OS_NAME in
       windows)
-        $prefix ../configure CPPFLAGS=-I/c/scroom-installed/include/ LDFLAGS="-L/c/scroom-installed/lib -Wl,-z,defs"
+        $prefix ../configure CPPFLAGS=-I/c/scroom-installed/include/ LDFLAGS="-L/c/scroom-installed/lib"
         ;;
       *)
         ../configure CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"
