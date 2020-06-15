@@ -57,6 +57,7 @@ std::list<GtkFileFilter *> Sep::getFilters() {
 
 void Sep::open(const std::string &fileName, ScroomInterface::Ptr const &scroomInterface) {
     if (boost::filesystem::path(fileName).extension() == ".sep") {
+        printf("A SEP file will be opened\n");
         SepPresentation::Ptr presentation = SepPresentation::create(scroomInterface);
         presentation->load(fileName);
         scroomInterface->showPresentation(presentation);

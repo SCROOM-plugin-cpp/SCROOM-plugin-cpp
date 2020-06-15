@@ -2,20 +2,18 @@
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
-
 #include <fstream>
 #include <iostream>
 
 int ShowWarning(std::string message, GtkMessageType type_gtk = GTK_MESSAGE_WARNING) {
-    // We don't have a pointer to the parent window, so nullptr
-    // we'll just supply nullptr..
+    // We don't have a pointer to the parent window, so nullptr should suffice
     GtkWidget *dialog = gtk_message_dialog_new(
         nullptr, GTK_DIALOG_DESTROY_WITH_PARENT,
         type_gtk, GTK_BUTTONS_CLOSE, message.c_str());
 
-    int k = gtk_dialog_run(GTK_DIALOG(dialog));
+    int signal = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
-    return k;
+    return signal;  // return the received signal
 }
 
 SepSource::SepSource() {}
@@ -25,27 +23,23 @@ SepSource::Ptr SepSource::create() {
     return Ptr(new SepSource());
 }
 
-/**
- * SEP file only defines the name of the file, that is in the 
- * same directory, hence we have to find the parent directory.
- */
-boost::filesystem::path SepSource::findPath(const std::string &sep_directory) {
-    return boost::filesystem::path{sep_directory}.parent_path();
+boost::filesystem::path SepSource::findParentDir(const std::string &file_path) {
+    return boost::filesystem::path{file_path}.parent_path();
 }
 
 /**
  * Parses the content of a given SEP file.
  * When the width or height are not properly specified or one of the channel names
- * is empty or one of the channel lines does not follow the specification, an
+ * is empty or one of the channel lines does not follow the specification, a
  * warning dialog is shown.
  */
 SepFile SepSource::parseSep(const std::string &file_name) {
     std::ifstream file(file_name);
-    const auto parent_dir = SepSource::findPath(file_name);
+    std::string str;
 
     SepFile sep_file;
-    std::string str;
     std::string errors = "";
+    const auto parent_dir = SepSource::findParentDir(file_name);
 
     try {
         std::getline(file, str);
@@ -53,13 +47,15 @@ SepFile SepSource::parseSep(const std::string &file_name) {
         std::getline(file, str);
         sep_file.height = std::stoul(str);
     } catch (const std::exception &e) {
+        sep_file.height = 0;  // to trigger the error case in SepPresention::load()
         errors += "PANIC: Width or height have not been provided correctly!\n";
     }
 
-    // Make sure the required channels exist (albeit with empty paths). We
-    // can then later check for this value as an error value.
+    // Make sure the required channels exist (albeit with empty paths).
+    // Channels with empty paths are ignored during loading.
     sep_file.files = {{"C", ""}, {"M", ""}, {"Y", ""}, {"K", ""}};
 
+    // read lines of the file
     while (std::getline(file, str)) {
         std::vector<std::string> result;
         boost::split(result, str, boost::is_any_of(":"));
@@ -67,16 +63,17 @@ SepFile SepSource::parseSep(const std::string &file_name) {
         boost::algorithm::trim(result[1]);
 
         if (result.size() != 2 || result[1].empty() || (result[0].empty() && !result[1].empty())) {
-            // Remember the warning and skip this line
+            // Remember the warning and skip this line / channel
             errors += "PANIC: One of the channels has not been provided correctly!\n";
             continue;
         }
+        // store the full file path to each file
         sep_file.files[result[0]] = parent_dir / result[1];
     }
 
     file.close();  // Close the file
 
-    // get user choice for white ink
+    // get user's choice for white ink effect
     sep_file.white_ink_choice = 0;
     if (sep_file.files.count("W") == 1) {
         auto white_choice = gtk_dialog_new_with_buttons("White Ink Effect",
@@ -93,6 +90,7 @@ SepFile SepSource::parseSep(const std::string &file_name) {
         gtk_widget_destroy(white_choice);
     }
 
+    // show errors if there are any
     if (!errors.empty()) {
         std::cerr << errors;
         ShowWarning(errors);
@@ -165,7 +163,6 @@ void SepSource::fillSliLayer(SliLayer::Ptr sli) {
 
     sli->height = values.height;
     sli->width = values.width;
-
     sli->spp = 4;
     sli->bps = 8;
 
@@ -211,21 +208,21 @@ void SepSource::openFiles() {
     // open white ink and varnish channels
     if (sep_file.files.count("W") == 1) {
         this->white_ink = TIFFOpen(this->sep_file.files["W"].string().c_str(), "r");
-        show_warning = show_warning || (this->white_ink == NULL);
+        show_warning |= (this->white_ink == NULL);
     }
 
     if (sep_file.files.count("V") == 1) {
         this->varnish = TIFFOpen(this->sep_file.files["V"].string().c_str(), "r");
-        show_warning = show_warning || (this->varnish == NULL);
+        show_warning |= (this->varnish == NULL);
     }
 
     if (show_warning) {
-        printf("PANIC: One of the provided files is not valid, or could not be opened!");
+        printf("PANIC: One of the provided files is not valid, or could not be opened!\n");
         ShowWarning("PANIC: One of the provided files is not valid, or could not be opened!");
     }
 }
 
-int TIFFReadScanline_(tiff *file, void *buf, uint32 row, uint16 sample = 0) {
+int SepSource::TIFFReadScanline_(tiff *file, void *buf, uint32 row, uint16 sample) {
     return file == nullptr ? -1 : TIFFReadScanline(file, buf, row, sample);
 }
 
