@@ -10,7 +10,10 @@ public:
 
 private:
   Varnish(SliLayer::Ptr layer);
-  GtkWidget *varnishToggle;
+  GtkWidget *radio_enabled;
+  GtkWidget *radio_disabled;
+  GtkWidget *radio_inverted;
+  ViewInterface::WeakPtr viewWeak;
   void registerButton(ViewInterface::WeakPtr view);
   void invertSurface();
   SliLayer::Ptr layer;
@@ -20,6 +23,8 @@ private:
 public:
   static Ptr create(SliLayer::Ptr layer);
   void setView(ViewInterface::WeakPtr view);
+  void fixVarnishState(); //TODO; This probably shouldn't be public?
+  void forceRedraw();
 
   ~Varnish();
   void drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,

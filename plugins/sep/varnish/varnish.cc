@@ -10,6 +10,7 @@ Varnish::Varnish(SliLayer::Ptr layer)
   int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, layer->width);
   surface = cairo_image_surface_create_for_data(layer->bitmap, CAIRO_FORMAT_A8, 
                                                                     layer->width, layer->height, stride);
+  // Map is read inverted by cairo, so we invert it here once                                                                  
   this->invertSurface();
 }
 
@@ -28,23 +29,67 @@ Varnish::~Varnish()
 void Varnish::setView(ViewInterface::WeakPtr viewWeak)
 {
   registerButton(viewWeak);
+  this->viewWeak = viewWeak;
 }
 
-static void varnish_toggled(GtkToggleButton* button, gpointer data)
+static void varnish_toggled(GtkToggleButton* button, gpointer varnishP)
 {
+  // Have a member function sort out the varnishState
+  static_cast<Varnish*>(varnishP)->fixVarnishState();
   // Force a redraw when varnish is toggled.
-  static_cast<ViewInterface*>(data)->invalidate();
+  static_cast<Varnish*>(varnishP)->forceRedraw();
+}
+
+void Varnish::forceRedraw()
+{
+  ViewInterface::Ptr view(this->viewWeak);
+  view->invalidate();
+}
+
+void Varnish::fixVarnishState()
+{
+  if (inverted)
+  {
+    // If we're currently inverted and moving to normal,
+    // We need to invert back
+    if (GTK_TOGGLE_BUTTON(radio_enabled)->active)
+    {
+      this->invertSurface();
+      inverted = false;
+    }
+  } else
+  {
+    // If we're currently normal and moving to normal,
+    // We need to invert back
+    if (GTK_TOGGLE_BUTTON(radio_inverted)->active)
+    {
+      this->invertSurface();
+      inverted = true;
+    }
+  }
 }
 
 void Varnish::registerButton(ViewInterface::WeakPtr viewWeak)
 {
-  varnishToggle = gtk_toggle_button_new_with_label("Varnish");
+  GtkWidget *box = gtk_vbox_new(TRUE, 0);
+  radio_disabled = gtk_radio_button_new_with_label(NULL, "Disabled");
+  radio_enabled = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radio_disabled), "Enabled");
+  radio_inverted = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radio_disabled), "Inverted");
   ViewInterface::Ptr view(viewWeak);
-  g_signal_connect(static_cast<gpointer>(varnishToggle), "toggled", G_CALLBACK(varnish_toggled), view.get());
+  // trigger a redraw when disabled is checked/unchecked
+  g_signal_connect(static_cast<gpointer>(radio_disabled), "toggled", G_CALLBACK(varnish_toggled), this);
+  g_signal_connect(static_cast<gpointer>(radio_enabled), "toggled", G_CALLBACK(varnish_toggled), this);
+  g_signal_connect(static_cast<gpointer>(radio_disabled), "toggled", G_CALLBACK(varnish_toggled), this);
 
-  // Add everything to the sidebar
+  // Add all buttons into 1 box
+  gtk_box_pack_start_defaults(GTK_BOX(box), radio_disabled);
+  gtk_box_pack_start_defaults(GTK_BOX(box), radio_enabled);
+  gtk_box_pack_start_defaults(GTK_BOX(box), radio_inverted);
+  gtk_widget_show_all(box);
+
+  // Add the box to the sidebar
   gdk_threads_enter();
-  view->addSideWidget("Varnish", varnishToggle);
+  view->addSideWidget("Varnish", box);
   gdk_threads_leave();
 }
 
@@ -65,9 +110,9 @@ void Varnish::invertSurface()
 void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
               Scroom::Utils::Rectangle<double> presentationArea, int zoom)
 {
-  if (!GTK_TOGGLE_BUTTON(varnishToggle)->active)
+  if (GTK_TOGGLE_BUTTON(radio_disabled)->active)
   {
-    // if the varnish toggle button is disabled, return without drawing anything.
+    // if the varnish is disabled, return without drawing anything.
     return;
   }
   double pixelSize = pixelSizeFromZoom(zoom);
@@ -85,17 +130,6 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
 
   /** Overlay color: 20FC8F */
   cairo_set_source_rgba(cr, 32.0/255.0, 252.0/255.0, 143.0/255.0, 1.0);
-  if (inverted)
-  {
-
-  } else
-  {
-    // TODO; Add a sub cairo_t to add:
-    //    * Color
-    //    * Crop to canvas size
-   // cairo_set_operator(cr, CAIRO_OPERATOR_DEST_ATOP);
-  }
-  
   cairo_mask_surface(cr, surface, 0, 0);
   cairo_restore(cr);
 }
