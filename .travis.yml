@@ -37,7 +37,7 @@ script:
     esac
 - $prefix make -k -j2 check
 - echo "hi" > test.txt
-- $prefix curl --data-binary @"./test.txt" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/RoanH/SCROOM-plugin-cpp/releases/v0.0/assets?name=$(basename ./test.txt)"
+- '$prefix curl --data-binary @"./test.txt" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/RoanH/SCROOM-plugin-cpp/releases/v0.0/assets?name=$(basename ./test.txt)"'
 ## - $prefix make -k -j2 distcheck DISTCHECK_CONFIGURE_FLAGS='CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"'
 os:
 - linux
