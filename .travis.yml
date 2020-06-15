@@ -9,6 +9,7 @@ script:
 - git clone --depth 200 https://github.com/kees-jan/scroom.git
 - cd scroom
 - $prefix autoreconf -i
+- cd ..
 - mkdir scroom-build
 - cd scroom-build
 - |-
