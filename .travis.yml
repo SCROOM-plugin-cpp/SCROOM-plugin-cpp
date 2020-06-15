@@ -15,7 +15,7 @@ script:
 - cd cpp-plugins-build
 - ../configure CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"
 - make -k -j2 check
-#- make -k -j2 distcheck DISTCHECK_CONFIGURE_FLAGS='CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"'
+## - make -k -j2 distcheck DISTCHECK_CONFIGURE_FLAGS='CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"'
 os:
 - linux
 - windows
