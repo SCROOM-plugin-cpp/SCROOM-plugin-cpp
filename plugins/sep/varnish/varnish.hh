@@ -13,6 +13,7 @@ private:
   GtkWidget *varnishToggle;
   void registerButton(ViewInterface::WeakPtr view);
   SliLayer::Ptr layer;
+  bool inverted;
 
 public:
   static Ptr create(SliLayer::Ptr layer);

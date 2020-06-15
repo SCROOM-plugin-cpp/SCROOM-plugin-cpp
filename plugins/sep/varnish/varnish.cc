@@ -5,6 +5,7 @@
 Varnish::Varnish(SliLayer::Ptr layer)
 {
   this->layer = layer;
+  inverted = false;
 }
 
 Varnish::Ptr Varnish::create(SliLayer::Ptr layer)
@@ -55,6 +56,8 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
   double pixelSize = pixelSizeFromZoom(zoom);
   GdkRectangle GTKPresArea = presentationArea.toGdkRectangle();
   cairo_save(cr);
+  // Disable blurring/anti-ailiasing
+  cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
   cairo_translate(cr, -GTKPresArea.x*pixelSize,-GTKPresArea.y*pixelSize);
   if(zoom >= 0)
   {
@@ -62,8 +65,21 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
   } else {
     cairo_scale(cr, pow(2.0, zoom), pow(2.0, zoom));
   }
-  cairo_set_source_surface(cr, varnishSurface, 0, 0);
-  cairo_paint(cr);
+
+  /** Overlay color: 20FC8F */
+  cairo_set_source_rgb(cr, 32.0/255.0, 252.0/255.0, 143.0/255.0, 1.0);
+  if (inverted)
+  {
+
+  } else
+  {
+    // TODO; Add a sub cairo_t to add:
+    //    * Color
+    //    * Crop to canvas size
+    cairo_set_operator(cr, CAIRO_OPERATOR_DEST_ATOP);
+  }
+  
+  cairo_mask_surface(cr, varnishSurface, 0, 0);
   cairo_surface_destroy(varnishSurface);
   cairo_restore(cr);
 }
