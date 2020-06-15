@@ -12,7 +12,9 @@ private:
   Varnish(SliLayer::Ptr layer);
   GtkWidget *varnishToggle;
   void registerButton(ViewInterface::WeakPtr view);
+  void invertSurface();
   SliLayer::Ptr layer;
+  cairo_surface_t* surface;
   bool inverted;
 
 public:
