@@ -13,11 +13,9 @@
 
 ////////////////////////////////////////////////////////////////////////
 
-Sep::Sep() {
-}
+Sep::Sep() {}
 
-Sep::~Sep() {
-}
+Sep::~Sep() {}
 
 Sep::Ptr Sep::create() {
     return Ptr(new Sep());
@@ -66,7 +64,6 @@ void Sep::open(const std::string &fileName, ScroomInterface::Ptr const &scroomIn
             scroomInterface->showPresentation(result);
         }
     } else {
-        printf("A SLI file will be opened\n");
         SliPresentation::Ptr presentation = SliPresentation::create(scroomInterface);
         presentation->load(fileName);
 
