@@ -22,6 +22,9 @@ public:
   /** Height of all layers combined */
   int total_height = 0;
 
+  /** Whether any of the layers has an xoffset */
+  bool hasXoffsets;
+
   /** Bitmask representing the indexes of the currently visible layers (little-endian) */
   boost::dynamic_bitset<> visible {0};
 
@@ -88,6 +91,9 @@ public:
   /** Compute the overall width and height of the SLi file (over all layers) */
   virtual void computeHeightWidth();
 
+  /** Checks if any of the layers has an xoffset */
+  virtual void checkXoffsets();
+
   /**
    * Get the SurfaceWrapper for the surface that is needed to display the zoom level. 
    * If it is not cached yet, enqueue its computation
@@ -99,4 +105,15 @@ public:
   /** Wipe the zoom level RGB cache of the presentation. Needed when layers are enabled or disabled. */
   virtual void wipeCache();
 
+  /* Draw the CMYK data on the surface (more efficient) */
+  virtual void drawCmyk(uint8_t *surfacePointer, uint8_t *bitmap, int bitmapStart, int bitmapOffset);
+
+  /* Draw the CMYK data on the surface */
+  virtual void drawCmykXoffset(uint8_t *surfacePointer, uint8_t *bitmap, int bitmapStart, int bitmapOffset, Scroom::Utils::Rectangle<int> layerRect, Scroom::Utils::Rectangle<int> intersectRect, int layerBound, int stride);
+
+  /* Convert the CMYK data on the surface to ARGB (more efficient) */
+  virtual void convertCmyk(uint8_t *surfacePointer, uint32_t *targetPointer, int topLeftOffset, int bottomRightOffset);
+
+  /* Convert the CMYK data on the surface to ARGB */
+  virtual void convertCmykXoffset(uint8_t *surfacePointer, uint32_t *targetPointer, int topLeftOffset, int bottomRightOffset, Scroom::Utils::Rectangle<int> toggledRect, int imageBound, int stride);
 };

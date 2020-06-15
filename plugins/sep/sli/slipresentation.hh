@@ -90,7 +90,6 @@ public:
   virtual boost::dynamic_bitset<> getToggled();
   virtual boost::dynamic_bitset<> getVisible();
   virtual void setToggled(boost::dynamic_bitset<> bitmap);
-  virtual void setVisible(boost::dynamic_bitset<> bitmap);
 
   ////////////////////////////////////////////////////////////////////////
   // PresentationInterface

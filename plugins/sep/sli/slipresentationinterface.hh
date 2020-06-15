@@ -18,7 +18,6 @@ public:
   virtual boost::dynamic_bitset<> getToggled()=0;
   virtual boost::dynamic_bitset<> getVisible()=0;
   virtual void setToggled(boost::dynamic_bitset<> bitmap)=0;
-  virtual void setVisible(boost::dynamic_bitset<> bitmap)=0;
   virtual std::vector<SliLayer::Ptr>& getLayers()=0;
 
 };

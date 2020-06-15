@@ -30,17 +30,11 @@ SliPresentation::~SliPresentation()
 {
 }
 
-/**
- * Create a file *.sli containing for example:
- * Xresolution: 900
- * Yresolution: 600
- * cmyktif1.tif : 0 0
- * cmyktif2.tif : 0 11
- */
 bool SliPresentation::load(const std::string& fileName)
 {
   parseSli(fileName);
   source->computeHeightWidth();
+  source->checkXoffsets();
   source->visible.resize(source->layers.size(), false);
   source->toggled.resize(source->layers.size(), true);
   
@@ -149,11 +143,6 @@ boost::dynamic_bitset<> SliPresentation::getVisible()
 void SliPresentation::setToggled(boost::dynamic_bitset<> bitmap)
 {
   source->toggled = bitmap;
-}
-
-void SliPresentation::setVisible(boost::dynamic_bitset<> bitmap)
-{
-  source->visible = bitmap;
 }
 
 ////////////////////////////////////////////////////////////////////////

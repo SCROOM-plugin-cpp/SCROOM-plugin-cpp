@@ -46,9 +46,7 @@ void toggle_and_redraw(double old_value, double new_value, double other_value,
       for (int i = new_value; i <= other_value; i++)
         toggled.set(i);
 
-      auto tot_toggled = toggled | visible;
-      visible = toggled ^ tot_toggled;
-      toggled = tot_toggled;
+      toggled ^= visible;
     }
     else
     {
@@ -63,9 +61,7 @@ void toggle_and_redraw(double old_value, double new_value, double other_value,
       for (int i = other_value; i <= new_value; i++)
         toggled.set(i);
 
-      auto tot_toggled = toggled | visible;
-      visible = toggled ^ tot_toggled;
-      toggled = tot_toggled;
+      toggled ^= visible;
     }
     else
     {
@@ -75,7 +71,6 @@ void toggle_and_redraw(double old_value, double new_value, double other_value,
   }
 
   presPtr->setToggled(toggled);
-  presPtr->setVisible(visible);
   presPtr->wipeCache();
   presPtr->triggerRedraw();
 }
