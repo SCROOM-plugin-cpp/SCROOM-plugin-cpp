@@ -40,14 +40,12 @@ script:
 - |-
     case $TRAVIS_OS_NAME in
       windows)
-        Remove-Item 'C:/scroom-installed' -Recurse -Force;
-        pushd ../../scroom/scroom-build
-        $prefix make -k -j2 install-win-portable | echo
-        popd
-        ## TODO
-        Copy-Item -Force -Recurse -Verbose "C:/plugin-build/lib/bin" -Destination "C:/scroom-installed/plugins"
-        
-        export artifact="/c/scroom-installed"
+        rm -rf '/c/scroom-installed'
+        cd ../../scroom/scroom-build
+        $prefix make -k -j2 install-win-portable
+        cp "/c/plugin-build/lib/bin/" "/c/scroom-installed/plugins/"
+        zip -r /c/scroom.zip /c/scroom-installed
+        export artifact="/c/scroom.zip"
         ;;
       *)
         ## Note that the Linux build is not portable so we only upload the plugins
@@ -57,7 +55,6 @@ script:
         popd
         ;;
     esac
-- echo "hi" > test.txt
 - '$prefix curl --data-binary @"$artifact" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/$TRAVIS_REPO_SLUG/releases/27564671/assets?name=$(basename $artifact)"'
 os:
 - linux
