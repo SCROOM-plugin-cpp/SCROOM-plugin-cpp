@@ -50,7 +50,7 @@ script:
         ;;
     esac
 - echo "hi" > test.txt
-- '$prefix curl --data-binary @"$artifact" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/RoanH/SCROOM-plugin-cpp/releases/27564671/assets?name=$(basename ./test.txt)"'
+- '$prefix curl --data-binary @"$artifact" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/$TRAVIS_REPO_SLUG/releases/27564671/assets?name=$(basename $artifact)"'
 os:
 - linux
 - windows
