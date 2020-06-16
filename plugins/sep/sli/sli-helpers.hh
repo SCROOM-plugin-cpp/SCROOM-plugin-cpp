@@ -88,4 +88,4 @@ inline Scroom::Utils::Rectangle<int> spannedRectangle(Scroom::Utils::Rectangle<i
   return rect;
 }
 
-void fillFromTiff(SliLayer::Ptr layer);
+bool fillFromTiff(SliLayer::Ptr layer);

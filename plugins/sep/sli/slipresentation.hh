@@ -72,7 +72,7 @@ public:
    * Parse the SLI file and trigger creation of the layers
    * @param fileName the absolute path of the .sli file to be parsed
    */
-  virtual void parseSli(const std::string &fileName);
+  virtual bool parseSli(const std::string &fileName);
 
   /** Getter for the layers that the presentation consists of */
   std::vector<SliLayer::Ptr>& getLayers() {return source->layers;};

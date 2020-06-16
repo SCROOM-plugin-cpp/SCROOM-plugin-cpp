@@ -1,5 +1,4 @@
 #include "slipresentation.hh"
-#include "../sepsource.hh"
 #include "slisource.hh"
 
 #include <regex>
@@ -32,7 +31,10 @@ SliPresentation::~SliPresentation()
 
 bool SliPresentation::load(const std::string& fileName)
 {
-  parseSli(fileName);
+  if (! parseSli(fileName))
+  {
+    return false;
+  }
   source->computeHeightWidth();
   source->checkXoffsets();
   source->visible.resize(source->layers.size(), false);
@@ -56,7 +58,7 @@ bool SliPresentation::load(const std::string& fileName)
   return true;
 }
 
-void SliPresentation::parseSli(const std::string &sliFileName)
+bool SliPresentation::parseSli(const std::string &sliFileName)
 {
   std::ifstream file(sliFileName);
   std::string line;
@@ -86,29 +88,28 @@ void SliPresentation::parseSli(const std::string &sliFileName)
       else if (fs::exists(fs::path(dirPath) /= firstToken))
       {
         // Line contains name of an existing file
-        fs::path imagePath = fs::path(dirPath) /= firstToken;
         i++; // discard the colon
         int xOffset = std::stoi(*i++);
         int yOffset = std::stoi(*i++);
-        if (fs::extension(firstToken) == ".sep")
+        fs::path imagePath = fs::path(dirPath) /= firstToken;
+        if (! source->addLayer(imagePath.string(), firstToken, xOffset, yOffset))
         {
-          SliLayer::Ptr layer = SliLayer::create(imagePath.string(), firstToken, xOffset, yOffset);
-          SepSource::fillSliLayer(layer);
-          source->layers.push_back(layer);
-        }
-        else
-        {
-          SliLayer::Ptr layer = SliLayer::create(imagePath.string(), firstToken, xOffset, yOffset);
-          fillFromTiff(layer);
-          source->layers.push_back(layer);
+          return false;
         }
       }
       else
       {
-        printf("Warning: Token '%s' in SLI file is not an existing file\n", firstToken.c_str());
+        printf("Error: Token '%s' in SLI file is not an existing file\n", firstToken.c_str());
+        return false;
       }
     }
   }
+  if (Xresolution && Yresolution && source->layers.size())
+  {
+    return true;
+  }
+  return false;
+  
 }
 
 ////////////////////////////////////////////////////////////////////////

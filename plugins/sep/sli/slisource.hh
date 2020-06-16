@@ -102,6 +102,8 @@ public:
    */
   virtual SurfaceWrapper::Ptr getSurface(int zoom);
 
+  virtual bool addLayer(std::string imagePath, std::string filename, int xOffset, int yOffset);
+
   /** Wipe the zoom level RGB cache of the presentation. Needed when layers are enabled or disabled. */
   virtual void wipeCache();
 

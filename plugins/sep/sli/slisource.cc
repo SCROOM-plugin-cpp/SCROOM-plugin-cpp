@@ -1,11 +1,11 @@
 #include "slisource.hh"
+#include "../sepsource.hh"
 
 #include <scroom/bitmap-helpers.hh>
 
 SliSource::SliSource(boost::function<void()> &triggerRedrawFunc) : triggerRedraw(triggerRedrawFunc)
 {
   threadQueue = ThreadPool::Queue::createAsync();
-  //triggerRedraw = triggerRedrawFunc;
 }
 
 SliSource::~SliSource()
@@ -54,6 +54,32 @@ void SliSource::checkXoffsets()
         if (layer->xoffset != 0)
             hasXoffsets = true;
     }
+}
+
+bool SliSource::addLayer(std::string imagePath, std::string filename, int xOffset, int yOffset)
+{
+  SliLayer::Ptr layer = SliLayer::create(imagePath, filename, xOffset, yOffset);
+
+  if (filename.substr(filename.length() - 4) == ".sep")
+  {
+    SepSource::fillSliLayer(layer); 
+    
+  }
+  else if (filename.substr(filename.length() - 4) == ".tif")
+  {
+    if (! fillFromTiff(layer))
+    {
+      return false;
+    }
+  }
+  else
+  {
+    printf("Error: File extension of %s is not supported\n", filename.c_str());
+    return false;
+  }
+  layers.push_back(layer);
+  return true;
+
 }
 
 void SliSource::wipeCache()
