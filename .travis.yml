@@ -45,7 +45,7 @@ script:
         $prefix make -k -j2 install-win-portable
         cp -r "/c/plugin-build/lib/bin/" "/c/scroom-installed/plugins/"
         cd /c
-        zip -r scroom.zip scroom-installed
+        $prefix zip scroom.zip scroom-installed
         export artifact="/c/scroom.zip"
         ;;
       *)
@@ -82,7 +82,6 @@ addons:
     - pkg-config
     - doxygen
     - graphviz
-    - zip
 git:
   depth: 200
 before_install:
