@@ -73,8 +73,10 @@ void Varnish::fixVarnishState()
 void Varnish::registerButton(ViewInterface::WeakPtr viewWeak)
 {
   GtkWidget *box = gtk_vbox_new(false, 0);
-  GtkWidget *hiddenBox = gtk_expander_new("Overlay properties");
+  GtkWidget *expander = gtk_expander_new("Overlay properties");
+  GtkWidget *expander_box = gtk_vbox_new(false, 0);
   colorpicker = gtk_color_selection_new();
+  check_show_background = gtk_check_button_new_with_label("Show background");
   gtk_color_selection_set_has_palette(GTK_COLOR_SELECTION(colorpicker), false);
   // Set a default color for the overlay
   GdkColor color;
@@ -84,24 +86,27 @@ void Varnish::registerButton(ViewInterface::WeakPtr viewWeak)
   radio_disabled = gtk_radio_button_new_with_label(NULL, "Disabled");
   radio_enabled = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radio_disabled), "Enabled");
   radio_inverted = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radio_disabled), "Inverted");
-  ViewInterface::Ptr view(viewWeak);
   // trigger a redraw when disabled is checked/unchecked
   g_signal_connect(static_cast<gpointer>(radio_disabled), "toggled", G_CALLBACK(varnish_toggled), this);
   g_signal_connect(static_cast<gpointer>(radio_enabled), "toggled", G_CALLBACK(varnish_toggled), this);
   g_signal_connect(static_cast<gpointer>(radio_disabled), "toggled", G_CALLBACK(varnish_toggled), this);
   // We can use the same callback to force a redraw when the color is changed
   g_signal_connect(static_cast<gpointer>(colorpicker), "color-changed", G_CALLBACK(varnish_toggled), this);
+  g_signal_connect(static_cast<gpointer>(check_show_background), "toggled", G_CALLBACK(varnish_toggled), this);
 
   // Add all elements into 1 box
   gtk_box_pack_start_defaults(GTK_BOX(box), radio_disabled);
   gtk_box_pack_start_defaults(GTK_BOX(box), radio_enabled);
   gtk_box_pack_start_defaults(GTK_BOX(box), radio_inverted);
-  gtk_box_pack_start_defaults(GTK_BOX(box), hiddenBox);
-  gtk_container_add(GTK_CONTAINER(hiddenBox), colorpicker);
-  gtk_widget_show_all(hiddenBox);
+  gtk_box_pack_start_defaults(GTK_BOX(box), expander);
+  gtk_box_pack_start_defaults(GTK_BOX(expander_box), check_show_background);
+  gtk_box_pack_start_defaults(GTK_BOX(expander_box), colorpicker);
+  gtk_container_add(GTK_CONTAINER(expander), expander_box);
+  gtk_widget_show_all(expander);
   gtk_widget_show_all(box);
 
   // Add the box to the sidebar
+  ViewInterface::Ptr view(viewWeak);
   gdk_threads_enter();
   view->addSideWidget("Varnish", box);
   gdk_threads_leave();
@@ -143,6 +148,9 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
     cairo_scale(cr, pow(2.0, zoom), pow(2.0, zoom));
   }
 
+  
+
+
   // Read the overlay color and alpha
   GdkColor color;
   gint alpha;
@@ -155,7 +163,17 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
   g = (double)color.green / 65535.0;
   b = (double)color.blue / 65535.0;
   a = alpha / 65535.0;
+
+  if (!GTK_TOGGLE_BUTTON(check_show_background)->active)
+  {
+    // Clear the background
+    cairo_rectangle(cr, 0, 0, layer->width, layer->height);
+    cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+    cairo_fill(cr);
+  }
+
   cairo_set_source_rgba(cr, r, g, b, a);
   cairo_mask_surface(cr, surface, 0, 0);
+
   cairo_restore(cr);
 }
