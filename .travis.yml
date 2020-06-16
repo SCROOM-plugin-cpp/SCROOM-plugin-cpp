@@ -46,7 +46,7 @@ script:
         cp -r "/c/plugin-build/lib/bin/" "/c/scroom-installed/plugins/"
         cd /c
         $prefix zip scroom.zip scroom-installed
-        export artifact="/c/scroom.zip"
+        export artifact="./scroom.zip"
         ;;
       *)
         ## Note that the Linux build is not portable so we only upload the plugins
@@ -56,6 +56,7 @@ script:
         popd
         ;;
     esac
+- $prefix ls -l
 - '$prefix curl --data-binary @"$artifact" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/$TRAVIS_REPO_SLUG/releases/27564671/assets?name=$(basename $artifact)"'
 os:
 - linux
