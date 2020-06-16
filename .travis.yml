@@ -45,8 +45,10 @@ script:
         ;;
       *)
         ## Note that the Linux build is not portable so we only upload the plugins
-        tar czf plugins-linux.tar.gz /tmp/plugin-build
-        export artifact="./plugins-linux.tar.gz"
+        pushd /tmp
+        tar czf plugins-linux.tar.gz plugin-build
+        export artifact="/tmp/plugins-linux.tar.gz"
+        popd
         ;;
     esac
 - echo "hi" > test.txt
