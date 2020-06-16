@@ -70,7 +70,9 @@ plugins_sep_test_sep_tests_SOURCES = \
 
 plugins_sep_test_sep_tests_LDADD = \
 	@BOOSTTESTLIB@ @SCROOMLIB@\
-	plugins/sep/src/libspsep.la
+	plugins/sep/src/libspsep.la \
+	plugins/sep/*.lo \
+	plugins/sep/sli/*.lo
 
 endif BOOST_UNITTESTS
 
