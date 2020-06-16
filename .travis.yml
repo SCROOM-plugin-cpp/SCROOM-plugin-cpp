@@ -39,14 +39,14 @@ script:
 - |-
     case $TRAVIS_OS_NAME in
       windows)
-        $prefix make -k -j2 install
+        $prefix make -k -j2 install | echo
         ## TODO
         export artifact="./test.txt"
         ;;
       *)
         ## Note that the Linux build is not portable so we only upload the plugins
         pushd /tmp
-        tar czf plugins-linux.tar.gz plugin-build
+        tar czf plugins-linux.tar.gz ./plugin-build | echo
         export artifact="/tmp/plugins-linux.tar.gz"
         popd
         ;;
