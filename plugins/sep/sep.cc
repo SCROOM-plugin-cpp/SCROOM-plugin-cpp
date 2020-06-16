@@ -66,11 +66,9 @@ void Sep::open(const std::string &fileName, ScroomInterface::Ptr const &scroomIn
         }
     } else {
         SliPresentation::Ptr presentation = SliPresentation::create(scroomInterface);
-        presentation->load(fileName);
 
-        TransformationData::Ptr data = presentation->transformationData;
-        if (data) {
-            PresentationInterface::Ptr result = TransformPresentation::create(presentation, data);
+        if (presentation->load(fileName)) {
+            PresentationInterface::Ptr result = TransformPresentation::create(presentation, presentation->transformationData);
             scroomInterface->showPresentation(result);
         }
     }
