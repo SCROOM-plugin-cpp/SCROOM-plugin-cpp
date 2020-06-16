@@ -1,6 +1,6 @@
 variables:
   # Scroom branch to build against
-  SCROOM: ci-targets
+  SCROOM: next-ci
 
 stages:
   - build
@@ -13,7 +13,7 @@ build-windows:
   stage: build
   # This is a windows server core docker image with an msys2 install.
   # It includes all required msys packages
-  image: 192.168.2.19:4567/roan/scroom-ci:latest
+  image: registry.gitlab.com/sep-group-2/scroom-ci:windows
   tags:
     - Windows
   script:
