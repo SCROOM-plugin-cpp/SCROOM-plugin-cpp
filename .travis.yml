@@ -51,8 +51,8 @@ script:
         ;;
       *)
         ## Note that the Linux build is not portable so we only upload the plugins
-        pushd /tmp
-        tar czf plugins-linux.tar.gz ./plugin-build | echo
+        pushd /tmp/plugin-build/lib/scroom
+        tar czf /tmp/plugins-linux.tar.gz . | echo
         export artifact="/tmp/plugins-linux.tar.gz"
         popd
         ;;
