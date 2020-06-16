@@ -46,18 +46,17 @@ script:
         cp -r "/c/plugin-build/lib/bin/" "/c/scroom-installed/plugins/"
         cd /c
         $prefix zip scroom.zip scroom-installed
-        $prefix export artifact="./scroom.zip"
+        $prefix curl --data-binary @"./scroom.zip" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/$TRAVIS_REPO_SLUG/releases/27564671/assets?name=scroom.zip"
         ;;
       *)
         ## Note that the Linux build is not portable so we only upload the plugins
         pushd /tmp/plugin-build/lib/scroom
         tar czf /tmp/plugins-linux.tar.gz . | echo
-        export artifact="/tmp/plugins-linux.tar.gz"
         popd
+        $prefix curl --data-binary @"/tmp/plugins-linux.tar.gz" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/$TRAVIS_REPO_SLUG/releases/27564671/assets?name=plugins-linux.tar.gz"
         ;;
     esac
 - $prefix ls -l
-- '$prefix curl --data-binary @"$artifact" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/$TRAVIS_REPO_SLUG/releases/27564671/assets?name=$(basename $artifact)"'
 os:
 - linux
 - windows
