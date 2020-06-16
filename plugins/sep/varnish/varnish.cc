@@ -1,6 +1,7 @@
 #include "varnish.hh"
 #include <scroom/viewinterface.hh>
 #include <scroom/cairo-helpers.hh>
+#include <gdk/gdk.h>
 
 Varnish::Varnish(SliLayer::Ptr layer)
 {
@@ -22,7 +23,7 @@ Varnish::Ptr Varnish::create(SliLayer::Ptr layer)
 
 Varnish::~Varnish()
 {
-  free(layer->bitmap);
+  delete layer.get();
   cairo_surface_destroy(surface);
 }
 
@@ -71,7 +72,15 @@ void Varnish::fixVarnishState()
 
 void Varnish::registerButton(ViewInterface::WeakPtr viewWeak)
 {
-  GtkWidget *box = gtk_vbox_new(TRUE, 0);
+  GtkWidget *box = gtk_vbox_new(false, 0);
+  GtkWidget *hiddenBox = gtk_expander_new("Overlay properties");
+  colorpicker = gtk_color_selection_new();
+  gtk_color_selection_set_has_palette(GTK_COLOR_SELECTION(colorpicker), false);
+  // Set a default color for the overlay
+  GdkColor color;
+  gdk_color_parse("#20FC8F", &color);
+  gtk_color_selection_set_current_color(GTK_COLOR_SELECTION(colorpicker), &color);
+  // Add radio buttons for each display mode
   radio_disabled = gtk_radio_button_new_with_label(NULL, "Disabled");
   radio_enabled = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radio_disabled), "Enabled");
   radio_inverted = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radio_disabled), "Inverted");
@@ -80,11 +89,16 @@ void Varnish::registerButton(ViewInterface::WeakPtr viewWeak)
   g_signal_connect(static_cast<gpointer>(radio_disabled), "toggled", G_CALLBACK(varnish_toggled), this);
   g_signal_connect(static_cast<gpointer>(radio_enabled), "toggled", G_CALLBACK(varnish_toggled), this);
   g_signal_connect(static_cast<gpointer>(radio_disabled), "toggled", G_CALLBACK(varnish_toggled), this);
+  // We can use the same callback to force a redraw when the color is changed
+  g_signal_connect(static_cast<gpointer>(colorpicker), "color-changed", G_CALLBACK(varnish_toggled), this);
 
-  // Add all buttons into 1 box
+  // Add all elements into 1 box
   gtk_box_pack_start_defaults(GTK_BOX(box), radio_disabled);
   gtk_box_pack_start_defaults(GTK_BOX(box), radio_enabled);
   gtk_box_pack_start_defaults(GTK_BOX(box), radio_inverted);
+  gtk_box_pack_start_defaults(GTK_BOX(box), hiddenBox);
+  gtk_container_add(GTK_CONTAINER(hiddenBox), colorpicker);
+  gtk_widget_show_all(hiddenBox);
   gtk_widget_show_all(box);
 
   // Add the box to the sidebar
@@ -101,7 +115,7 @@ void Varnish::invertSurface()
   unsigned char *data = cairo_image_surface_get_data(surface);
   for (int i = 0; i < width * height; i++)
   {
-    // TODO; this assumes 8 bpp
+    // Invert each suface pixel.
     data[i] ^= 255;
   }
   cairo_surface_mark_dirty(surface);
@@ -112,7 +126,7 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
 {
   if (GTK_TOGGLE_BUTTON(radio_disabled)->active)
   {
-    // if the varnish is disabled, return without drawing anything.
+    // if the varnish overlay is disabled, return without drawing anything.
     return;
   }
   double pixelSize = pixelSizeFromZoom(zoom);
@@ -120,6 +134,7 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
   cairo_save(cr);
   // Disable blurring/anti-ailiasing
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
+  cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
   cairo_translate(cr, -GTKPresArea.x*pixelSize,-GTKPresArea.y*pixelSize);
   if(zoom >= 0)
   {
@@ -128,8 +143,19 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
     cairo_scale(cr, pow(2.0, zoom), pow(2.0, zoom));
   }
 
-  /** Overlay color: 20FC8F */
-  cairo_set_source_rgba(cr, 32.0/255.0, 252.0/255.0, 143.0/255.0, 1.0);
+  // Read the overlay color and alpha
+  GdkColor color;
+  gint alpha;
+  // This method is deprecated, but the alternative doesn't work
+  gtk_color_selection_get_current_color(GTK_COLOR_SELECTION(colorpicker), &color);
+  alpha = gtk_color_selection_get_current_alpha(GTK_COLOR_SELECTION(colorpicker));
+  // Cairo is expecting doubles as color values, so we have to convert them.
+  double r, g, b, a;
+  r = (double)color.red / 65535.0;
+  g = (double)color.green / 65535.0;
+  b = (double)color.blue / 65535.0;
+  a = alpha / 65535.0;
+  cairo_set_source_rgba(cr, r, g, b, a);
   cairo_mask_surface(cr, surface, 0, 0);
   cairo_restore(cr);
 }

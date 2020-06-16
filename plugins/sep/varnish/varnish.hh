@@ -13,6 +13,7 @@ private:
   GtkWidget *radio_enabled;
   GtkWidget *radio_disabled;
   GtkWidget *radio_inverted;
+  GtkWidget *colorpicker;
   ViewInterface::WeakPtr viewWeak;
   void registerButton(ViewInterface::WeakPtr view);
   void invertSurface();
