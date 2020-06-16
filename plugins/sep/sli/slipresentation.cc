@@ -7,248 +7,248 @@
 #include <scroom/cairo-helpers.hh>
 #include <scroom/unused.hh>
     
-SliPresentationInterface::WeakPtr SliPresentation::weakPtrToThis;
+// SliPresentationInterface::WeakPtr SliPresentation::weakPtrToThis;
 
-SliPresentation::SliPresentation(ScroomInterface::Ptr scroomInterface_): scroomInterface(scroomInterface_)
-{
-}
+// SliPresentation::SliPresentation(ScroomInterface::Ptr scroomInterface_): scroomInterface(scroomInterface_)
+// {
+// }
 
-SliPresentation::Ptr SliPresentation::create(ScroomInterface::Ptr scroomInterface_)
-{
-  SliPresentation::Ptr result = Ptr(new SliPresentation(scroomInterface_));
-  weakPtrToThis = result;
+// SliPresentation::Ptr SliPresentation::create(ScroomInterface::Ptr scroomInterface_)
+// {
+//   SliPresentation::Ptr result = Ptr(new SliPresentation(scroomInterface_));
+//   weakPtrToThis = result;
   
-  // Can't do this in the constructor as it requires an existing shared pointer
-  result->triggerRedrawFunc = boost::bind(&SliPresentation::triggerRedraw, result->shared_from_this<SliPresentation>());
-  result->source = SliSource::create(result->triggerRedrawFunc);
+//   // Can't do this in the constructor as it requires an existing shared pointer
+//   result->triggerRedrawFunc = boost::bind(&SliPresentation::triggerRedraw, result->shared_from_this<SliPresentation>());
+//   result->source = SliSource::create(result->triggerRedrawFunc);
 
-  return result;
-}
+//   return result;
+// }
 
-SliPresentation::~SliPresentation()
-{
-}
+// SliPresentation::~SliPresentation()
+// {
+// }
 
-bool SliPresentation::load(const std::string& fileName)
-{
-  if (! parseSli(fileName))
-  {
-    return false;
-  }
-  source->computeHeightWidth();
-  source->checkXoffsets();
-  source->visible.resize(source->layers.size(), false);
-  source->toggled.resize(source->layers.size(), true);
+// bool SliPresentation::load(const std::string& fileName)
+// {
+//   if (! parseSli(fileName))
+//   {
+//     return false;
+//   }
+//   source->computeHeightWidth();
+//   source->checkXoffsets();
+//   source->visible.resize(source->layers.size(), false);
+//   source->toggled.resize(source->layers.size(), true);
   
-  transformationData = TransformationData::create();
-  float xAspect = Xresolution / std::max(Xresolution, Yresolution);
-  float yAspect = Yresolution / std::max(Xresolution, Yresolution);
-  transformationData->setAspectRatio(1 / xAspect, 1 / yAspect);
+//   transformationData = TransformationData::create();
+//   float xAspect = Xresolution / std::max(Xresolution, Yresolution);
+//   float yAspect = Yresolution / std::max(Xresolution, Yresolution);
+//   transformationData->setAspectRatio(1 / xAspect, 1 / yAspect);
 
-  // Check if the aspect ratios align
-  for (SliLayer::Ptr layer: source->layers)
-  {
-    if (std::abs((layer->xAspect / layer->yAspect) - (xAspect / yAspect)) > 1e-3)
-    {
-      printf("Warning: Aspect ratio mismatch - SLI file defines xAspect=%.3f and yAspect=%.3f "
-             "but layer %s has xAspect=%.3f and yAspect=%.3f\n", 
-             xAspect, yAspect, layer->name.c_str(), layer->xAspect, layer->yAspect);
-    }
-  }
-  return true;
-}
+//   // Check if the aspect ratios align
+//   for (SliLayer::Ptr layer: source->layers)
+//   {
+//     if (std::abs((layer->xAspect / layer->yAspect) - (xAspect / yAspect)) > 1e-3)
+//     {
+//       printf("Warning: Aspect ratio mismatch - SLI file defines xAspect=%.3f and yAspect=%.3f "
+//              "but layer %s has xAspect=%.3f and yAspect=%.3f\n", 
+//              xAspect, yAspect, layer->name.c_str(), layer->xAspect, layer->yAspect);
+//     }
+//   }
+//   return true;
+// }
 
-bool SliPresentation::parseSli(const std::string &sliFileName)
-{
-  std::ifstream file(sliFileName);
-  std::string line;
-  std::regex e("\\s+"); // split on whitespaces
-  std::sregex_token_iterator j;
-  namespace fs = boost::filesystem;
-  std::string dirPath = fs::path(sliFileName).parent_path().string();
+// bool SliPresentation::parseSli(const std::string &sliFileName)
+// {
+//   std::ifstream file(sliFileName);
+//   std::string line;
+//   std::regex e("\\s+"); // split on whitespaces
+//   std::sregex_token_iterator j;
+//   namespace fs = boost::filesystem;
+//   std::string dirPath = fs::path(sliFileName).parent_path().string();
 
-  // Iterate over the lines
-  while (std::getline(file, line))  
-  {
-    std::sregex_token_iterator i(line.begin(), line.end(), e, -1);
-    // Iterate over the whitespace-separated tokens of the line
-    while(i != j)
-    {
-      std::string firstToken = *i++;
-      if (firstToken == "Xresolution:")
-      {
-        Xresolution = std::stof(*i++);
-        printf("xresolution: %f\n", Xresolution);
-      }
-      else if (firstToken == "Yresolution:")
-      {
-        Yresolution = std::stof(*i++);
-        printf("yresolution: %f\n", Yresolution);
-      }
-      else if (fs::exists(fs::path(dirPath) /= firstToken))
-      {
-        // Line contains name of an existing file
-        i++; // discard the colon
-        int xOffset = std::stoi(*i++);
-        int yOffset = std::stoi(*i++);
-        fs::path imagePath = fs::path(dirPath) /= firstToken;
-        if (! source->addLayer(imagePath.string(), firstToken, xOffset, yOffset))
-        {
-          return false;
-        }
-      }
-      else
-      {
-        printf("Error: Token '%s' in SLI file is not an existing file\n", firstToken.c_str());
-        return false;
-      }
-    }
-  }
-  if (Xresolution && Yresolution && source->layers.size())
-  {
-    return true;
-  }
-  return false;
+//   // Iterate over the lines
+//   while (std::getline(file, line))  
+//   {
+//     std::sregex_token_iterator i(line.begin(), line.end(), e, -1);
+//     // Iterate over the whitespace-separated tokens of the line
+//     while(i != j)
+//     {
+//       std::string firstToken = *i++;
+//       if (firstToken == "Xresolution:")
+//       {
+//         Xresolution = std::stof(*i++);
+//         printf("xresolution: %f\n", Xresolution);
+//       }
+//       else if (firstToken == "Yresolution:")
+//       {
+//         Yresolution = std::stof(*i++);
+//         printf("yresolution: %f\n", Yresolution);
+//       }
+//       else if (fs::exists(fs::path(dirPath) /= firstToken))
+//       {
+//         // Line contains name of an existing file
+//         i++; // discard the colon
+//         int xOffset = std::stoi(*i++);
+//         int yOffset = std::stoi(*i++);
+//         fs::path imagePath = fs::path(dirPath) /= firstToken;
+//         if (! source->addLayer(imagePath.string(), firstToken, xOffset, yOffset))
+//         {
+//           return false;
+//         }
+//       }
+//       else
+//       {
+//         printf("Error: Token '%s' in SLI file is not an existing file\n", firstToken.c_str());
+//         return false;
+//       }
+//     }
+//   }
+//   if (Xresolution && Yresolution && source->layers.size())
+//   {
+//     return true;
+//   }
+//   return false;
   
-}
+// }
 
-////////////////////////////////////////////////////////////////////////
-// SliPresentationInterface
+// ////////////////////////////////////////////////////////////////////////
+// // SliPresentationInterface
 
-void SliPresentation::wipeCache()
-{
-  source->wipeCache();
-}
+// void SliPresentation::wipeCache()
+// {
+//   source->wipeCache();
+// }
 
-void SliPresentation::triggerRedraw()
-{
-  for (ViewInterface::WeakPtr view: views)
-  {
-    ViewInterface::Ptr viewPtr = view.lock();
-    gdk_threads_enter();
-    viewPtr->invalidate();
-    gdk_threads_leave();
-  }
-}
+// void SliPresentation::triggerRedraw()
+// {
+//   for (ViewInterface::WeakPtr view: views)
+//   {
+//     ViewInterface::Ptr viewPtr = view.lock();
+//     gdk_threads_enter();
+//     viewPtr->invalidate();
+//     gdk_threads_leave();
+//   }
+// }
 
-boost::dynamic_bitset<> SliPresentation::getToggled()
-{
-  return source->toggled;
-}
+// boost::dynamic_bitset<> SliPresentation::getToggled()
+// {
+//   return source->toggled;
+// }
 
-boost::dynamic_bitset<> SliPresentation::getVisible()
-{
-  return source->visible;
-}
+// boost::dynamic_bitset<> SliPresentation::getVisible()
+// {
+//   return source->visible;
+// }
 
-void SliPresentation::setToggled(boost::dynamic_bitset<> bitmap)
-{
-  source->toggled = bitmap;
-}
+// void SliPresentation::setToggled(boost::dynamic_bitset<> bitmap)
+// {
+//   source->toggled = bitmap;
+// }
 
-////////////////////////////////////////////////////////////////////////
-// PresentationInterface
+// ////////////////////////////////////////////////////////////////////////
+// // PresentationInterface
 
-Scroom::Utils::Rectangle<double> SliPresentation::getRect()
-{
-  GdkRectangle rect;
-  rect.x = 0;
-  rect.y = 0;
-  rect.width = source->total_width;
-  rect.height = source->total_height;
+// Scroom::Utils::Rectangle<double> SliPresentation::getRect()
+// {
+//   GdkRectangle rect;
+//   rect.x = 0;
+//   rect.y = 0;
+//   rect.width = source->total_width;
+//   rect.height = source->total_height;
 
-  return rect;
-}
+//   return rect;
+// }
 
-void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
-                             Scroom::Utils::Rectangle<double> presentationArea, int zoom)
-{
-  UNUSED(vi);
-  GdkRectangle presentArea = presentationArea.toGdkRectangle();
-  Scroom::Utils::Rectangle<double> actualPresentationArea = getRect();
-  double pixelSize = pixelSizeFromZoom(zoom);
+// void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
+//                              Scroom::Utils::Rectangle<double> presentationArea, int zoom)
+// {
+//   UNUSED(vi);
+//   GdkRectangle presentArea = presentationArea.toGdkRectangle();
+//   Scroom::Utils::Rectangle<double> actualPresentationArea = getRect();
+//   double pixelSize = pixelSizeFromZoom(zoom);
  
-  drawOutOfBoundsWithBackground(cr, presentArea, actualPresentationArea, pixelSize);
+//   drawOutOfBoundsWithBackground(cr, presentArea, actualPresentationArea, pixelSize);
   
-  SurfaceWrapper::Ptr surfaceWrap = source->getSurface(zoom);
+//   SurfaceWrapper::Ptr surfaceWrap = source->getSurface(zoom);
 
-  // Check if it's not computed yet and we need to draw the waiting rectangle
-  if (surfaceWrap == nullptr)
-  {
-    drawRectangle(cr, Color(0.5, 1, 0.5), pixelSize*(actualPresentationArea - presentationArea.getTopLeft()));
-    return;
-  }
+//   // Check if it's not computed yet and we need to draw the waiting rectangle
+//   if (surfaceWrap == nullptr)
+//   {
+//     drawRectangle(cr, Color(0.5, 1, 0.5), pixelSize*(actualPresentationArea - presentationArea.getTopLeft()));
+//     return;
+//   }
 
-  // The level that we need is in the cache, so draw it! 
-  cairo_save(cr);
-  cairo_translate(cr, -presentArea.x*pixelSize,-presentArea.y*pixelSize);
-  if(zoom >= 0)
-  {
-    // We're using the bottom bitmap, hence we have to scale
-    cairo_scale(cr, 1<<zoom, 1<<zoom);
-    cairo_set_source_surface(cr, surfaceWrap->surface, 0, 0);
-    cairo_pattern_set_filter (cairo_get_source (cr), CAIRO_FILTER_NEAREST);
-  }
-  else
-  {
-    // Cached and reduced bitmap is already to scale
-    cairo_set_source_surface(cr, surfaceWrap->surface, 0, 0);
-  }
-  cairo_paint(cr);
-  cairo_restore(cr);
-}
+//   // The level that we need is in the cache, so draw it! 
+//   cairo_save(cr);
+//   cairo_translate(cr, -presentArea.x*pixelSize,-presentArea.y*pixelSize);
+//   if(zoom >= 0)
+//   {
+//     // We're using the bottom bitmap, hence we have to scale
+//     cairo_scale(cr, 1<<zoom, 1<<zoom);
+//     cairo_set_source_surface(cr, surfaceWrap->surface, 0, 0);
+//     cairo_pattern_set_filter (cairo_get_source (cr), CAIRO_FILTER_NEAREST);
+//   }
+//   else
+//   {
+//     // Cached and reduced bitmap is already to scale
+//     cairo_set_source_surface(cr, surfaceWrap->surface, 0, 0);
+//   }
+//   cairo_paint(cr);
+//   cairo_restore(cr);
+// }
 
-bool SliPresentation::getProperty(const std::string& name, std::string& value)
-{
-  std::map<std::string, std::string>::iterator p = properties.find(name);
-  bool found = false;
-  if (p == properties.end())
-  {
-    found = false;
-    value = "";
-  }
-  else
-  {
-    found = true;
-    value = p->second;
-  }
+// bool SliPresentation::getProperty(const std::string& name, std::string& value)
+// {
+//   std::map<std::string, std::string>::iterator p = properties.find(name);
+//   bool found = false;
+//   if (p == properties.end())
+//   {
+//     found = false;
+//     value = "";
+//   }
+//   else
+//   {
+//     found = true;
+//     value = p->second;
+//   }
 
-  return found;
-}
+//   return found;
+// }
 
-bool SliPresentation::isPropertyDefined(const std::string& name)
-{
-  return properties.end() != properties.find(name);
-}
+// bool SliPresentation::isPropertyDefined(const std::string& name)
+// {
+//   return properties.end() != properties.find(name);
+// }
 
-std::string SliPresentation::getTitle()
-{
-  return "slipresentation";
-}
+// std::string SliPresentation::getTitle()
+// {
+//   return "slipresentation";
+// }
 
-////////////////////////////////////////////////////////////////////////
-// PresentationBase
+// ////////////////////////////////////////////////////////////////////////
+// // PresentationBase
 
-void SliPresentation::viewAdded(ViewInterface::WeakPtr viewInterface)
-{
-  controlPanel = SliControlPanel::create(viewInterface, weakPtrToThis);
+// void SliPresentation::viewAdded(ViewInterface::WeakPtr viewInterface)
+// {
+//   controlPanel = SliControlPanel::create(viewInterface, weakPtrToThis);
 
-  // Provide the source with the means to enable and disable the widgets in the sidebar
-  source->enableInteractions = boost::bind(&SliControlPanel::enableInteractions, controlPanel);
-  source->disableInteractions = boost::bind(&SliControlPanel::disableInteractions, controlPanel);
+//   // Provide the source with the means to enable and disable the widgets in the sidebar
+//   source->enableInteractions = boost::bind(&SliControlPanel::enableInteractions, controlPanel);
+//   source->disableInteractions = boost::bind(&SliControlPanel::disableInteractions, controlPanel);
 
-  views.insert(viewInterface);
-}
+//   views.insert(viewInterface);
+// }
 
-void SliPresentation::viewRemoved(ViewInterface::WeakPtr vi)
-{
-  views.erase(vi);
-}
+// void SliPresentation::viewRemoved(ViewInterface::WeakPtr vi)
+// {
+//   views.erase(vi);
+// }
 
-std::set<ViewInterface::WeakPtr> SliPresentation::getViews()
-{
-  return views;
-}
+// std::set<ViewInterface::WeakPtr> SliPresentation::getViews()
+// {
+//   return views;
+// }
 
 
 // ////////////////////////////////////////////////////////////////////////

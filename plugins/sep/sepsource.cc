@@ -83,7 +83,7 @@ SepFile SepSource::parseSep(const std::string &file_name) {
     sep_file.white_ink_choice = 0;
     if (sep_file.files.count("W") == 1) {
         auto choice_dialog = gtk_dialog_new_with_buttons(
-            "White Ink Effect",  // i reverted this back because the one you wrote was too long for the window
+            "White Ink Effect",
             nullptr,
             GTK_DIALOG_DESTROY_WITH_PARENT,
             "Subtractive", GTK_RESPONSE_ACCEPT,
