@@ -44,7 +44,8 @@ script:
         cd ../../scroom-build
         $prefix make -k -j2 install-win-portable
         cp -r "/c/plugin-build/lib/bin/" "/c/scroom-installed/plugins/"
-        zip -r /c/scroom.zip /c/scroom-installed
+        cd /c
+        zip -r scroom.zip scroom-installed
         export artifact="/c/scroom.zip"
         ;;
       *)
