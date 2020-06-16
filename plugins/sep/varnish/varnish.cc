@@ -80,7 +80,7 @@ void Varnish::registerButton(ViewInterface::WeakPtr viewWeak)
   gtk_color_selection_set_has_palette(GTK_COLOR_SELECTION(colorpicker), false);
   // Set a default color for the overlay
   GdkColor color;
-  gdk_color_parse("#20FC8F", &color);
+  gdk_color_parse("#000000", &color);
   gtk_color_selection_set_current_color(GTK_COLOR_SELECTION(colorpicker), &color);
   // Add radio buttons for each display mode
   radio_disabled = gtk_radio_button_new_with_label(NULL, "Disabled");
