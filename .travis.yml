@@ -46,7 +46,7 @@ script:
         cp -r "/c/plugin-build/lib/bin/" "/c/scroom-installed/plugins/"
         cd /c
         $prefix zip scroom.zip scroom-installed
-        export artifact="./scroom.zip"
+        $prefix export artifact="./scroom.zip"
         ;;
       *)
         ## Note that the Linux build is not portable so we only upload the plugins
