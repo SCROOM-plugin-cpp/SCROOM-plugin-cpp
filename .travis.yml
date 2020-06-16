@@ -40,10 +40,11 @@ script:
 - |-
     case $TRAVIS_OS_NAME in
       windows)
+        Remove-Item 'C:/scroom-installed' -Recurse -Force;
+        pushd ../../scroom/scroom-build
+        $prefix make -k -j2 install-win-portable
+        popd
         ## TODO
-        
-        
-        
         
         export artifact="./test.txt"
         ;;
