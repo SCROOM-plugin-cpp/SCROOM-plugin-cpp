@@ -45,6 +45,7 @@ script:
         $prefix make -k -j2 install-win-portable | echo
         popd
         ## TODO
+        Copy-Item -Force -Recurse -Verbose "C:/plugin-build/lib/bin" -Destination "C:/scroom-installed/plugins"
         
         export artifact="/c/scroom-installed"
         ;;
