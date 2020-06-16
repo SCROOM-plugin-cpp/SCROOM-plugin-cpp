@@ -42,11 +42,11 @@ script:
       windows)
         Remove-Item 'C:/scroom-installed' -Recurse -Force;
         pushd ../../scroom/scroom-build
-        $prefix make -k -j2 install-win-portable
+        $prefix make -k -j2 install-win-portable | echo
         popd
         ## TODO
         
-        export artifact="./test.txt"
+        export artifact="/c/scroom-installed"
         ;;
       *)
         ## Note that the Linux build is not portable so we only upload the plugins
