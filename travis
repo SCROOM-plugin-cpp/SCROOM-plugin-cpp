@@ -45,7 +45,7 @@ then
 else
   tar czf ./plugins-linux.tar.gz $plugin_loc
 
-  curl --data-binary @"/tmp/plugins-linux.tar.gz" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/$TRAVIS_REPO_SLUG/releases/27564671/assets?name=plugins-linux.tar.gz"
+  curl --data-binary @"./plugins-linux.tar.gz" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/$TRAVIS_REPO_SLUG/releases/27564671/assets?name=plugins-linux.tar.gz"
 fi
 
 ls -l
