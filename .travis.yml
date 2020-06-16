@@ -15,10 +15,10 @@ script:
 - |-
     case $TRAVIS_OS_NAME in
       windows)
-        $prefix ../scroom/configure --prefix /c/scroom-installed
+        $prefix ../scroom/configure --prefix /c/scroom-installed | echo
         ;;
       *)
-        ../scroom/configure --prefix /tmp/scroom-installed
+        ../scroom/configure --prefix /tmp/scroom-installed | echo
         ;;
     esac
 - $prefix make -k -j2 install
@@ -29,18 +29,22 @@ script:
 - |-
     case $TRAVIS_OS_NAME in
       windows)
-        $prefix ../configure --prefix='C:/plugin-build' CPPFLAGS=-I/c/scroom-installed/include/ LDFLAGS="-L/c/scroom-installed/lib"
+        $prefix ../configure --prefix='C:/plugin-build' CPPFLAGS=-I/c/scroom-installed/include/ LDFLAGS="-L/c/scroom-installed/lib" | echo
         ;;
       *)
-        ../configure --prefix="/tmp/plugin-build" CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"
+        ../configure --prefix="/tmp/plugin-build" CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs" | echo
         ;;
     esac
 - $prefix make -k -j2 check
+- $prefix make -k -j2 install
 - |-
     case $TRAVIS_OS_NAME in
       windows)
-        $prefix make -k -j2 install | echo
         ## TODO
+        
+        
+        
+        
         export artifact="./test.txt"
         ;;
       *)
