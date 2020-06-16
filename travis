@@ -27,7 +27,6 @@ mkdir cpp-plugins-build
 cd cpp-plugins-build
 
 ../configure --prefix=$plugin_loc CPPFLAGS=-I$scroom_loc/include/ LDFLAGS="-L$scroom_loc/lib"
-make -k -j2 check
 make -k -j2 install
 
 if [ "${TRAVIS_OS_NAME}" = "windows" ]
