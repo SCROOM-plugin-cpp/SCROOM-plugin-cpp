@@ -29,16 +29,28 @@ script:
 - |-
     case $TRAVIS_OS_NAME in
       windows)
-        $prefix ../configure CPPFLAGS=-I/c/scroom-installed/include/ LDFLAGS="-L/c/scroom-installed/lib"
+        $prefix ../configure --prefix='C:/plugin-build' CPPFLAGS=-I/c/scroom-installed/include/ LDFLAGS="-L/c/scroom-installed/lib"
         ;;
       *)
-        ../configure CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"
+        ../configure --prefix="/tmp/plugin-build" CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"
         ;;
     esac
 - $prefix make -k -j2 check
+- |-
+    case $TRAVIS_OS_NAME in
+      windows)
+        $prefix make -k -j2 install
+        ## TODO
+        export artifact="./test.txt"
+        ;;
+      *)
+        ## Note that the Linux build is not portable so we only upload the plugins
+        tar czf plugins-linux.tar.gz /tmp/plugin-build
+        export artifact="./plugins-linux.tar.gz"
+        ;;
+    esac
 - echo "hi" > test.txt
-- '$prefix curl --data-binary @"./test.txt" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/RoanH/SCROOM-plugin-cpp/releases/27564671/assets?name=$(basename ./test.txt)"'
-## - $prefix make -k -j2 distcheck DISTCHECK_CONFIGURE_FLAGS='CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"'
+- '$prefix curl --data-binary @"$artifact" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/RoanH/SCROOM-plugin-cpp/releases/27564671/assets?name=$(basename ./test.txt)"'
 os:
 - linux
 - windows
