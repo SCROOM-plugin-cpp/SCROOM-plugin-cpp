@@ -5,58 +5,7 @@ script:
   echo TRAVIS_BRANCH=${TRAVIS_BRANCH} &&
   echo TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST} &&
   echo SHELL=$SHELL
-- pushd ..
-- git clone --depth 200 https://github.com/kees-jan/scroom.git
-- cd scroom
-- $prefix autoreconf -i
-- cd ..
-- mkdir scroom-build
-- cd scroom-build
-- |-
-    case $TRAVIS_OS_NAME in
-      windows)
-        $prefix ../scroom/configure --prefix /c/scroom-installed
-        ;;
-      *)
-        ../scroom/configure --prefix /tmp/scroom-installed
-        ;;
-    esac
-- $prefix make -k -j2 install
-- popd
-- $prefix autoreconf -i
-- mkdir cpp-plugins-build
-- cd cpp-plugins-build
-- |-
-    case $TRAVIS_OS_NAME in
-      windows)
-        $prefix ../configure --prefix='C:/plugin-build' CPPFLAGS=-I/c/scroom-installed/include/ LDFLAGS="-L/c/scroom-installed/lib"
-        ;;
-      *)
-        ../configure --prefix="/tmp/plugin-build" CPPFLAGS=-I/tmp/scroom-installed/include/ LDFLAGS="-L/tmp/scroom-installed/lib -Wl,-z,defs"
-        ;;
-    esac
-- $prefix make -k -j2 check
-- $prefix make -k -j2 install
-- |-
-    case $TRAVIS_OS_NAME in
-      windows)
-        rm -rf '/c/scroom-installed'
-        cd ../../scroom-build
-        $prefix make -k -j2 install-win-portable
-        cp -r "/c/plugin-build/lib/bin/" "/c/scroom-installed/plugins/"
-        cd /c
-        $prefix zip scroom.zip scroom-installed
-        $prefix curl --data-binary @"./scroom.zip" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/$TRAVIS_REPO_SLUG/releases/27564671/assets?name=scroom.zip"
-        ;;
-      *)
-        ## Note that the Linux build is not portable so we only upload the plugins
-        pushd /tmp/plugin-build/lib/scroom
-        tar czf /tmp/plugins-linux.tar.gz . | echo
-        popd
-        $prefix curl --data-binary @"/tmp/plugins-linux.tar.gz" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/$TRAVIS_REPO_SLUG/releases/27564671/assets?name=plugins-linux.tar.gz"
-        ;;
-    esac
-- $prefix ls -l
+- $prefix ./travis
 os:
 - linux
 - windows
