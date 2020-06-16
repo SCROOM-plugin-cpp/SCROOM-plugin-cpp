@@ -50,7 +50,10 @@ public:
   /** Fill a rectangle of the surface with 0s */
   virtual void clearSurface(Scroom::Utils::Rectangle<int> rect);
 
-  /** Return the Rectangle representation of the surface*/
+  /** Return the Rectangle representation of the surface (in pixels) */
+  virtual Scroom::Utils::Rectangle<int> toRectangle();
+
+  /** Return the Rectangle representation of the surface (in bytes) */
   virtual Scroom::Utils::Rectangle<int> toBytesRectangle();
 
   /** Destructor */

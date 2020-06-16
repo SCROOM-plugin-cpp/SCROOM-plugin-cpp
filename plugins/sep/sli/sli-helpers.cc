@@ -55,6 +55,13 @@ uint8_t* SurfaceWrapper::getBitmap()
   return cairo_image_surface_get_data(surface);
 }
 
+Scroom::Utils::Rectangle<int> SurfaceWrapper::toRectangle()
+{
+  Scroom::Utils::Rectangle<int> rect {0, 0, getWidth(), getHeight()};
+  
+  return rect;
+}
+
 Scroom::Utils::Rectangle<int> SurfaceWrapper::toBytesRectangle()
 {
   Scroom::Utils::Rectangle<int> rect {0, 0, getStride(), getHeight()};

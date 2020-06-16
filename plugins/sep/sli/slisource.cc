@@ -343,14 +343,12 @@ void SliSource::computeRgb()
 
     if (hasXoffsets)
     {
-        printf("draw with xoffset\n");
         int layerBound = std::min(intersectRect.getRight() - layerRect.getLeft(),
                                 layerRect.getRight() - layerRect.getLeft()) % layerRect.getWidth();
         drawCmykXoffset(currentSurfaceByte, bitmap, bitmapStart, bitmapOffset, layerRect, intersectRect, layerBound, stride);
     }
     else
     {
-        printf("draw without\n");
         drawCmyk(currentSurfaceByte, bitmap, bitmapStart, bitmapOffset);
     }
   }
@@ -359,13 +357,11 @@ void SliSource::computeRgb()
   int bottomRightOffset = pointToOffset(toggledRect.getBottomRight(), stride) - stride;
   if (hasXoffsets)
   {
-      printf("convert with xoffset\n");
     int imageBound = toggledRect.getRight() % stride;
     convertCmykXoffset(surfaceBegin, targetBegin, topLeftOffset, bottomRightOffset, toggledRect, imageBound, stride);
   }
   else
   {
-      printf("convert without\n");
     convertCmyk(surfaceBegin, targetBegin, topLeftOffset, bottomRightOffset);
   }
 
