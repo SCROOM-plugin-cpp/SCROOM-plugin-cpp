@@ -37,7 +37,7 @@ then
   make -k -j2 install-win-portable
   
   cd ..
-  cp -r $(plugin_loc)/lib/bin/ $(scroom_loc)/plugins/
+  cp -r $plugin_loc/lib/bin/ $scroom_loc/plugins/
   zip -r scroom.zip $scroom_loc
   
   curl --data-binary @"./scroom.zip" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/$TRAVIS_REPO_SLUG/releases/27564671/assets?name=scroom.zip"
