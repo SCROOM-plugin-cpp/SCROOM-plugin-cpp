@@ -41,9 +41,9 @@ script:
     case $TRAVIS_OS_NAME in
       windows)
         rm -rf '/c/scroom-installed'
-        cd ../../scroom/scroom-build
+        cd ../../scroom-build
         $prefix make -k -j2 install-win-portable
-        cp "/c/plugin-build/lib/bin/" "/c/scroom-installed/plugins/"
+        cp -r "/c/plugin-build/lib/bin/" "/c/scroom-installed/plugins/"
         zip -r /c/scroom.zip /c/scroom-installed
         export artifact="/c/scroom.zip"
         ;;
@@ -81,6 +81,7 @@ addons:
     - pkg-config
     - doxygen
     - graphviz
+    - zip
 git:
   depth: 200
 before_install:
