@@ -5,12 +5,9 @@
 set -e
 set -u
 
-#first clone and build the Scroom repository
-git clone --depth 200 https://github.com/SCROOM-plugin-cpp/scroom
+#first build the Scroom repository
 cd scroom
-
 autoreconf -i
-
 cd ..
 
 scroom_loc=$(pwd)/scroom-install
@@ -41,19 +38,18 @@ then
   make -k -j2 install-win-portable
   
   cp -rf $plugin_loc/lib/bin/* $scroom_loc/plugins/
-  cd $scroom_loc
-  cd ..
-  zip -r scroom.zip scroom
+  cd $TRAVIS_BUILD_DIR
+  zip -r scroom.zip scroom-install
   
   artifact=./scroom.zip
   name=scroom.zip
 else
   #the linux build is not portable so we only provide the plugins
-  cd $plugin_loc
-  tar czf ../plugins-linux.tar.gz .
+  cd $TRAVIS_BUILD_DIR
+  zip -r plugins-linux.zip plugin-build
 
-  artifact=../plugins-linux.tar.gz
-  name=plugins-linux.tar.gz
+  artifact=../plugins-linux.zip
+  name=plugins-linux.zip
 fi
 
 ls -l
