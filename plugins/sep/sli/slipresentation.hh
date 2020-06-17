@@ -48,10 +48,10 @@ private:
   static SliPresentationInterface::WeakPtr weakPtrToThis;
 
   /** The number of pixels per ResolutionUnit in the ImageWidth direction */
-  float Xresolution;
+  float Xresolution = -1;
 
   /** The number of pixels per ResolutionUnit in the ImageLength direction */
-  float Yresolution;
+  float Yresolution = -1;
 
 private:
   /** Constructor */

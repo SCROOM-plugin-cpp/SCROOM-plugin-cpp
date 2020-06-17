@@ -104,7 +104,7 @@ bool SliPresentation::parseSli(const std::string &sliFileName)
       }
     }
   }
-  if (Xresolution && Yresolution && source->layers.size())
+  if (Xresolution > 0 && Yresolution > 0 && source->layers.size() > 0)
   {
     return true;
   }
