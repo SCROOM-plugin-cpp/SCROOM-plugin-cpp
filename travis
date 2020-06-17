@@ -6,6 +6,7 @@ set -e
 set -u
 
 #first build the Scroom repository
+chmod -R 755 scroom
 cd scroom
 autoreconf -i
 cd ..
@@ -46,7 +47,7 @@ then
   name=scroom.zip
 else
   #the linux build is not portable so we only provide the plugins
-  cd $public_loc
+  cd $plugin_loc
   cd ..
   mkdir plugins
   cp -rf plugin-build/lib/scroom/* plugins/
