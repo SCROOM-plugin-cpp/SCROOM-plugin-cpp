@@ -35,10 +35,10 @@ bool SliPresentation::load(const std::string& fileName)
   {
     return false;
   }
-  source->computeHeightWidth();
-  source->checkXoffsets();
   source->visible.resize(source->layers.size(), false);
   source->toggled.resize(source->layers.size(), true);
+  source->computeHeightWidth();
+  source->checkXoffsets();
   
   transformationData = TransformationData::create();
   float xAspect = Xresolution / std::max(Xresolution, Yresolution);

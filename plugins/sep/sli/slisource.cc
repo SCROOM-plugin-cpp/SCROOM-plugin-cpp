@@ -17,33 +17,11 @@ SliSource::Ptr SliSource::create(boost::function<void()> &triggerRedrawFunc)
   return Ptr(new SliSource(triggerRedrawFunc));
 }
 
-/** 
- * Find the total height and width of the SLI file.
-*/
 void SliSource::computeHeightWidth()
 {
-  int max_xoffset = 0;
-  int rightmost_l = 0;
-  int max_yoffset = 0;
-  int bottommost_l = 0;
-
-  for (size_t i = 0; i < layers.size(); i++)
-  {
-    if (layers[i]->xoffset > max_xoffset)
-    {
-      rightmost_l = i;
-      max_xoffset = layers[i]->xoffset;
-    }
-
-    if (layers[i]->yoffset > max_yoffset)
-    {
-      bottommost_l = i;
-      max_yoffset = layers[i]->xoffset;
-    }
-  }
-
-  total_width = layers[rightmost_l]->width + layers[rightmost_l]->xoffset;
-  total_height = layers[bottommost_l]->height + layers[bottommost_l]->yoffset;
+  auto rect = spannedRectangle(toggled, layers, true);
+  total_width = rect.getWidth();
+  total_height = rect.getHeight();
 }
 
 void SliSource::checkXoffsets()

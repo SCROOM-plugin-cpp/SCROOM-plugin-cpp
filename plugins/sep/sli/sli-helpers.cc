@@ -138,6 +138,7 @@ Scroom::Utils::Rectangle<int> spannedRectangle(boost::dynamic_bitset<> bitmap, s
   }
   
   Scroom::Utils::Rectangle<int> rect {min_x0, min_y0, max_x1 - min_x0, max_y1 - min_y0};
+
   return rect;
 }
 
