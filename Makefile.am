@@ -50,7 +50,7 @@ plugins_sep_src_libspsep_la_SOURCES = \
 	plugins/sep/sli/sli-helpers.cc \
 	plugins/sep/sli/sli-helpers.hh
 
-plugins_sep_src_libspsep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ -ltiff
+plugins_sep_src_libspsep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ @THREADPOOLLIB@ -ltiff
 
 plugins_sep_src_libspsep_la_LDFLAGS = $(loadflag) -I../scroom/gui/src/
 
@@ -63,6 +63,8 @@ sep_plugin_check_programs = \
 	plugins/sep/test/sep-tests
 
 plugins_sep_test_sep_tests_CPPFLAGS = @SEPPLUGIN_CFLAGS@
+
+plugins_sep_test_sep_tests_LDFLAGS = -pthread
 
 plugins_sep_test_sep_tests_SOURCES = \
 	plugins/sep/test/main.cc \
