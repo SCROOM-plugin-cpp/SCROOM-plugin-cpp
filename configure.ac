@@ -4,11 +4,32 @@ AC_INIT([Scroom Plugins for Canon Production Printing],
         [],
         [scroom-cpp-plugins],
         [])
+
+# Detect the target system
+AC_CANONICAL_HOST
+case "${host_os}" in
+    linux*)
+        build_linux=yes
+        AC_MSG_NOTICE([detected linux environment])
+        ;;
+    cygwin*|mingw*|msys*)
+        build_windows=yes
+        AC_MSG_NOTICE([detected windows environment])
+        ;;
+    *)
+        AC_MSG_ERROR(["OS $host_os is not supported."])
+        ;;
+esac
+AM_CONDITIONAL([LINUX], [test "$build_linux" = "yes"])
+AM_CONDITIONAL([WINDOWS], [test "$build_windows" = "yes"])
+
 AM_INIT_AUTOMAKE([-Wall -Werror foreign silent-rules subdir-objects])
 AM_SILENT_RULES([yes])
 AM_PROG_AR
 LT_PREREQ([2.2])
-LT_INIT([dlopen])
+
+# Properly create shared libraries on both Linux and Windows
+LT_INIT([dlopen win32-dll])
 
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([plugins/example/example.hh])
@@ -30,7 +51,6 @@ dnl SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wconversion])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wpointer-arith])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wwrite-strings])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wunused])
-SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wredundant-decls])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wuninitialized])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Winit-self])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wcast-qual])
@@ -42,6 +62,24 @@ SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wnon-virtual-dtor])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Woverloaded-virtual])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wsign-promo])
 SCROOM_TEST_ISYSTEM
+    
+# Disabled warnings
+AM_COND_IF([LINUX], [
+    # - Lots of warnings on Windows
+    SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wredundant-decls])
+])   
+AM_COND_IF([WINDOWS], [
+    # - Warns for C pointer declarations - On windows there are a lot of those in gtk headers
+    SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wno-parentheses])
+    # - On Windows, gtk uses deprecated glib stuff - need to move to gtk3 ;-)
+    SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wno-deprecated-declarations])
+])  
+
+# This flag is used in Makefile.am and needed for properly generating DLLs on Windows
+loadflag=""
+AM_COND_IF([WINDOWS], 
+    [loadflag="-no-undefined"])
+AC_SUBST([loadflag])
 
 # Configurable features
 AC_ARG_ENABLE([doxygen-all-code],
