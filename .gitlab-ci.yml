@@ -1,0 +1,103 @@
+variables:
+  # Scroom branch to build against
+  SCROOM: next-ci
+
+stages:
+  - test
+  - deploy
+
+coverage-test:
+  stage: test
+  image: registry.gitlab.com/sep-group-2/scroom-ci:latest
+  before_script:
+    # Download the latest Scroom artifacts and mirror its path
+    - cd ..
+    - rm -rf scroom
+    - mkdir scroom
+    - cd scroom
+    - curl -o scroom.zip -L "https://gitlab.com/api/v4/projects/18421652/jobs/artifacts/$SCROOM/download?job=linux-dev"
+    - unzip scroom.zip
+    - ls -l
+    # Build the plugin
+  script:
+    - path=$(pwd)/scroom-install
+    - cd ../scroom-plugin-cpp
+    - autoreconf -i
+    - mkdir plugin-build
+    - ./configure --prefix="$(pwd)/plugin-build" CPPFLAGS="-g -O0 -I$path/include/ -ftest-coverage -fprofile-arcs --coverage" LDFLAGS="-L$path/lib -Wl,-z,defs"
+    - make check
+    - gcovr -s --html -o plugin_coverage.html
+  retry:
+    max: 2
+    when: runner_system_failure
+  coverage: '/lines:\ \d+\.\d+\%/'
+  artifacts:
+    name: "Plugin coverage reports"
+    paths:
+      - plugin_coverage.html
+
+build-windows:
+  # Due to windows docker issues, we can't configure/build in the volume mount.
+  # As a workaround, we clone the repo to C:\ manually
+  variables:
+    GIT_STRATEGY: none
+  stage: deploy
+  # This is a windows server core docker image with an msys2 install.
+  # It includes all required msys packages
+  image: registry.gitlab.com/sep-group-2/scroom-ci:windows
+  tags:
+    - Windows
+  script:
+    # Download the latest Scroom artifact
+    - cd C:\
+    - if (Test-Path '.\scroom') { Remove-Item '.\scroom' -Recurse -Force; }
+    - $ProgressPreference = 'SilentlyContinue'
+    - Invoke-WebRequest "https://gitlab.com/api/v4/projects/18421652/jobs/artifacts/$SCROOM/download?job=windows-dev" -OutFile scroom.zip
+    - Expand-Archive C:\scroom.zip -DestinationPath C:\scroom
+    # Copy to build to match the Scroom CI pipeline
+    - if (Test-Path '.\build') { Remove-Item '.\build' -Recurse -Force; }
+    - cp -r "C:/scroom/scroom_build/" "C:/build"
+    # Build the plugin
+    - if (Test-Path '.\plugin-build') { Remove-Item '.\plugin-build' -Recurse -Force; }
+    - C:/msys64/usr/bin/env MSYSTEM=MINGW64 c:/msys64/usr/bin/bash -l -c "cd /c/ && git clone https://gitlab.com/sep-group-2/scroom-plugin-cpp"
+    - C:/msys64/usr/bin/env MSYSTEM=MINGW64 c:/msys64/usr/bin/bash -l -c "cd /c/scroom-plugin-cpp && git checkout $CI_COMMIT_SHA"
+    - C:/msys64/usr/bin/env MSYSTEM=MINGW64 c:/msys64/usr/bin/bash -l -c "cd /c/scroom-plugin-cpp && autoreconf -i"
+    - C:/msys64/usr/bin/env MSYSTEM=MINGW64 c:/msys64/usr/bin/bash -l -c "cd /c/scroom-plugin-cpp && ./configure --prefix='C:/plugin-build' CPPFLAGS=-I/c/build/include/ LDFLAGS='-L/c/build/lib'"
+    - C:/msys64/usr/bin/env MSYSTEM=MINGW64 c:/msys64/usr/bin/bash -l -c "cd /c/scroom-plugin-cpp && make install"
+    # Finally, we copy the build into the shared volume, so gitlab can upload it
+    - if (Test-Path 'C:/builds/$CI_PROJECT_PATH/plugins') { Remove-Item 'C:/builds/$CI_PROJECT_PATH/plugins' -Recurse -Force; }
+    - Copy-Item -Force -Recurse -Verbose "C:/plugin-build/lib/bin" -Destination "C:/builds/$CI_PROJECT_PATH/plugins"
+  retry:
+    max: 2
+    when: runner_system_failure
+  artifacts:
+    name: "Scroom Plugins Windows"
+    paths:
+      - plugins/
+
+build-linux:
+  stage: deploy
+  image: registry.gitlab.com/sep-group-2/scroom-ci:latest
+  script:
+    # Download the latest Scroom artifacts and mirror its path
+    - cd ..
+    - rm -rf scroom
+    - mkdir scroom
+    - cd scroom
+    - curl -o scroom.zip -L "https://gitlab.com/api/v4/projects/18421652/jobs/artifacts/$SCROOM/download?job=linux-dev"
+    - unzip scroom.zip
+    - ls -l
+    # Build the plugin
+    - path=$(pwd)/scroom-install
+    - cd ../scroom-plugin-cpp
+    - autoreconf -i
+    - mkdir plugin-build
+    - ./configure --prefix="$(pwd)/plugin-build" CPPFLAGS=-I$path/include/ LDFLAGS="-L$path/lib -Wl,-z,defs"
+    - make install
+  retry:
+    max: 2
+    when: runner_system_failure
+  artifacts:
+    name: "Scroom Plugins Linux"
+    paths:
+      - plugin-build
