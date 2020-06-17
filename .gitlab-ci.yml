@@ -3,7 +3,6 @@ variables:
   SCROOM: next-ci
 
 stages:
-  - build
   - test
   - deploy
 
@@ -25,7 +24,7 @@ coverage-test:
   script:
     - autoreconf -i
     - mkdir plugin-build
-    - ./configure --prefix="$(pwd)/plugin-build" CPPFLAGS="-g -O0 -I$path/include/ --coverage" LDFLAGS="--coverage -p -L$path/lib -Wl,-z,defs"
+    - ./configure --prefix="$(pwd)/plugin-build" CPPFLAGS="-g -O0 -I$path/include/ --coverage" LDFLAGS="--coverage -p -L$path/lib/ -Wl,-z,defs"
     - make check
     - gcovr -s --html -o plugin_coverage.html
   retry:
@@ -77,7 +76,7 @@ build-windows:
       - plugins/
 
 build-linux:
-  stage: build
+  stage: deploy
   image: registry.gitlab.com/sep-group-2/scroom-ci:latest
   script:
     # Download the latest Scroom artifacts and mirror its path
