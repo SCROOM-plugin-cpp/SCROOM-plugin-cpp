@@ -53,6 +53,6 @@ ls -l
 
 if [ ! "${TRAVIS_TAG}" = "" ]
 then
-  tag_id=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$TRAVIS_REPO_SLUG/git/tags/$TRAVIS_TAG | jq '.id')
+  tag_id=$(curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$TRAVIS_REPO_SLUG/releases/tags/$TRAVIS_TAG | jq '.id')
   curl --data-binary @"$artifact" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/$TRAVIS_REPO_SLUG/releases/$tag_id/assets?name=$name"
 fi
