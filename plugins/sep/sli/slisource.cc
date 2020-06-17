@@ -5,7 +5,7 @@
 
 SliSource::SliSource(boost::function<void()> &triggerRedrawFunc) : triggerRedraw(triggerRedrawFunc)
 {
-  threadQueue = ThreadPool::Queue::createAsync();
+  threadQueue = ThreadPool::Queue::create();
 }
 
 SliSource::~SliSource()
