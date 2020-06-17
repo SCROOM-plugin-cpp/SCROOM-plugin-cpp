@@ -157,8 +157,6 @@ TransformationData::Ptr SepSource::getTransform() {
     float file_res_x, file_res_y;
     this->getResolution(unit, file_res_x, file_res_y);
 
-    std::cout << "Resolution: " << 1 / file_res_x << " * " << 1 / file_res_y << "\n";
-
     TransformationData::Ptr data = TransformationData::create();
     data->setAspectRatio(1 / file_res_x, 1 / file_res_y);
     return data;
