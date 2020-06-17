@@ -69,7 +69,7 @@ plugins_sep_test_sep_tests_SOURCES = \
 	plugins/sep/test/slipresentation-tests.cc
 
 plugins_sep_test_sep_tests_LDADD = \
-	@BOOSTTESTLIB@ @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ @THREADPOOLLIB@ -ltiff -ldl \
+	@BOOSTTESTLIB@ @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ @THREADPOOLLIB@ -ltiff -ldl -pthread\
 	plugins/sep/src/libspsep.la \
 	plugins/sep/*.lo \
 	plugins/sep/sli/*.lo
