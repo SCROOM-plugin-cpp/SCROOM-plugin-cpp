@@ -16,7 +16,7 @@
 class SliPresentation : public PresentationBase,
                         public virtual Scroom::Utils::Base,
                         public SliPresentationInterface
-                        // public PipetteViewInterface // TODO include when pipette is ready
+                        // ,public PipetteViewInterface // TODO include when pipette is ready
 {
 public:
   typedef boost::shared_ptr<SliPresentation> Ptr;

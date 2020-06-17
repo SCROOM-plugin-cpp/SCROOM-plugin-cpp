@@ -62,13 +62,6 @@ Scroom::Utils::Rectangle<int> SurfaceWrapper::toRectangle()
   return rect;
 }
 
-Scroom::Utils::Rectangle<int> SurfaceWrapper::toBytesRectangle()
-{
-  Scroom::Utils::Rectangle<int> rect {0, 0, getStride(), getHeight()};
-  
-  return rect;
-}
-
 void SurfaceWrapper::clearSurface()
 {
   cairo_t* cr = cairo_create(surface);
@@ -88,6 +81,14 @@ void SurfaceWrapper::clearSurface(Scroom::Utils::Rectangle<int> rect)
   clear = true;
 }
 
+// TODO bps/bpp/spp are pretty much used as magic numbers throughout the SLI code
+Scroom::Utils::Rectangle<int> toBytesRectangle(Scroom::Utils::Rectangle<int> rect, int bpp)
+{
+  Scroom::Utils::Rectangle<int> bytesRect {rect.getLeft()*bpp, rect.getTop(), rect.getWidth()*bpp, rect.getHeight()};
+  
+  return bytesRect;
+}
+
 int getArea(Scroom::Utils::Rectangle<int> rect)
 {
   return rect.getHeight() * rect.getWidth();
@@ -103,15 +104,40 @@ int pointToOffset(Scroom::Utils::Rectangle<int> rect, Scroom::Utils::Point<int> 
   return (p.y - rect.getTop()) * rect.getWidth() + (p.x - rect.getLeft());
 }
 
-Scroom::Utils::Rectangle<int> spannedRectangle(Scroom::Utils::Rectangle<int> rect1, Scroom::Utils::Rectangle<int> rect2)
-{
-  Scroom::Utils::Rectangle<int> rect{
-      std::min(rect1.getLeft(), rect2.getLeft()),
-      std::min(rect1.getTop(), rect2.getTop()),
-      std::max(rect1.getRight() - std::min(rect1.getLeft(), rect2.getLeft()),
-              rect2.getRight() - std::min(rect1.getLeft(), rect2.getLeft())),
-      std::max(rect1.getBottom() - std::min(rect1.getTop(), rect2.getTop()),
-              rect2.getBottom() - std::min(rect1.getTop(), rect2.getTop()))};
+Scroom::Utils::Rectangle<int> spannedRectangle(boost::dynamic_bitset<> bitmap, std::vector<SliLayer::Ptr> layers, bool fromOrigin)
+{ 
+  int min_x0 = INT_MAX;
+  int min_y0 = INT_MAX;
+  int max_x1 = INT_MIN;
+  int max_y1 = INT_MIN;
+
+  if (fromOrigin)
+  {
+    min_x0 = 0;
+    min_y0 = 0;
+  }
+
+  for (size_t i = 0; i < bitmap.size(); i++)
+  {
+    if (!bitmap[i])
+      continue;
+
+    auto rect = layers[i]->toRectangle();
+
+    if (rect.getLeft() < min_x0)
+      min_x0 = rect.getLeft();
+
+    if (rect.getTop() < min_y0)
+      min_y0 = rect.getTop();
+    
+    if (rect.getRight() > max_x1)
+      max_x1 = rect.getRight();
+      
+    if (rect.getBottom() > max_y1)
+      max_y1= rect.getBottom();
+  }
+  
+  Scroom::Utils::Rectangle<int> rect {min_x0, min_y0, max_x1 - min_x0, max_y1 - min_y0};
   return rect;
 }
 
@@ -124,7 +150,6 @@ SurfaceWrapper::~SurfaceWrapper()
   }
 }
 
-// TODO set the instance bps, spp values too at some point
 bool fillFromTiff(SliLayer::Ptr layer)
 {
   // We only support simple CMYK Tiffs with 4 SPP and 8 BPS

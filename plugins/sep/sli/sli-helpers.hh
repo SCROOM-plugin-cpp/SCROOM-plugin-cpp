@@ -1,10 +1,10 @@
 #pragma once
 
 #include <cairo.h>
-
 #include <scroom/utilities.hh>
 #include <scroom/rectangle.hh>
 #include <scroom/point.hh>
+#include <boost/dynamic_bitset.hpp>
 
 #include "slilayer.hh"
 
@@ -53,9 +53,6 @@ public:
   /** Return the Rectangle representation of the surface (in pixels) */
   virtual Scroom::Utils::Rectangle<int> toRectangle();
 
-  /** Return the Rectangle representation of the surface (in bytes) */
-  virtual Scroom::Utils::Rectangle<int> toBytesRectangle();
-
   /** Destructor */
   virtual ~SurfaceWrapper();
 };
@@ -63,13 +60,19 @@ public:
 /** Compute area in pixels of the given rectangle */
 int getArea(Scroom::Utils::Rectangle<int> rect);
 
+/** Stretch the rectangle @param bpp (Bytes Per Pixel) times horizontally */
+Scroom::Utils::Rectangle<int> toBytesRectangle(Scroom::Utils::Rectangle<int> rect, int bpp = 4);
+
 /** Compute the offset from coordinate (0,0) of the canvas to the given point */
 int pointToOffset(Scroom::Utils::Point<int> p, int stride);
 
 /** Compute the offset of the point from the top-left point of the rectangle */
 int pointToOffset(Scroom::Utils::Rectangle<int> rect, Scroom::Utils::Point<int> p);
 
-/** Compute the Rectangle spanned by the union of two Rectangles */
-Scroom::Utils::Rectangle<int> spannedRectangle(Scroom::Utils::Rectangle<int> rect1, Scroom::Utils::Rectangle<int> rect2);
+/** Compute the Rectangle (in pixels) spanned by the union of all layers set in the bitmap.
+ * If @param fromOrigin is true, coordinate (0,0) will be used as a starting point.
+ * If not, the smallest top-left point of all set layers will be used instead.
+ */
+Scroom::Utils::Rectangle<int> spannedRectangle(boost::dynamic_bitset<> bitmap, std::vector<SliLayer::Ptr> layers, bool fromOrigin = false);
 
 bool fillFromTiff(SliLayer::Ptr layer);

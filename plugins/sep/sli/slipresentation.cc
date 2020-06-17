@@ -256,7 +256,7 @@ std::set<ViewInterface::WeakPtr> SliPresentation::getViews()
 // ////////////////////////////////////////////////////////////////////////
 
 // TODO include when pipette is ready
-// PipetteLayerOperations::PipetteColor SliPresentation::getAverages(Scroom::Utils::Rectangle<int> area)
+// PipetteLayerOperations::PipetteColor SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area)
 // {
 //   if (getArea(area) <= 0)
 //     return {};
@@ -265,7 +265,7 @@ std::set<ViewInterface::WeakPtr> SliPresentation::getViews()
 //   int stride = surfaceWrapper->getStride();
 //   uint8_t* surfaceBegin =  cairo_image_surface_get_data(source->getSurface(0)->surface);
 //   Scroom::Utils::Rectangle<int> intersectionPixels = area.intersection(surfaceWrapper->toRectangle());
-//   Scroom::Utils::Rectangle<int> intersectionBytes {intersectionPixels.getLeft()*4, intersectionPixels.getTop(), intersectionPixels.getWidth()*4, intersectionPixels.getHeight()};
+//   Scroom::Utils::Rectangle<int> intersectionBytes = toBytesRectangle(intersectionPixels);
 //   int offset = pointToOffset(intersectionBytes.getTopLeft(), stride);
 //   int offsetEnd = pointToOffset(intersectionBytes.getBottomRight(), stride) - stride;
 //   double R, G, B, c, m, y, k;
