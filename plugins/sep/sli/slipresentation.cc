@@ -35,10 +35,10 @@ bool SliPresentation::load(const std::string& fileName)
   {
     return false;
   }
-  source->computeHeightWidth();
-  source->checkXoffsets();
   source->visible.resize(source->layers.size(), false);
   source->toggled.resize(source->layers.size(), true);
+  source->computeHeightWidth();
+  source->checkXoffsets();
   
   transformationData = TransformationData::create();
   float xAspect = Xresolution / std::max(Xresolution, Yresolution);
@@ -104,7 +104,7 @@ bool SliPresentation::parseSli(const std::string &sliFileName)
       }
     }
   }
-  if (Xresolution && Yresolution && source->layers.size())
+  if (Xresolution > 0 && Yresolution > 0 && source->layers.size() > 0)
   {
     return true;
   }
@@ -255,17 +255,20 @@ std::set<ViewInterface::WeakPtr> SliPresentation::getViews()
 // // PipetteViewInterface
 // ////////////////////////////////////////////////////////////////////////
 
-// TODO include when ready
+// TODO include when pipette is ready
 // PipetteLayerOperations::PipetteColor SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area)
 // {
+//   if (getArea(area) <= 0)
+//     return {};
+
 //   auto surfaceWrapper = source->getSurface(0);
 //   int stride = surfaceWrapper->getStride();
 //   uint8_t* surfaceBegin =  cairo_image_surface_get_data(source->getSurface(0)->surface);
 //   Scroom::Utils::Rectangle<int> intersectionPixels = area.intersection(surfaceWrapper->toRectangle());
-//   Scroom::Utils::Rectangle<int> intersectionBytes {intersectionPixels.getLeft()*4, intersectionPixels.getTop(), intersectionPixels.getWidth()*4, intersectionPixels.getHeight()};
+//   Scroom::Utils::Rectangle<int> intersectionBytes = toBytesRectangle(intersectionPixels);
 //   int offset = pointToOffset(intersectionBytes.getTopLeft(), stride);
 //   int offsetEnd = pointToOffset(intersectionBytes.getBottomRight(), stride) - stride;
-//   double A, R, G, B, c, m, y, k;
+//   double R, G, B, c, m, y, k;
 //   double C = 0, Y = 0, M = 0, K = 0;
 
 //   for (; offset < offsetEnd; offset += 4)
@@ -276,7 +279,7 @@ std::set<ViewInterface::WeakPtr> SliPresentation::getViews()
 //     B = surfaceBegin[offset+0];
 //     G = surfaceBegin[offset+1];
 //     R = surfaceBegin[offset+2];
-//     A = surfaceBegin[offset+3];
+//     // A = surfaceBegin[offset+3]; // don't need this
 
 //     c = (255.0 - R);
 //     m = (255.0 - G);

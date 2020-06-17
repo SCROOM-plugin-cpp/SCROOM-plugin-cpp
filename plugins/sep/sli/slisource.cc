@@ -5,7 +5,7 @@
 
 SliSource::SliSource(boost::function<void()> &triggerRedrawFunc) : triggerRedraw(triggerRedrawFunc)
 {
-  threadQueue = ThreadPool::Queue::createAsync();
+  threadQueue = ThreadPool::Queue::create();
 }
 
 SliSource::~SliSource()
@@ -17,43 +17,21 @@ SliSource::Ptr SliSource::create(boost::function<void()> &triggerRedrawFunc)
   return Ptr(new SliSource(triggerRedrawFunc));
 }
 
-/** 
- * Find the total height and width of the SLI file.
-*/
 void SliSource::computeHeightWidth()
 {
-  int max_xoffset = 0;
-  int rightmost_l = 0;
-  int max_yoffset = 0;
-  int bottommost_l = 0;
-
-  for (size_t i = 0; i < layers.size(); i++)
-  {
-    if (layers[i]->xoffset > max_xoffset)
-    {
-      rightmost_l = i;
-      max_xoffset = layers[i]->xoffset;
-    }
-
-    if (layers[i]->yoffset > max_yoffset)
-    {
-      bottommost_l = i;
-      max_yoffset = layers[i]->xoffset;
-    }
-  }
-
-  total_width = layers[rightmost_l]->width + layers[rightmost_l]->xoffset;
-  total_height = layers[bottommost_l]->height + layers[bottommost_l]->yoffset;
+  auto rect = spannedRectangle(toggled, layers, true);
+  total_width = rect.getWidth();
+  total_height = rect.getHeight();
 }
 
 void SliSource::checkXoffsets()
-{   
-    hasXoffsets = false;
-    for (auto layer : layers)
-    {
-        if (layer->xoffset != 0)
-            hasXoffsets = true;
-    }
+{
+  hasXoffsets = false;
+  for (auto layer : layers)
+  {
+    if (layer->xoffset != 0)
+      hasXoffsets = true;
+  }
 }
 
 bool SliSource::addLayer(std::string imagePath, std::string filename, int xOffset, int yOffset)
@@ -62,12 +40,11 @@ bool SliSource::addLayer(std::string imagePath, std::string filename, int xOffse
 
   if (filename.substr(filename.length() - 4) == ".sep")
   {
-    SepSource::fillSliLayer(layer); 
-    
+    SepSource::fillSliLayer(layer);
   }
   else if (filename.substr(filename.length() - 4) == ".tif")
   {
-    if (! fillFromTiff(layer))
+    if (!fillFromTiff(layer))
     {
       return false;
     }
@@ -79,7 +56,6 @@ bool SliSource::addLayer(std::string imagePath, std::string filename, int xOffse
   }
   layers.push_back(layer);
   return true;
-
 }
 
 void SliSource::wipeCache()
@@ -193,7 +169,6 @@ void SliSource::reduceRgb(int zoom)
   rgbCache[zoom] = targetSurface;
 }
 
-
 void SliSource::convertCmykXoffset(uint8_t *surfacePointer, uint32_t *targetPointer, int topLeftOffset, int bottomRightOffset, Scroom::Utils::Rectangle<int> toggledRect, int imageBound, int stride)
 {
   double black;
@@ -216,8 +191,9 @@ void SliSource::convertCmykXoffset(uint8_t *surfacePointer, uint32_t *targetPoin
     i += 4;
 
     // we are past the image bounds; go to the next next line
-    if (i % stride == imageBound) {
-        i += stride - toggledRect.getWidth();
+    if (i % stride == imageBound)
+    {
+      i += stride - toggledRect.getWidth();
     }
   }
 }
@@ -299,25 +275,7 @@ void SliSource::computeRgb()
   uint8_t *currentSurfaceByte = surfaceBegin;
 
   // Rectangle (in bytes) of the toggled area
-  Scroom::Utils::Rectangle<int> toggledRect;
-
-  // TODO slightly duplicate code
-  // Find the total rectangle spanned by all toggled layers
-  size_t i = 0;
-  for (; i < toggled.size(); i++)
-  {
-    if (toggled[i])
-    {
-      toggledRect = layers[i]->toBytesRectangle();
-      i++;
-      break;
-    }
-  }
-  for (; i < toggled.size(); i++)
-  {
-    if (toggled[i])
-      toggledRect = spannedRectangle(toggledRect, layers[i]->toBytesRectangle());
-  }
+  Scroom::Utils::Rectangle<int> toggledRect = toBytesRectangle(spannedRectangle(toggled, layers));
 
   for (size_t j = 0; j < layers.size(); j++)
   {
@@ -326,7 +284,7 @@ void SliSource::computeRgb()
 
     auto layer = layers[j];
     auto bitmap = layer->bitmap;
-    Scroom::Utils::Rectangle<int> layerRect = layer->toBytesRectangle();
+    Scroom::Utils::Rectangle<int> layerRect = toBytesRectangle(layer->toRectangle());
 
     if (!layerRect.intersects(toggledRect))
       continue;
@@ -343,13 +301,14 @@ void SliSource::computeRgb()
 
     if (hasXoffsets)
     {
-        int layerBound = std::min(intersectRect.getRight() - layerRect.getLeft(),
-                                layerRect.getRight() - layerRect.getLeft()) % layerRect.getWidth();
-        drawCmykXoffset(currentSurfaceByte, bitmap, bitmapStart, bitmapOffset, layerRect, intersectRect, layerBound, stride);
+      int layerBound = std::min(intersectRect.getRight() - layerRect.getLeft(),
+                                layerRect.getRight() - layerRect.getLeft()) %
+                       layerRect.getWidth();
+      drawCmykXoffset(currentSurfaceByte, bitmap, bitmapStart, bitmapOffset, layerRect, intersectRect, layerBound, stride);
     }
     else
     {
-        drawCmyk(currentSurfaceByte, bitmap, bitmapStart, bitmapOffset);
+      drawCmyk(currentSurfaceByte, bitmap, bitmapStart, bitmapOffset);
     }
   }
 
@@ -380,32 +339,15 @@ void SliSource::clearBottomSurface()
   if (toggled.all() && rgbCache.count(0))
   {
     rgbCache[0]->clearSurface();
-    printf("Complete redraw!\n");
+    printf("Complete redraw! Area: %d pixels.\n", getArea(rgbCache[0]->toRectangle()));
+    return;
   }
-  else
-  {
-    // TODO ask Luke how to improve this
-    Scroom::Utils::Rectangle<int> toggledRect;
-    size_t i = 0;
-    for (; i < toggled.size(); i++)
-    {
-      if (toggled[i])
-      {
-        toggledRect = layers[i]->toRectangle();
-        i++;
-        break;
-      }
-    }
-    for (; i < toggled.size(); i++)
-    {
-      if (toggled[i])
-        toggledRect = spannedRectangle(toggledRect, layers[i]->toRectangle());
-    }
 
-    if (rgbCache.count(0))
-    {
-      rgbCache[0]->clearSurface(toggledRect);
-      printf("Partial redraw! Area: %d\n", getArea(toggledRect));
-    }
+  Scroom::Utils::Rectangle<int> spannedRect = spannedRectangle(toggled, layers);
+
+  if (rgbCache.count(0))
+  {
+    rgbCache[0]->clearSurface(spannedRect);
+    printf("Partial redraw! Area: %d pixels.\n", getArea(spannedRect));
   }
 }

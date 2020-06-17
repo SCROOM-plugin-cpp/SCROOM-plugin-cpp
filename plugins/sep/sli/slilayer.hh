@@ -40,9 +40,6 @@ public:
   /** The memory chunk containing the bitmap */
   uint8_t* bitmap;
 
-  /** Whether or not the layer is toggled to be visible */
-  bool visible; // TODO can be removed
-
 private:
   SliLayer();
 
@@ -55,8 +52,5 @@ public:
 
   /** Returns the Rectangle representation of the layer (in pixels) */
   virtual Scroom::Utils::Rectangle<int> toRectangle();
-
-  /** Returns the Rectangle representation of the layer (in bytes) */
-  virtual Scroom::Utils::Rectangle<int> toBytesRectangle();
 
 };
