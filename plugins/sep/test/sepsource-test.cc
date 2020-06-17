@@ -78,14 +78,24 @@ BOOST_AUTO_TEST_CASE(apply_white_nowhite) {
     BOOST_CHECK(res == 100);
 }
 
-BOOST_AUTO_TEST_CASE(apply_white_subtract) {
+BOOST_AUTO_TEST_CASE(apply_white_subtract_1) {
     auto res = SepSource::applyWhiteInk(100, 100, 1);
     BOOST_CHECK(res == 0);
 }
 
-BOOST_AUTO_TEST_CASE(apply_white_multiply) {
+BOOST_AUTO_TEST_CASE(apply_white_subtract_2) {
+    auto res = SepSource::applyWhiteInk(100, 101, 1);
+    BOOST_CHECK(res == 1);
+}
+
+BOOST_AUTO_TEST_CASE(apply_white_multiply_1) {
     auto res = SepSource::applyWhiteInk(100, 100, 2);
     BOOST_CHECK(res == 39);
+}
+
+BOOST_AUTO_TEST_CASE(apply_white_multiply_2) {
+    auto res = SepSource::applyWhiteInk(0, 100, 2);
+    BOOST_CHECK(res == 100);
 }
 
 BOOST_AUTO_TEST_CASE(tiff_wrapper_nullptr) {
