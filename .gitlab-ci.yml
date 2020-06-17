@@ -24,7 +24,7 @@ coverage-test:
     - cd ../scroom-plugin-cpp
     - autoreconf -i
     - mkdir plugin-build
-    - ./configure --prefix="$(pwd)/plugin-build" CPPFLAGS="-g -O0 -I$path/include/ -ftest-coverage -fprofile-arcs --coverage" LDFLAGS="-L$path/lib -Wl,-z,defs"
+    - ./configure --prefix="$(pwd)/plugin-build" CPPFLAGS="-g -O0 -I$path/include/ --coverage" LDFLAGS="--coverage -p -L$path/lib -Wl,-z,defs"
     - make check
     - gcovr -s --html -o plugin_coverage.html
   retry:
