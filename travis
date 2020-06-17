@@ -48,7 +48,7 @@ else
   cd $TRAVIS_BUILD_DIR
   zip -r plugins-linux.zip plugin-build
 
-  artifact=../plugins-linux.zip
+  artifact=./plugins-linux.zip
   name=plugins-linux.zip
 fi
 
