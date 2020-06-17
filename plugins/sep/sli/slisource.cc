@@ -188,7 +188,7 @@ void SliSource::convertCmykXoffset(uint8_t *surfacePointer, uint32_t *targetPoin
     B = 255 * (1 - Y / 255.0) * black;
 
     targetPointer[i / 4] = (A << 24) | (R << 16) | (G << 8) | B;
-    i += 4;
+    i += 4; // SPP = 4
 
     // we are past the image bounds; go to the next next line
     if (i % stride == imageBound)
@@ -203,7 +203,7 @@ void SliSource::convertCmyk(uint8_t *surfacePointer, uint32_t *targetPointer, in
   double black;
   uint8_t C, M, Y, K, A, R, G, B;
 
-  for (int i = topLeftOffset; i < bottomRightOffset; i += 4)
+  for (int i = topLeftOffset; i < bottomRightOffset; i += 4) // SPP = 4
   {
     C = surfacePointer[i + 0];
     M = surfacePointer[i + 1];

@@ -17,7 +17,7 @@ gboolean scroll_event (GtkWidget *widget, GdkEvent *event, gpointer user_data)
 gboolean check_constraints(gdouble old_low, gdouble old_high, SliControlPanel *cPanel)
 {
   auto presPtr = cPanel->presentation.lock();
-  auto toggled = presPtr->getVisible().reset();
+  boost::dynamic_bitset<> toggled {cPanel->getNumLayers()};
   auto visible = presPtr->getVisible();
 
   for (size_t i = old_low; i <= old_high; i++)
@@ -34,7 +34,7 @@ void toggle_and_redraw(double old_value, double new_value, double other_value,
                        GtkWidget *widget, SliControlPanel *cPanel)
 {
   auto presPtr = cPanel->presentation.lock();
-  auto toggled = presPtr->getVisible().reset();
+  auto toggled = boost::dynamic_bitset<> {cPanel->getNumLayers()};
   auto visible = presPtr->getVisible();
   int start = std::min(old_value, new_value);
   int finish = std::max(old_value, new_value);
@@ -176,7 +176,7 @@ static void on_toggle(GtkCellRendererToggle *renderer, gchar *path, SliControlPa
 
   SliPresentationInterface::Ptr presPtr = cPanel->presentation.lock();
   std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
-  auto toggled = presPtr->getVisible().reset();
+  auto toggled = boost::dynamic_bitset<> {cPanel->getNumLayers()};
 
   model = gtk_tree_view_get_model(GTK_TREE_VIEW(cPanel->widgets[TREEVIEW]));
 

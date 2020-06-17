@@ -26,7 +26,7 @@ public:
 
 private:
   /** The number of layers that the SliPresentation consists of*/
-  int n_layers;
+  unsigned int n_layers;
 
 public:
   /** Contains the pointers to the widgets of the control panel*/
@@ -51,6 +51,9 @@ private:
 public:
   /** Constructor */
   static SliControlPanel::Ptr create(ViewInterface::WeakPtr view, SliPresentationInterface::WeakPtr presentation_);
+
+  /** Get the number of layers in the model */
+  unsigned int getNumLayers() {return n_layers;};
   
   /** Disable the widgets while the cache is being computed. */
   virtual void disableInteractions();
