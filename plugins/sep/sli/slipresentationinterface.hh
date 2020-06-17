@@ -4,7 +4,6 @@
 
 #include "slilayer.hh"
 
-
 class SliPresentationInterface
 {
 public:
@@ -13,11 +12,21 @@ public:
 
   virtual ~SliPresentationInterface() {}
 
-  virtual void wipeCache()=0;
-  virtual void triggerRedraw()=0;
-  virtual boost::dynamic_bitset<> getToggled()=0;
-  virtual boost::dynamic_bitset<> getVisible()=0;
-  virtual void setToggled(boost::dynamic_bitset<> bitmap)=0;
-  virtual std::vector<SliLayer::Ptr>& getLayers()=0;
+  /** 
+   *  Erase the RGB cache of the SliSource except for the bottom layer
+   *  for which the relevant bytes are simply turned to 0s.
+   */
+  virtual void wipeCache() = 0;
 
+  /** Causes the SliPresentation to redraw the current presentation */
+  virtual void triggerRedraw() = 0;
+
+  /** Get a copy of the bitmap encoding the visibility of layers from SliSource */
+  virtual boost::dynamic_bitset<> getVisible() = 0;
+
+  /** Set the bits of the newly toggled bits in the toggled bitmap of SliSource */
+  virtual void setToggled(boost::dynamic_bitset<> bitmap) = 0;
+
+  /** Get a reference to the list of all layers in SliSource */
+  virtual std::vector<SliLayer::Ptr> &getLayers() = 0;
 };

@@ -104,7 +104,10 @@ public:
 
   virtual bool addLayer(std::string imagePath, std::string filename, int xOffset, int yOffset);
 
-  /** Wipe the zoom level RGB cache of the presentation. Needed when layers are enabled or disabled. */
+  /** 
+   *  Erase the RGB cache of the SliSource except for the bottom layer
+   *  for which the relevant bytes are simply turned to 0s.
+   */
   virtual void wipeCache();
 
   /* Draw the CMYK data on the surface (more efficient) */

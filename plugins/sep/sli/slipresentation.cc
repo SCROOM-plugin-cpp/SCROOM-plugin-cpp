@@ -142,11 +142,6 @@ void SliPresentation::triggerRedraw()
   }
 }
 
-boost::dynamic_bitset<> SliPresentation::getToggled()
-{
-  return source->toggled;
-}
-
 boost::dynamic_bitset<> SliPresentation::getVisible()
 {
   return source->visible;
@@ -282,7 +277,7 @@ std::set<ViewInterface::WeakPtr> SliPresentation::getViews()
 //   double R, G, B, c, m, y, k;
 //   double C = 0, Y = 0, M = 0, K = 0;
 
-//   for (; offset < offsetEnd; offset += 4)
+//   for (; offset < offsetEnd; offset += 4) // SPP = 4
 //   {
 //     if (offset % stride == intersectionBytes.getRight() % stride)
 //       offset += stride - intersectionBytes.getWidth();
