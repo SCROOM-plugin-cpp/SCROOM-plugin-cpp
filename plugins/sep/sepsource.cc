@@ -148,9 +148,9 @@ bool SepSource::getResolution(uint16_t &unit, float &x_resolution, float &y_reso
         this->getForOneChannel(channel, channel_res_unit, channel_res_x, channel_res_y);
         // check if the same as first values
         // if not, set status flag and continue
-        warning |= (channel_res_x != x_resolution) ||
-                   (channel_res_y != y_resolution) ||
-                   (channel_res_unit != unit);
+        warning |= std::abs(channel_res_x - x_resolution) > 1e-3 ||
+                   std::abs(channel_res_y - y_resolution) > 1e-3 ||
+                   channel_res_unit != unit;
     }
 
     return !warning;
