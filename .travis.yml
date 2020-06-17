@@ -41,6 +41,7 @@ before_install:
       windows)
         [[ ! -f C:/tools/msys64/msys2_shell.cmd ]] && rm -rf C:/tools/msys64
         choco uninstall -y mingw
+        choco install jq
         choco upgrade --no-progress -y msys2
         export msys2='cmd //C RefreshEnv.cmd '
         export msys2+='& set MSYS=winsymlinks:nativestrict '
@@ -65,8 +66,7 @@ before_install:
                mingw-w64-x86_64-gtk2 \
                mingw-w64-x86_64-libglade \
                pkg-config \
-               zip \
-               jq
+               zip
         taskkill //IM gpg-agent.exe //F  # https://travis-ci.community/t/4967
         export PATH=/C/tools/msys64/mingw64/bin:$PATH
         export prefix="$mingw64"
