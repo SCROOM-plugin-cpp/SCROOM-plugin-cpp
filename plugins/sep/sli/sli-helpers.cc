@@ -100,7 +100,7 @@ int pointToOffset(Scroom::Utils::Point<int> p, int stride)
 
 int pointToOffset(Scroom::Utils::Rectangle<int> rect, Scroom::Utils::Point<int> p)
 {
-  return (p.y - rect.getTop()) * rect.getWidth() + (p.x - rect.getLeft());
+  return std::max(0, (p.y - rect.getTop()) * rect.getWidth() + (p.x - rect.getLeft()));
 }
 
 Scroom::Utils::Rectangle<int> spannedRectangle(boost::dynamic_bitset<> bitmap, std::vector<SliLayer::Ptr> layers, bool fromOrigin)

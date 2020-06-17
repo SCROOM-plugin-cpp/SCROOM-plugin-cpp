@@ -292,7 +292,7 @@ void SliSource::computeRgb()
     // Rectangle area (in bytes) of the intersection between the toggled and current rectangles
     Scroom::Utils::Rectangle<int> intersectRect = toggledRect.intersection(layerRect);
     // index of the first pixel that needs to be drawn
-    int bitmapStart = std::max(0, pointToOffset(layerRect, intersectRect.getTopLeft()));
+    int bitmapStart = pointToOffset(layerRect, intersectRect.getTopLeft());
     // offset of the last pixel from bitmapStart
     int bitmapOffset = intersectRect.getHeight() * layerRect.getWidth();
     // offset of the surface pointer from the top-left point of the surface

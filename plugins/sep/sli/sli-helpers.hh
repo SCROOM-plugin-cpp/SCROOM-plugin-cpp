@@ -67,7 +67,11 @@ Scroom::Utils::Rectangle<int> toBytesRectangle(Scroom::Utils::Rectangle<int> rec
 /** Compute the offset from coordinate (0,0) of the canvas to the given point */
 int pointToOffset(Scroom::Utils::Point<int> p, int stride);
 
-/** Compute the offset of the point from the top-left point of the rectangle */
+/** 
+ * Compute the offset of the point from the top-left point of the rectangle.
+ * Keep in ming this is still computed with the origin (0,0)  as the absolute point of reference,
+ * for both the rectangle and the point!
+ */
 int pointToOffset(Scroom::Utils::Rectangle<int> rect, Scroom::Utils::Point<int> p);
 
 /** 

@@ -91,7 +91,11 @@ public:
   /** Compute the overall width and height of the SLi file (over all layers) */
   virtual void computeHeightWidth();
 
-  /** Checks if any of the layers has an xoffset */
+  /** 
+   * Check if any of the layers has an xoffset.
+   * Drawing Sli layers with xoffsets requires many checks to know when to jump to the next line.
+   * These degrade performance so we try to avoid them if possible.
+   */
   virtual void checkXoffsets();
 
   /**
