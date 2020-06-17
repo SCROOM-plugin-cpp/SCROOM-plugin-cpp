@@ -82,14 +82,14 @@ class SepSource : public SourcePresentation {
 
     /**
      * Setter for SepSource::sep_file.
-     * Sets SepSource::sep_file = sep_file_
-     * @param sep_file_ - value to set.
+     *
+     * @param file - value to set.
      */
-    void setData(SepFile sep_file_);
+    void setData(SepFile file);
 
     /**
      * Opens the required TIFF files for the individual channels.
-     * Sets value of channel_files, white_ink and varnish .
+     * Sets value of channel_files, white_ink and varnish.
      */
     void openFiles();
 
@@ -107,7 +107,7 @@ class SepSource : public SourcePresentation {
      * acts expectedly/throws errors when supplied with a NULL. So,
      * this function adds a brief error handling case around it.
      */
-    int TIFFReadScanline_(tiff *file, void *buf, uint32 row, uint16 sample = 0);
+    static int TIFFReadScanline_(tiff *file, void *buf, uint32 row, uint16 sample = 0);
 
     /**
      * Retrieves a scanline from all components combined.

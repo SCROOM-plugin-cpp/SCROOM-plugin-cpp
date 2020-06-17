@@ -29,11 +29,13 @@ boost::filesystem::path SepSource::findParentDir(const std::string &file_path) {
 
 /**
  * Parses the content of a given SEP file.
+ *
  * When the width or height are not properly specified or one of the channel names
  * is empty or one of the channel lines does not follow the specification, a
  * warning dialog is shown.
  */
 SepFile SepSource::parseSep(const std::string &file_name) {
+    std::cerr << file_name << "\n";
     std::ifstream file(file_name);
     std::string line;
 
@@ -70,6 +72,7 @@ SepFile SepSource::parseSep(const std::string &file_name) {
             errors += "PANIC: One of the channels has not been provided correctly!\n";
             continue;
         }
+
         // store the full file path to each file
         sep_file.files[result[0]] = parent_dir / result[1];
     }
