@@ -5,7 +5,7 @@
 #include <scroom/presentationinterface.hh>
 #include <scroom/scroominterface.hh>
 #include <scroom/transformpresentation.hh>
-// #include <scroom/pipetteviewinterface.hh> // TODO include when ready
+// #include <scroom/pipetteviewinterface.hh> // TODO include when pipette is ready
 
 #include "slilayer.hh"
 #include "slicontrolpanel.hh"
@@ -16,7 +16,7 @@
 class SliPresentation : public PresentationBase,
                         public virtual Scroom::Utils::Base,
                         public SliPresentationInterface
-                        // public PipetteViewInterface // TODO include when ready
+                        // public PipetteViewInterface // TODO include when pipette is ready
 {
 public:
   typedef boost::shared_ptr<SliPresentation> Ptr;
@@ -115,6 +115,6 @@ public:
   // PipetteViewInterface
   ////////////////////////////////////////////////////////////////////////
 
-  // TODO include when ready
-  // virtual PipetteLayerOperations::PipetteColor getPixelAverages(Scroom::Utils::Rectangle<int> area);
+  // TODO include when pipette is ready
+  // virtual PipetteLayerOperations::PipetteColor getAverages(Scroom::Utils::Rectangle<int> area);
 };

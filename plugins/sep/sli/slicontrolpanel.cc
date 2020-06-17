@@ -99,7 +99,6 @@ void update_tree_model(GtkTreeView *treeview, int min, int max, int low, int hig
   }
 }
 
-// TODO Change buffer color
 /* Takes care of all focus-out, button-press, and key-release events */
 gboolean slider_event_handler(GtkWidget *widget, GdkEvent *event, SliControlPanel *cPanel)
 {

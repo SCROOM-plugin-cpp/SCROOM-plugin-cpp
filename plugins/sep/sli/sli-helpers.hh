@@ -61,34 +61,15 @@ public:
 };
 
 /** Compute area in pixels of the given rectangle */
-inline int getArea(Scroom::Utils::Rectangle<int> rect)
-{
-  return rect.getHeight() * rect.getWidth();
-}
+int getArea(Scroom::Utils::Rectangle<int> rect);
 
 /** Compute the offset from coordinate (0,0) of the canvas to the given point */
-inline int pointToOffset(Scroom::Utils::Point<int> p, int stride)
-{
-  return p.y * stride + p.x;
-}
+int pointToOffset(Scroom::Utils::Point<int> p, int stride);
 
 /** Compute the offset of the point from the top-left point of the rectangle */
-inline int pointToOffset(Scroom::Utils::Rectangle<int> rect, Scroom::Utils::Point<int> p)
-{
-  return (p.y - rect.getTop()) * rect.getWidth() + (p.x - rect.getLeft());
-}
+int pointToOffset(Scroom::Utils::Rectangle<int> rect, Scroom::Utils::Point<int> p);
 
 /** Compute the Rectangle spanned by the union of two Rectangles */
-inline Scroom::Utils::Rectangle<int> spannedRectangle(Scroom::Utils::Rectangle<int> rect1, Scroom::Utils::Rectangle<int> rect2)
-{
-  Scroom::Utils::Rectangle<int> rect{
-      std::min(rect1.getLeft(), rect2.getLeft()),
-      std::min(rect1.getTop(), rect2.getTop()),
-      std::max(rect1.getRight() - std::min(rect1.getLeft(), rect2.getLeft()),
-              rect2.getRight() - std::min(rect1.getLeft(), rect2.getLeft())),
-      std::max(rect1.getBottom() - std::min(rect1.getTop(), rect2.getTop()),
-              rect2.getBottom() - std::min(rect1.getTop(), rect2.getTop()))};
-  return rect;
-}
+Scroom::Utils::Rectangle<int> spannedRectangle(Scroom::Utils::Rectangle<int> rect1, Scroom::Utils::Rectangle<int> rect2);
 
 bool fillFromTiff(SliLayer::Ptr layer);

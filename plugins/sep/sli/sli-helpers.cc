@@ -88,6 +88,33 @@ void SurfaceWrapper::clearSurface(Scroom::Utils::Rectangle<int> rect)
   clear = true;
 }
 
+int getArea(Scroom::Utils::Rectangle<int> rect)
+{
+  return rect.getHeight() * rect.getWidth();
+}
+
+int pointToOffset(Scroom::Utils::Point<int> p, int stride)
+{
+  return p.y * stride + p.x;
+}
+
+int pointToOffset(Scroom::Utils::Rectangle<int> rect, Scroom::Utils::Point<int> p)
+{
+  return (p.y - rect.getTop()) * rect.getWidth() + (p.x - rect.getLeft());
+}
+
+Scroom::Utils::Rectangle<int> spannedRectangle(Scroom::Utils::Rectangle<int> rect1, Scroom::Utils::Rectangle<int> rect2)
+{
+  Scroom::Utils::Rectangle<int> rect{
+      std::min(rect1.getLeft(), rect2.getLeft()),
+      std::min(rect1.getTop(), rect2.getTop()),
+      std::max(rect1.getRight() - std::min(rect1.getLeft(), rect2.getLeft()),
+              rect2.getRight() - std::min(rect1.getLeft(), rect2.getLeft())),
+      std::max(rect1.getBottom() - std::min(rect1.getTop(), rect2.getTop()),
+              rect2.getBottom() - std::min(rect1.getTop(), rect2.getTop()))};
+  return rect;
+}
+
 SurfaceWrapper::~SurfaceWrapper()
 {
   if (!empty)
