@@ -1,10 +1,12 @@
 #!/bin/bash
 
-set -x
+#useful for debugging but will leak secret variables on Travis for Windows
+#set -x
 set -e
 set -u
 
-git clone --depth 200 https://github.com/kees-jan/scroom.git
+#first clone and build the Scroom repository
+git clone --depth 200 https://github.com/SCROOM-plugin-cpp/scroom
 cd scroom
 
 autoreconf -i
@@ -21,6 +23,7 @@ cd scroom-build
 make -k -j2 install
 cd ..
 
+#build the plugins
 autoreconf -i
 
 mkdir cpp-plugins-build
@@ -31,6 +34,7 @@ make -k -j2 install
 
 if [ "${TRAVIS_OS_NAME}" = "windows" ]
 then
+  #for windows we can build a portable application with all the plugins
   rm -rf $scroom_loc
   cd ../scroom-build
 
@@ -43,6 +47,7 @@ then
   artifact=./scroom.zip
   name=scroom.zip
 else
+  #the linux build is not portable so we only provide the plugins
   tar czf ./plugins-linux.tar.gz $plugin_loc
 
   artifact=./plugins-linux.tar.gz
@@ -51,6 +56,7 @@ fi
 
 ls -l
 
+#if this build is for a tag add the build artifacts as GitHub release artifacts
 if [ ! "${TRAVIS_TAG}" = "" ]
 then
   tag_id=$(curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/$TRAVIS_REPO_SLUG/releases/tags/$TRAVIS_TAG | jq '.id')
