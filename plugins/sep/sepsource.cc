@@ -268,7 +268,7 @@ uint8_t SepSource::applyWhiteInk(uint8_t white, uint8_t color, int type) {
     if (type == 1)  // 1 means subtractive model
         return white >= color ? 0 : color - white;
     else if (type == 2)  // 2 means multiplicative model
-        return white > 0 ? color / white : color;
+        return white > 0 ? (color * white) / 255 : color; // 255 is the maximum white value
     else  // 0 means white ink is not present
         return color;
 }
