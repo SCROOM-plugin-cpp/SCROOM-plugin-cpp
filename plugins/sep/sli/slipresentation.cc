@@ -88,9 +88,20 @@ bool SliPresentation::parseSli(const std::string &sliFileName)
       else if (fs::exists(fs::path(dirPath) /= firstToken))
       {
         // Line contains name of an existing file
-        i++; // discard the colon
-        int xOffset = std::stoi(*i++);
-        int yOffset = std::stoi(*i++);
+        if (*i == ":")
+        {
+          i++; // discard the colon
+        }
+        int xOffset = 0;
+        int yOffset = 0;
+        if (i != j)
+        {
+          xOffset = std::stoi(*i++);
+        }
+        if (i != j)
+        {
+          yOffset = std::stoi(*i++);
+        }
         fs::path imagePath = fs::path(dirPath) /= firstToken;
         if (! source->addLayer(imagePath.string(), firstToken, xOffset, yOffset))
         {
