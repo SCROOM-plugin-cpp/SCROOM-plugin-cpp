@@ -251,13 +251,15 @@ void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr) {
     }
 
     auto w_line = std::vector<uint8_t>(size);
-    auto v_line = std::vector<uint8_t>(size);
     TIFFReadScanline_(white_ink, w_line.data(), line_nr);
+
+    // NOTE: Support for varnish is not used at the moment
+    auto v_line = std::vector<uint8_t>(size);
     TIFFReadScanline_(varnish, v_line.data(), line_nr);
 
     for (size_t i = 0; i < size; i++) {
         for (size_t j = 0; j < nr_channels; j++) {
-            out[4 * i + j] = SepSource::applyWhiteInk(w_line[i], lines[j][i], this->sep_file.white_ink_choice);
+            out[nr_channels * i + j] = SepSource::applyWhiteInk(w_line[i], lines[j][i], this->sep_file.white_ink_choice);
         }
     }
 }
