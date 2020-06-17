@@ -5,16 +5,13 @@
 set -e
 set -u
 
-#first clone and build the Scroom repository
-git clone --depth 200 https://github.com/SCROOM-plugin-cpp/scroom
+#first build the Scroom repository
 cd scroom
-
 autoreconf -i
-
 cd ..
 
-scroom_loc=$(pwd)/scroom-install
-plugin_loc=$(pwd)/plugin-build
+scroom_loc=$(pwd)/build/scroom
+plugin_loc=$(pwd)/build/plugin-build
 
 mkdir scroom-build
 cd scroom-build
@@ -50,10 +47,13 @@ then
 else
   #the linux build is not portable so we only provide the plugins
   cd $plugin_loc
-  tar czf ../plugins-linux.tar.gz .
+  cd ..
+  mkdir plugins
+  cp -rf plugin-build/lib/scroom/* plugins/
+  zip -r plugins-linux.zip plugins
 
-  artifact=../plugins-linux.tar.gz
-  name=plugins-linux.tar.gz
+  artifact=./plugins-linux.zip
+  name=plugins-linux.zip
 fi
 
 ls -l
