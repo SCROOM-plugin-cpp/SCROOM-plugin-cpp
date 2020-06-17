@@ -32,6 +32,7 @@ addons:
     - pkg-config
     - doxygen
     - graphviz
+    - jq
 git:
   depth: 200
 before_install:
@@ -64,7 +65,8 @@ before_install:
                mingw-w64-x86_64-gtk2 \
                mingw-w64-x86_64-libglade \
                pkg-config \
-               zip
+               zip \
+               jq
         taskkill //IM gpg-agent.exe //F  # https://travis-ci.community/t/4967
         export PATH=/C/tools/msys64/mingw64/bin:$PATH
         export prefix="$mingw64"
