@@ -40,17 +40,19 @@ then
 
   make -k -j2 install-win-portable
   
-  cd ..
   cp -r $plugin_loc/lib/bin/ $scroom_loc/plugins/
-  zip -r scroom.zip $scroom_loc
+  cd $scroom_loc
+  cd ..
+  zip -r scroom.zip scroom
   
   artifact=./scroom.zip
   name=scroom.zip
 else
   #the linux build is not portable so we only provide the plugins
-  tar czf ./plugins-linux.tar.gz $plugin_loc
+  cd $public_loc
+  tar czf ../plugins-linux.tar.gz .
 
-  artifact=./plugins-linux.tar.gz
+  artifact=../plugins-linux.tar.gz
   name=plugins-linux.tar.gz
 fi
 
