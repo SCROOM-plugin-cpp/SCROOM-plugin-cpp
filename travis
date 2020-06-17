@@ -6,8 +6,6 @@ set -e
 set -u
 
 #first build the Scroom repository
-rm -rf scroom
-git clone https://github.com/SCROOM-plugin-cpp/scroom.git
 cd scroom
 autoreconf -i
 cd ..
