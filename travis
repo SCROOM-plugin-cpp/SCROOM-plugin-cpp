@@ -10,8 +10,8 @@ cd scroom
 autoreconf -i
 cd ..
 
-scroom_loc=$(pwd)/scroom-install
-plugin_loc=$(pwd)/plugin-build
+scroom_loc=$(pwd)/build/scroom
+plugin_loc=$(pwd)/build/plugin-build
 
 mkdir scroom-build
 cd scroom-build
@@ -38,15 +38,19 @@ then
   make -k -j2 install-win-portable
   
   cp -rf $plugin_loc/lib/bin/* $scroom_loc/plugins/
-  cd $TRAVIS_BUILD_DIR
-  zip -r scroom.zip scroom-install
+  cd $scroom_loc
+  cd ..
+  zip -r scroom.zip scroom
   
   artifact=./scroom.zip
   name=scroom.zip
 else
   #the linux build is not portable so we only provide the plugins
-  cd $TRAVIS_BUILD_DIR
-  zip -r plugins-linux.zip plugin-build
+  cd $public_loc
+  cd ..
+  mkdir plugins
+  cp -rf plugin-build/lib/scroom/* plugins/
+  zip -r plugins-linux.zip plugins
 
   artifact=./plugins-linux.zip
   name=plugins-linux.zip
