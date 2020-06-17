@@ -26,7 +26,8 @@ coverage-test:
     - mkdir plugin-build
     - ./configure --prefix="$(pwd)/plugin-build" CPPFLAGS="-g -O0 -I$path/include/ --coverage" LDFLAGS="--coverage -p -L$path/lib/ -Wl,-z,defs"
     - make check
-    - gcovr -s --html -o plugin_coverage.html
+    - mkdir reports
+    - gcovr -s --html-details -o reports/coverage.html
   retry:
     max: 2
     when: runner_system_failure
@@ -34,7 +35,7 @@ coverage-test:
   artifacts:
     name: "Plugin coverage reports"
     paths:
-      - plugin_coverage.html
+      - reports/
 
 build-windows:
   # Due to windows docker issues, we can't configure/build in the volume mount.
