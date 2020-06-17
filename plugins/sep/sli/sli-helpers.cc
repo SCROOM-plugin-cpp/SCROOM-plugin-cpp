@@ -81,7 +81,6 @@ void SurfaceWrapper::clearSurface(Scroom::Utils::Rectangle<int> rect)
   clear = true;
 }
 
-// TODO bps/bpp/spp are pretty much used as magic numbers throughout the SLI code
 Scroom::Utils::Rectangle<int> toBytesRectangle(Scroom::Utils::Rectangle<int> rect, int bpp)
 {
   Scroom::Utils::Rectangle<int> bytesRect {rect.getLeft()*bpp, rect.getTop(), rect.getWidth()*bpp, rect.getHeight()};

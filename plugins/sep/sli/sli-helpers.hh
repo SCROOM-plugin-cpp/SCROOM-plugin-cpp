@@ -28,7 +28,8 @@ private:
   SurfaceWrapper(int width, int height, cairo_format_t format);
 
 public:
-  /** Constructor */
+
+  /** Constructors */
   static Ptr create();
   static Ptr create(int width, int height, cairo_format_t format);
 
@@ -60,7 +61,7 @@ public:
 /** Compute area in pixels of the given rectangle */
 int getArea(Scroom::Utils::Rectangle<int> rect);
 
-/** Stretch the rectangle @param bpp (Bytes Per Pixel) times horizontally */
+/** Stretch the rectangle @param bpp (Bytes Per Pixel, 4 for this plugin) times horizontally */
 Scroom::Utils::Rectangle<int> toBytesRectangle(Scroom::Utils::Rectangle<int> rect, int bpp = 4);
 
 /** Compute the offset from coordinate (0,0) of the canvas to the given point */
@@ -69,7 +70,8 @@ int pointToOffset(Scroom::Utils::Point<int> p, int stride);
 /** Compute the offset of the point from the top-left point of the rectangle */
 int pointToOffset(Scroom::Utils::Rectangle<int> rect, Scroom::Utils::Point<int> p);
 
-/** Compute the Rectangle (in pixels) spanned by the union of all layers set in the bitmap.
+/** 
+ * Compute the Rectangle (in pixels) spanned by the union of all toggled layers set in the bitmap.
  * If @param fromOrigin is true, coordinate (0,0) will be used as a starting point.
  * If not, the smallest top-left point of all set layers will be used instead.
  */

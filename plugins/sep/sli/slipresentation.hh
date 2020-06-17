@@ -76,21 +76,26 @@ public:
    */
   virtual bool parseSli(const std::string &fileName);
 
-  /** Getter for the layers that the presentation consists of */
+  /** Get a reference to the list of all layers in SliSource */
   std::vector<SliLayer::Ptr>& getLayers() {return source->layers;};
 
   ////////////////////////////////////////////////////////////////////////
   // SliPresentationInterface
   ////////////////////////////////////////////////////////////////////////
 
-  /** Wipe the zoom level RGB cache of the presentation. Needed when layers are enabled or disabled. */
+  /** 
+   *  Erase (delete reference) the RGB cache of the SliSource except for the bottom layer
+   *  for which the relevant bytes are simply turned to 0s.
+   */
   virtual void wipeCache();
 
-  /** Causes the complete canvas to be redrawn */
+  /** Causes the SliPresentation to redraw the current presentation */
   virtual void triggerRedraw();
   
-  virtual boost::dynamic_bitset<> getToggled();
+  /** Get a copy of the bitmap encoding the visibility of layers from SliSource */
   virtual boost::dynamic_bitset<> getVisible();
+
+  /** Set the bits of the newly toggled bits in the toggled bitmap of SliSource */
   virtual void setToggled(boost::dynamic_bitset<> bitmap);
 
   ////////////////////////////////////////////////////////////////////////
