@@ -109,7 +109,8 @@ SepFile SepSource::parseSep(const std::string &file_name) {
 }
 
 void SepSource::getForOneChannel(struct tiff *channel, uint16_t &unit, float &x_resolution, float &y_resolution) {
-    if (TIFFGetField(channel, TIFFTAG_XRESOLUTION, &x_resolution) &&
+    if (channel != nullptr &&
+        TIFFGetField(channel, TIFFTAG_XRESOLUTION, &x_resolution) &&
         TIFFGetField(channel, TIFFTAG_YRESOLUTION, &y_resolution) &&
         TIFFGetField(channel, TIFFTAG_RESOLUTIONUNIT, &unit)) {
         if (unit == RESUNIT_NONE) {
