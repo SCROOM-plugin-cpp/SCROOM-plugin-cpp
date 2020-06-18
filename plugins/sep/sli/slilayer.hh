@@ -31,7 +31,7 @@ public:
   /** Vertical offset from the top-left point of the canvas (in pixels) */
   int yoffset;
 
-  /** Filename without extension; used as an ID */
+  /** Filename of the layer. Used as an identifier in the TreeView */
   std::string name;
 
   /** Absolute filepath to the tiff/sep file */

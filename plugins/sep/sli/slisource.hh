@@ -64,7 +64,7 @@ private:
 
   /**
    * Reduces the RGB bitmap and caches the result. 
-   * 2x2 pixels of the zoom+1 bitmap are combined into one pixel of the zoom bitmap
+   * 2x2 pixels of the @param zoom+1 bitmap are combined into one pixel of the zoom bitmap
    */
   virtual void reduceRgb(int zoom);
 
@@ -78,16 +78,49 @@ private:
   /** Clear the last modified area of the bottom surface */
   virtual void clearBottomSurface();
 
-  /* Draw the CMYK data on the surface (more efficient) */
+  /** 
+   * Draw the CMYK data onto the surface. 
+   * @param surfacePointer is a pointer to the byte of the surface where the drawing will start. 
+   * @param bitmap holds a pointer to the CMYK bitmap to draw. 
+   * @param bitmapStart is the index into the start of the bitmap area to draw. 
+   * @param bitmapOffset is the offset from bitmapStart of the bitmap area to draw.
+   */
   virtual void drawCmyk(uint8_t *surfacePointer, uint8_t *bitmap, int bitmapStart, int bitmapOffset);
 
-  /* Draw the CMYK data on the surface */
+  /** 
+   * Draw the CMYK data onto the surface. It is similar to drawCmyk but it also supports SLI files with xoffsets. 
+   * However, it is noticably slower.
+   * @param surfacePointer is a pointer to the byte of the surface where the drawing will start. 
+   * @param bitmap holds a pointer to the CMYK bitmap to draw. 
+   * @param bitmapStart is the index into the start of the bitmap area to draw. 
+   * @param bitmapOffset is the offset from bitmapStart of the bitmap area to draw.
+   * @param layerRect represents the current layer being drawn. 
+   * @param intersectRect represents the area of the current layer that intersects the canvas.
+   * @param layerBound is the right bound of area to draw. 
+   * @param stride is the stride of the entire SLI image.
+   */
   virtual void drawCmykXoffset(uint8_t *surfacePointer, uint8_t *bitmap, int bitmapStart, int bitmapOffset, Scroom::Utils::Rectangle<int> layerRect, Scroom::Utils::Rectangle<int> intersectRect, int layerBound, int stride);
 
-  /* Convert the CMYK data on the surface to ARGB (more efficient) */
+  /** 
+   * Converts the a CMYK surface to an RGB surface. 
+   * @param surfacePointer is a pointer to the first byte of the surface. 
+   * @param targetPointer is a pointer to the first pixel of the surface.
+   * @param topLeftOffset is the offset from coordinate (0,0) of the first byte of the surface.
+   * @param bottomRightOffset is the offset from coordinate (0,0) of the last byte of the surface.
+   */
   virtual void convertCmyk(uint8_t *surfacePointer, uint32_t *targetPointer, int topLeftOffset, int bottomRightOffset);
 
-  /* Convert the CMYK data on the surface to ARGB */
+  /** 
+   * Converts the a CMYK surface to an RGB surface. It is similar to convertCmyk
+   * but it also supports SLI files with xoffsets. However, it is noticably slower.
+   * @param surfacePointer is a pointer to the first byte of the surface. 
+   * @param targetPointer is a pointer to the first pixel of the surface.
+   * @param topLeftOffset is the offset from coordinate (0,0) of the first byte of the surface.
+   * @param bottomRightOffset is the offset from coordinate (0,0) of the last byte of the surface.
+   * @param toggledWidth represents the width of the area of the surface that needs to be converted. 
+   * @param toggledBound represents the right bound of the area to convert.
+   * @param stride is the stride of the entire SLI image.
+   */
   virtual void convertCmykXoffset(uint8_t *surfacePointer, uint32_t *targetPointer, int topLeftOffset, int bottomRightOffset, int toggledWidth, int toggledBound, int stride);
 
 public:
@@ -117,7 +150,14 @@ public:
    * @return the SurfaceWrapper needed for displaying the zoom level or nullptr if it is not cached yet
    */
   virtual SurfaceWrapper::Ptr getSurface(int zoom);
-
+  
+  /**
+   * Create a new SliLayer and add it to the list of layers.
+   * @param imagePath is the absolute path to the tif/sep file.
+   * @param filename is the name of the file, including its extension.
+   * @param xOffset the xoffset of the layer defined in the SLI file.
+   * @param yOffset the yoffset of the layer defined in the SLI file.
+   */
   virtual bool addLayer(std::string imagePath, std::string filename, int xOffset, int yOffset);
 
   /** 
