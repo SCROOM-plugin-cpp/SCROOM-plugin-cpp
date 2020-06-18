@@ -41,7 +41,7 @@ bool SepPresentation::load(const std::string &file_name) {
 
     this->transform = this->sep_source->getTransform();
 
-    this->tbi = createTiledBitmap(this->width, this->height, {OperationsCMYK32::create()});
+    this->tbi = createTiledBitmap(this->width, this->height, {OperationsCMYK32::create(8)});
     this->tbi->setSource(this->sep_source);
 
     return true;
