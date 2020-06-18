@@ -37,12 +37,14 @@ void SliSource::checkXoffsets()
 bool SliSource::addLayer(std::string imagePath, std::string filename, int xOffset, int yOffset)
 {
   SliLayer::Ptr layer = SliLayer::create(imagePath, filename, xOffset, yOffset);
-
-  if (filename.substr(filename.length() - 4) == ".sep")
+  auto extension = filename.substr(filename.find_last_of("."));
+  boost::to_lower(extension);
+  
+  if (extension == ".sep")
   {
     SepSource::fillSliLayer(layer);
   }
-  else if (filename.substr(filename.length() - 4) == ".tif")
+  else if (extension == ".tif" || extension == ".tiff")
   {
     if (!fillFromTiff(layer))
     {
