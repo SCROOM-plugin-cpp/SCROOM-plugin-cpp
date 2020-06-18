@@ -5,6 +5,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "varnish/varnish-helpers.hh"
+
 int ShowWarning(std::string message, GtkMessageType type_gtk = GTK_MESSAGE_WARNING) {
     // We don't have a pointer to the parent window, so nullptr should suffice
     GtkWidget *dialog = gtk_message_dialog_new(
@@ -223,15 +225,19 @@ void SepSource::openFiles() {
         show_warning |= channel_files[c] == nullptr;
     }
 
-    // open white ink and varnish channels
+    // open white ink channel
     if (sep_file.files.count("W") == 1) {
         this->white_ink = TIFFOpen(this->sep_file.files["W"].string().c_str(), "r");
         show_warning |= (this->white_ink == nullptr);
     }
 
+    // open varnish channel
     if (sep_file.files.count("V") == 1) {
-        this->varnish = TIFFOpen(this->sep_file.files["V"].string().c_str(), "r");
-        show_warning |= (this->varnish == nullptr);
+        SliLayer::Ptr varnishLayer = SliLayer::create(sep_file.files["V"].string(), "Varnish", 0, 0);
+        fillVarnishOverlay(varnishLayer);
+        this->varnish = Varnish::create(varnishLayer);
+        // TODO; find a nice way to check whether the above succeeded
+        // show_warning |= (this->varnish);
     }
 
     if (show_warning) {
@@ -258,10 +264,6 @@ void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr) {
 
     auto w_line = std::vector<uint8_t>(size);
     TIFFReadScanline_(white_ink, w_line.data(), line_nr);
-
-    // NOTE: Support for varnish is not used at the moment
-    auto v_line = std::vector<uint8_t>(size);
-    TIFFReadScanline_(varnish, v_line.data(), line_nr);
 
     for (size_t i = 0; i < size; i++) {
         for (size_t j = 0; j < nr_channels; j++) {

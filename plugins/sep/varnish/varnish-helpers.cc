@@ -71,8 +71,6 @@ void fillVarnishOverlay(SliLayer::Ptr layer)
     // Iterate over the rows and copy the bitmap data to newly allocated memory pointed to by currentBitmap
     for (int row = 0; row < layer->height; row++)
     {
-      //TODO, add a fluorecent color here
-      //TODO, add tranparency here
       TIFFReadScanline(tif, layer->bitmap + row*stride, row);
     }
     

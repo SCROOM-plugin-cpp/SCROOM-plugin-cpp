@@ -16,8 +16,8 @@ private:
   GtkWidget *check_show_background;
   GtkWidget *colorpicker;
   ViewInterface::WeakPtr viewWeak;
-  void registerButton(ViewInterface::WeakPtr view);
   void invertSurface();
+  void registerButton(ViewInterface::WeakPtr view);
   SliLayer::Ptr layer;
   cairo_surface_t* surface;
   bool inverted;
