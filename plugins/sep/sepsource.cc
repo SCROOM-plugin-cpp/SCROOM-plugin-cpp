@@ -40,7 +40,7 @@ SepFile SepSource::parseSep(const std::string &file_name) {
     std::string line;
 
     SepFile sep_file;
-    std::string errors = "";
+    std::string warnings = "";
     const auto parent_dir = SepSource::findParentDir(file_name);
 
     // Read the first two lines of the file seperately, since they follow
@@ -53,7 +53,7 @@ SepFile SepSource::parseSep(const std::string &file_name) {
         sep_file.height = std::stoul(line);
     } catch (const std::exception &e) {
         sep_file.height = 0;  // to trigger the error case in SepPresention::load()
-        errors += "PANIC: Width or height have not been provided correctly!\n";
+        warnings += "WARNING: Width or height have not been provided correctly!\n";
     }
 
     // Make sure the required channels exist (albeit with empty paths).
@@ -69,7 +69,7 @@ SepFile SepSource::parseSep(const std::string &file_name) {
 
         if (result.size() != 2 || result[1].empty() || (result[0].empty() && !result[1].empty())) {
             // Remember the warning and skip this line / channel
-            errors += "PANIC: One of the channels has not been provided correctly!\n";
+            warnings += "WARNING: One of the channels has not been provided correctly!\n";
             continue;
         }
 
@@ -100,9 +100,9 @@ SepFile SepSource::parseSep(const std::string &file_name) {
     }
 
     // show errors if there are any
-    if (!errors.empty()) {
-        std::cerr << errors;
-        ShowWarning(errors);
+    if (!warnings.empty()) {
+        std::cerr << warnings;
+        ShowWarning(warnings);
     }
 
     return sep_file;
