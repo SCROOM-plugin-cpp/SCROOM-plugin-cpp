@@ -74,6 +74,12 @@ SepFile SepSource::parseSep(const std::string &file_name) {
         }
 
         // store the full file path to each file
+        if (result[0] != "C" && result[0] != "M" && result[0] != "Y" && result[0] != "K" && result[0] != "V" && result[0] != "W") {
+            // Unsupported channel
+            warnings += "WARNING: The .sep file defines an unknown channel (not C, M, Y, K, V or W)!\n";
+            continue;
+        }
+
         sep_file.files[result[0]] = parent_dir / result[1];
     }
 
