@@ -89,7 +89,7 @@ private:
 
   /** 
    * Draw the CMYK data onto the surface. It is similar to drawCmyk but it also supports SLI files with xoffsets. 
-   * However, it is noticably slower.
+   * However, it is noticeably slower.
    * @param surfacePointer is a pointer to the byte of the surface where the drawing will start. 
    * @param bitmap holds a pointer to the CMYK bitmap to draw. 
    * @param bitmapStart is the index into the start of the bitmap area to draw. 
@@ -112,7 +112,7 @@ private:
 
   /** 
    * Converts the a CMYK surface to an RGB surface. It is similar to convertCmyk
-   * but it also supports SLI files with xoffsets. However, it is noticably slower.
+   * but it also supports SLI files with xoffsets. However, it is noticeably slower.
    * @param surfacePointer is a pointer to the first byte of the surface. 
    * @param targetPointer is a pointer to the first pixel of the surface.
    * @param topLeftOffset is the offset from coordinate (0,0) of the first byte of the surface.
