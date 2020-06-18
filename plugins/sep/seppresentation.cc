@@ -5,36 +5,33 @@
 #include <string>
 
 /////////////////////////////////////////////////////////
-///// SepPresentation
+///// SepPresentation ///////////////////////////////////
 
 SepPresentation::SepPresentation(ScroomInterface::Ptr interface)
-    : scroom_interface(interface), sep_source(SepSource::create())
-{
+    : scroom_interface(interface), sep_source(SepSource::create()) {
 }
 
-SepPresentation::~SepPresentation()
-{
+SepPresentation::~SepPresentation() {
 }
 
-SepPresentation::Ptr SepPresentation::create(ScroomInterface::Ptr interface)
-{
+SepPresentation::Ptr SepPresentation::create(ScroomInterface::Ptr interface) {
     return Ptr(new SepPresentation(interface));
 }
 
 /**
  * TODO: check if this function meets the requirements.
- * TODO: Support different resolutions.
  * TODO: Support varnish.
  * TODO: Support pipette.
  */
-bool SepPresentation::load(const std::string &file_name)
-{
+bool SepPresentation::load(const std::string &file_name) {
     const SepFile file_content = SepSource::parseSep(file_name);
     this->file_name = file_name;
 
     this->width = file_content.width;
     this->height = file_content.height;
 
+    // not knowing width or height is a critical error
+    // so we cannot load the file without it
     if (this->width == 0 || this->height == 0)
         return false;
 
@@ -43,7 +40,10 @@ bool SepPresentation::load(const std::string &file_name)
 
     this->transform = this->sep_source->getTransform();
 
-    this->tbi = createTiledBitmap(this->width, this->height, {OperationsCMYK32::create()});
+    // TODO: a future update to the main scroom repo will cause
+    // the OperationsCMYK32::create to no longer take any arguments.
+    // Remove the 8 in the below line when that happens.
+    this->tbi = createTiledBitmap(this->width, this->height, {OperationsCMYK32::create(8)});
     this->tbi->setSource(this->sep_source);
 
     return true;
@@ -56,30 +56,24 @@ TransformationData::Ptr SepPresentation::getTransform() {
 ////////////////////////////////////////////////////////////////////////
 // PresentationInterface
 
-Scroom::Utils::Rectangle<double> SepPresentation::getRect()
-{
+Scroom::Utils::Rectangle<double> SepPresentation::getRect() {
     return {0, 0, static_cast<double>(this->width), static_cast<double>(this->height)};
 }
 
 void SepPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
-                             Scroom::Utils::Rectangle<double> presentationArea, int zoom)
-{
+                             Scroom::Utils::Rectangle<double> presentationArea, int zoom) {
     drawOutOfBoundsWithoutBackground(cr, presentationArea, getRect(), pixelSizeFromZoom(zoom));
     if (this->tbi)
         this->tbi->redraw(vi, cr, presentationArea, zoom);
 }
 
-bool SepPresentation::getProperty(const std::string &name, std::string &value)
-{
+bool SepPresentation::getProperty(const std::string &name, std::string &value) {
     std::map<std::string, std::string>::iterator p = properties.find(name);
     bool found = false;
-    if (p == properties.end())
-    {
+    if (p == properties.end()) {
         found = false;
         value = "";
-    }
-    else
-    {
+    } else {
         found = true;
         value = p->second;
     }
@@ -87,25 +81,21 @@ bool SepPresentation::getProperty(const std::string &name, std::string &value)
     return found;
 }
 
-bool SepPresentation::isPropertyDefined(const std::string &name)
-{
+bool SepPresentation::isPropertyDefined(const std::string &name) {
     return properties.end() != properties.find(name);
 }
 
-std::string SepPresentation::getTitle()
-{
+std::string SepPresentation::getTitle() {
     return this->file_name;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // PresentationBase
 
-void SepPresentation::viewAdded(ViewInterface::WeakPtr interface)
-{
+void SepPresentation::viewAdded(ViewInterface::WeakPtr interface) {
     this->views.insert(interface);
 
-    if (this->tbi == nullptr)
-    {
+    if (this->tbi == nullptr) {
         printf("ERROR: SepPresentation::open(): No TiledBitmapInterface available!\n");
         return;
     }
@@ -113,12 +103,10 @@ void SepPresentation::viewAdded(ViewInterface::WeakPtr interface)
     this->tbi->open(interface);
 }
 
-void SepPresentation::viewRemoved(ViewInterface::WeakPtr interface)
-{
+void SepPresentation::viewRemoved(ViewInterface::WeakPtr interface) {
     this->views.erase(interface);
 
-    if (this->tbi == nullptr)
-    {
+    if (this->tbi == nullptr) {
         printf("ERROR: SepPresentation::close(): No TiledBitmapInterface available!\n");
         return;
     }
@@ -126,7 +114,6 @@ void SepPresentation::viewRemoved(ViewInterface::WeakPtr interface)
     this->tbi->close(interface);
 }
 
-std::set<ViewInterface::WeakPtr> SepPresentation::getViews()
-{
+std::set<ViewInterface::WeakPtr> SepPresentation::getViews() {
     return this->views;
 }

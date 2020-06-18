@@ -55,9 +55,9 @@ uint8_t* SurfaceWrapper::getBitmap()
   return cairo_image_surface_get_data(surface);
 }
 
-Scroom::Utils::Rectangle<int> SurfaceWrapper::toBytesRectangle()
+Scroom::Utils::Rectangle<int> SurfaceWrapper::toRectangle()
 {
-  Scroom::Utils::Rectangle<int> rect {0, 0, getStride(), getHeight()};
+  Scroom::Utils::Rectangle<int> rect {0, 0, getWidth(), getHeight()};
   
   return rect;
 }
@@ -81,6 +81,66 @@ void SurfaceWrapper::clearSurface(Scroom::Utils::Rectangle<int> rect)
   clear = true;
 }
 
+Scroom::Utils::Rectangle<int> toBytesRectangle(Scroom::Utils::Rectangle<int> rect, int bpp)
+{
+  Scroom::Utils::Rectangle<int> bytesRect {rect.getLeft()*bpp, rect.getTop(), rect.getWidth()*bpp, rect.getHeight()};
+  
+  return bytesRect;
+}
+
+int getArea(Scroom::Utils::Rectangle<int> rect)
+{
+  return rect.getHeight() * rect.getWidth();
+}
+
+int pointToOffset(Scroom::Utils::Point<int> p, int stride)
+{
+  return p.y * stride + p.x;
+}
+
+int pointToOffset(Scroom::Utils::Rectangle<int> rect, Scroom::Utils::Point<int> p)
+{
+  return std::max(0, (p.y - rect.getTop()) * rect.getWidth() + (p.x - rect.getLeft()));
+}
+
+Scroom::Utils::Rectangle<int> spannedRectangle(boost::dynamic_bitset<> bitmap, std::vector<SliLayer::Ptr> layers, bool fromOrigin)
+{ 
+  int min_x0 = INT_MAX;
+  int min_y0 = INT_MAX;
+  int max_x1 = INT_MIN;
+  int max_y1 = INT_MIN;
+
+  if (fromOrigin)
+  {
+    min_x0 = 0;
+    min_y0 = 0;
+  }
+
+  for (size_t i = 0; i < bitmap.size(); i++)
+  {
+    if (!bitmap[i])
+      continue;
+
+    auto rect = layers[i]->toRectangle();
+
+    if (rect.getLeft() < min_x0)
+      min_x0 = rect.getLeft();
+
+    if (rect.getTop() < min_y0)
+      min_y0 = rect.getTop();
+    
+    if (rect.getRight() > max_x1)
+      max_x1 = rect.getRight();
+      
+    if (rect.getBottom() > max_y1)
+      max_y1= rect.getBottom();
+  }
+  
+  Scroom::Utils::Rectangle<int> rect {min_x0, min_y0, max_x1 - min_x0, max_y1 - min_y0};
+
+  return rect;
+}
+
 SurfaceWrapper::~SurfaceWrapper()
 {
   if (!empty)
@@ -90,8 +150,7 @@ SurfaceWrapper::~SurfaceWrapper()
   }
 }
 
-// TODO set the instance bps, spp values too at some point
-void fillFromTiff(SliLayer::Ptr layer)
+bool fillFromTiff(SliLayer::Ptr layer)
 {
   // We only support simple CMYK Tiffs with 4 SPP and 8 BPS
   const uint16 allowedSpp = 4;
@@ -102,7 +161,7 @@ void fillFromTiff(SliLayer::Ptr layer)
     if (!tif)
     {
       printf("PANIC: Failed to open file %s\n", layer->filepath.c_str());
-      return;
+      return false;
     }
 
     if (1 != TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &layer->spp))
@@ -110,14 +169,14 @@ void fillFromTiff(SliLayer::Ptr layer)
     if (layer->spp != allowedSpp)
     {
       printf("PANIC: Samples per pixel is not %d, but %d. Giving up\n", allowedSpp, layer->spp);
-      return;
+      return false;
     }
 
     TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &layer->bps);
     if (layer->bps != allowedBps)
     {
       printf("PANIC: Bits per sample is not %d, but %d. Giving up\n", allowedBps, layer->bps);
-      return;
+      return false;
     }
 
     float resolutionX;
@@ -160,11 +219,12 @@ void fillFromTiff(SliLayer::Ptr layer)
     }
     
     TIFFClose(tif);
+    return true;
   }
   catch (const std::exception &ex)
   {
     printf("PANIC: %s\n", ex.what());
-    return;
+    return false;
   }
 
 }

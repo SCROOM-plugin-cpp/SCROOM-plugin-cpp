@@ -5,6 +5,7 @@
 #include <scroom/presentationinterface.hh>
 #include <scroom/scroominterface.hh>
 #include <scroom/transformpresentation.hh>
+#include <scroom/pipetteviewinterface.hh>
 
 #include "slilayer.hh"
 #include "slicontrolpanel.hh"
@@ -15,7 +16,8 @@
 
 class SliPresentation : public PresentationBase,
                         public virtual Scroom::Utils::Base,
-                        public SliPresentationInterface
+                        public SliPresentationInterface,
+                        public PipetteViewInterface
 {
 public:
   typedef boost::shared_ptr<SliPresentation> Ptr;
@@ -25,7 +27,7 @@ public:
   TransformationData::Ptr transformationData;
 
 private:
-  /** The properties defined for this presentation*/
+  /** The properties defined for this presentation */
   std::map<std::string, std::string> properties;
 
   /** The views associated with this presentation */
@@ -47,10 +49,10 @@ private:
   static SliPresentationInterface::WeakPtr weakPtrToThis;
 
   /** The number of pixels per ResolutionUnit in the ImageWidth direction */
-  float Xresolution;
+  float Xresolution = -1;
 
   /** The number of pixels per ResolutionUnit in the ImageLength direction */
-  float Yresolution;
+  float Yresolution = -1;
 
   /** (Optional) the object used to draw the varnish overlay */
   Varnish::Ptr varnish;
@@ -76,25 +78,29 @@ public:
    * Parse the SLI file and trigger creation of the layers
    * @param fileName the absolute path of the .sli file to be parsed
    */
-  virtual void parseSli(const std::string &fileName);
+  virtual bool parseSli(const std::string &fileName);
 
-  /** Getter for the layers that the presentation consists of */
+  /** Get a reference to the list of all layers in SliSource */
   std::vector<SliLayer::Ptr>& getLayers() {return source->layers;};
 
   ////////////////////////////////////////////////////////////////////////
   // SliPresentationInterface
   ////////////////////////////////////////////////////////////////////////
 
-  /** Wipe the zoom level RGB cache of the presentation. Needed when layers are enabled or disabled. */
+  /** 
+   *  Erase (delete reference) the RGB cache of the SliSource except for the bottom layer
+   *  for which the relevant bytes are simply turned to 0s.
+   */
   virtual void wipeCache();
 
-  /** Causes the complete canvas to be redrawn */
+  /** Causes the SliPresentation to redraw the current presentation */
   virtual void triggerRedraw();
   
-  virtual boost::dynamic_bitset<> getToggled();
+  /** Get a copy of the bitmap encoding the visibility of layers from SliSource */
   virtual boost::dynamic_bitset<> getVisible();
+
+  /** Set the bits of the newly toggled bits in the toggled bitmap of SliSource */
   virtual void setToggled(boost::dynamic_bitset<> bitmap);
-  virtual void setVisible(boost::dynamic_bitset<> bitmap);
 
   ////////////////////////////////////////////////////////////////////////
   // PresentationInterface
@@ -118,5 +124,5 @@ public:
   // PipetteViewInterface
   ////////////////////////////////////////////////////////////////////////
 
-  //virtual void SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area);
+  virtual PipetteLayerOperations::PipetteColor getPixelAverages(Scroom::Utils::Rectangle<int> area);
 };

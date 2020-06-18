@@ -13,7 +13,6 @@ SliLayer::Ptr SliLayer::create(const std::string &filepath,
 
 SliLayer::SliLayer() : height(0), width(0)
 {
-  visible = true;
 }
 
 SliLayer::~SliLayer()
@@ -24,13 +23,6 @@ SliLayer::~SliLayer()
 Scroom::Utils::Rectangle<int> SliLayer::toRectangle()
 {
   Scroom::Utils::Rectangle<int> rect {xoffset, yoffset, width, height};
-  
-  return rect;
-}
-
-Scroom::Utils::Rectangle<int> SliLayer::toBytesRectangle()
-{
-  Scroom::Utils::Rectangle<int> rect {xoffset*(int)spp, yoffset, width*(int)spp, height};
   
   return rect;
 }

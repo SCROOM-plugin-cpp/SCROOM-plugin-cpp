@@ -54,7 +54,7 @@ plugins_sep_src_libspsep_la_SOURCES = \
 	plugins/sep/varnish/varnish-helpers.cc \
 	plugins/sep/varnish/varnish-helpers.hh
 
-plugins_sep_src_libspsep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ -ltiff
+plugins_sep_src_libspsep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ @THREADPOOLLIB@ -ltiff
 
 plugins_sep_src_libspsep_la_LDFLAGS = $(loadflag) -I../scroom/gui/src/
 
@@ -68,13 +68,19 @@ sep_plugin_check_programs = \
 
 plugins_sep_test_sep_tests_CPPFLAGS = @SEPPLUGIN_CFLAGS@
 
+plugins_sep_test_sep_tests_LDFLAGS = -pthread
+
 plugins_sep_test_sep_tests_SOURCES = \
 	plugins/sep/test/main.cc \
-	plugins/sep/test/slipresentation-tests.cc
+	plugins/sep/test/slipresentation-tests.cc \
+	plugins/sep/test/sepsource-test.cc \
+	plugins/sep/test/slihelpers-tests.cc
 
 plugins_sep_test_sep_tests_LDADD = \
-	@BOOSTTESTLIB@ @SCROOMLIB@\
-	plugins/sep/src/libspsep.la
+	@BOOSTTESTLIB@ @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ @THREADPOOLLIB@ -ltiff -ldl \
+	plugins/sep/src/libspsep.la \
+	plugins/sep/*.lo \
+	plugins/sep/sli/*.lo
 
 endif BOOST_UNITTESTS
 

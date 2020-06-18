@@ -1,5 +1,4 @@
 #include "slipresentation.hh"
-#include "../sepsource.hh"
 #include "slisource.hh"
 
 #include "../varnish/varnish.hh"
@@ -33,20 +32,16 @@ SliPresentation::~SliPresentation()
 {
 }
 
-/**
- * Create a file *.sli containing for example:
- * Xresolution: 900
- * Yresolution: 600
- * varnish_file: varnish.tif
- * cmyktif1.tif : 0 0
- * cmyktif2.tif : 0 11
- */
 bool SliPresentation::load(const std::string& fileName)
 {
-  parseSli(fileName);
-  source->computeHeightWidth();
+  if (! parseSli(fileName))
+  {
+    return false;
+  }
   source->visible.resize(source->layers.size(), false);
   source->toggled.resize(source->layers.size(), true);
+  source->computeHeightWidth();
+  source->checkXoffsets();
   
   transformationData = TransformationData::create();
   float xAspect = Xresolution / std::max(Xresolution, Yresolution);
@@ -66,7 +61,7 @@ bool SliPresentation::load(const std::string& fileName)
   return true;
 }
 
-void SliPresentation::parseSli(const std::string &sliFileName)
+bool SliPresentation::parseSli(const std::string &sliFileName)
 {
   std::ifstream file(sliFileName);
   std::string line;
@@ -110,29 +105,39 @@ void SliPresentation::parseSli(const std::string &sliFileName)
       else if (fs::exists(fs::path(dirPath) /= firstToken))
       {
         // Line contains name of an existing file
-        fs::path imagePath = fs::path(dirPath) /= firstToken;
-        i++; // discard the colon
-        int xOffset = std::stoi(*i++);
-        int yOffset = std::stoi(*i++);
-        if (fs::extension(firstToken) == ".sep")
+        if (*i == ":")
         {
-          SliLayer::Ptr layer = SliLayer::create(imagePath.string(), firstToken, xOffset, yOffset);
-          SepSource::fillSliLayer(layer);
-          source->layers.push_back(layer);
+          i++; // discard the colon
         }
-        else
+        int xOffset = 0;
+        int yOffset = 0;
+        if (i != j)
         {
-          SliLayer::Ptr layer = SliLayer::create(imagePath.string(), firstToken, xOffset, yOffset);
-          fillFromTiff(layer);
-          source->layers.push_back(layer);
+          xOffset = std::stoi(*i++);
+        }
+        if (i != j)
+        {
+          yOffset = std::stoi(*i++);
+        }
+        fs::path imagePath = fs::path(dirPath) /= firstToken;
+        if (! source->addLayer(imagePath.string(), firstToken, xOffset, yOffset))
+        {
+          return false;
         }
       }
       else
       {
-        printf("Warning: Token '%s' in SLI file is not an existing file\n", firstToken.c_str());
+        printf("Error: Token '%s' in SLI file is not an existing file\n", firstToken.c_str());
+        return false;
       }
     }
   }
+  if (Xresolution > 0 && Yresolution > 0 && source->layers.size() > 0)
+  {
+    return true;
+  }
+  return false;
+  
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -154,11 +159,6 @@ void SliPresentation::triggerRedraw()
   }
 }
 
-boost::dynamic_bitset<> SliPresentation::getToggled()
-{
-  return source->toggled;
-}
-
 boost::dynamic_bitset<> SliPresentation::getVisible()
 {
   return source->visible;
@@ -167,11 +167,6 @@ boost::dynamic_bitset<> SliPresentation::getVisible()
 void SliPresentation::setToggled(boost::dynamic_bitset<> bitmap)
 {
   source->toggled = bitmap;
-}
-
-void SliPresentation::setVisible(boost::dynamic_bitset<> bitmap)
-{
-  source->visible = bitmap;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -293,8 +288,48 @@ std::set<ViewInterface::WeakPtr> SliPresentation::getViews()
 // // PipetteViewInterface
 // ////////////////////////////////////////////////////////////////////////
 
-// // void SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area)
-// // {
+PipetteLayerOperations::PipetteColor SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area)
+{
+  if (getArea(area) <= 0)
+    return {};
 
-// // }
+  auto surfaceWrapper = source->getSurface(0);
+  int stride = surfaceWrapper->getStride();
+  uint8_t* surfaceBegin =  cairo_image_surface_get_data(source->getSurface(0)->surface);
+  Scroom::Utils::Rectangle<int> intersectionPixels = area.intersection(surfaceWrapper->toRectangle());
+  Scroom::Utils::Rectangle<int> intersectionBytes = toBytesRectangle(intersectionPixels);
+  int offset = pointToOffset(intersectionBytes.getTopLeft(), stride);
+  int offsetEnd = pointToOffset(intersectionBytes.getBottomRight(), stride) - stride;
+  double R, G, B, c, m, y, k;
+  double C = 0, Y = 0, M = 0, K = 0;
 
+  for (; offset < offsetEnd; offset += 4) // SPP = 4
+  {
+    if (offset % stride == intersectionBytes.getRight() % stride)
+      offset += stride - intersectionBytes.getWidth();
+
+    B = surfaceBegin[offset+0];
+    G = surfaceBegin[offset+1];
+    R = surfaceBegin[offset+2];
+    // A = surfaceBegin[offset+3]; // don't need this
+
+    c = (255.0 - R);
+    m = (255.0 - G);
+    y = (255.0 - B);
+    k = std::min({c, m, y});
+
+    C += c - k;
+    M += m - k;
+    Y += y - k;
+    K += k;
+  }
+
+  PipetteLayerOperations::PipetteColor result = {
+    {"C", C / getArea(intersectionPixels)},
+    {"M", M / getArea(intersectionPixels)},
+    {"Y", Y / getArea(intersectionPixels)},
+    {"K", K / getArea(intersectionPixels)}
+  };
+
+  return result;
+}

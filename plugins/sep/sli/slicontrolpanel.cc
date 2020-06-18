@@ -17,7 +17,7 @@ gboolean scroll_event (GtkWidget *widget, GdkEvent *event, gpointer user_data)
 gboolean check_constraints(gdouble old_low, gdouble old_high, SliControlPanel *cPanel)
 {
   auto presPtr = cPanel->presentation.lock();
-  auto toggled = presPtr->getToggled().reset();
+  boost::dynamic_bitset<> toggled {cPanel->getNumLayers()};
   auto visible = presPtr->getVisible();
 
   for (size_t i = old_low; i <= old_high; i++)
@@ -34,7 +34,7 @@ void toggle_and_redraw(double old_value, double new_value, double other_value,
                        GtkWidget *widget, SliControlPanel *cPanel)
 {
   auto presPtr = cPanel->presentation.lock();
-  auto toggled = presPtr->getToggled().reset();
+  boost::dynamic_bitset<> toggled {cPanel->getNumLayers()};
   auto visible = presPtr->getVisible();
   int start = std::min(old_value, new_value);
   int finish = std::max(old_value, new_value);
@@ -46,9 +46,7 @@ void toggle_and_redraw(double old_value, double new_value, double other_value,
       for (int i = new_value; i <= other_value; i++)
         toggled.set(i);
 
-      auto tot_toggled = toggled | visible;
-      visible = toggled ^ tot_toggled;
-      toggled = tot_toggled;
+      toggled ^= visible;
     }
     else
     {
@@ -63,9 +61,7 @@ void toggle_and_redraw(double old_value, double new_value, double other_value,
       for (int i = other_value; i <= new_value; i++)
         toggled.set(i);
 
-      auto tot_toggled = toggled | visible;
-      visible = toggled ^ tot_toggled;
-      toggled = tot_toggled;
+      toggled ^= visible;
     }
     else
     {
@@ -75,7 +71,6 @@ void toggle_and_redraw(double old_value, double new_value, double other_value,
   }
 
   presPtr->setToggled(toggled);
-  presPtr->setVisible(visible);
   presPtr->wipeCache();
   presPtr->triggerRedraw();
 }
@@ -104,7 +99,6 @@ void update_tree_model(GtkTreeView *treeview, int min, int max, int low, int hig
   }
 }
 
-// TODO Change buffer color
 /* Takes care of all focus-out, button-press, and key-release events */
 gboolean slider_event_handler(GtkWidget *widget, GdkEvent *event, SliControlPanel *cPanel)
 {
@@ -182,8 +176,7 @@ static void on_toggle(GtkCellRendererToggle *renderer, gchar *path, SliControlPa
 
   SliPresentationInterface::Ptr presPtr = cPanel->presentation.lock();
   std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
-  auto toggled = presPtr->getToggled();
-  toggled.reset();
+  boost::dynamic_bitset<> toggled {cPanel->getNumLayers()};
 
   model = gtk_tree_view_get_model(GTK_TREE_VIEW(cPanel->widgets[TREEVIEW]));
 
@@ -251,7 +244,6 @@ void SliControlPanel::create_view_and_model()
   g_object_unref(list_store);
 }
 
-// TODO remove all layers references and unused slipresentationinterface methods
 SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentationInterface::WeakPtr presentation_) : presentation(presentation_)
 {
   printf("Multilayer control panel has been created\n");

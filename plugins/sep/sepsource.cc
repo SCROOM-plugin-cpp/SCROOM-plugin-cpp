@@ -2,20 +2,18 @@
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
-
 #include <fstream>
 #include <iostream>
 
 int ShowWarning(std::string message, GtkMessageType type_gtk = GTK_MESSAGE_WARNING) {
-    // We don't have a pointer to the parent window, so nullptr
-    // we'll just supply nullptr..
+    // We don't have a pointer to the parent window, so nullptr should suffice
     GtkWidget *dialog = gtk_message_dialog_new(
         nullptr, GTK_DIALOG_DESTROY_WITH_PARENT,
         type_gtk, GTK_BUTTONS_CLOSE, message.c_str());
 
-    int k = gtk_dialog_run(GTK_DIALOG(dialog));
+    int signal = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
-    return k;
+    return signal;  // return the received signal
 }
 
 SepSource::SepSource() {}
@@ -25,27 +23,25 @@ SepSource::Ptr SepSource::create() {
     return Ptr(new SepSource());
 }
 
-/**
- * SEP file only defines the name of the file, that is in the 
- * same directory, hence we have to find the parent directory.
- */
-boost::filesystem::path SepSource::findPath(const std::string &sep_directory) {
-    return boost::filesystem::path(sep_directory).parent_path();
+boost::filesystem::path SepSource::findParentDir(const std::string &file_path) {
+    return boost::filesystem::path{file_path}.parent_path();
 }
 
 /**
  * Parses the content of a given SEP file.
+ *
  * When the width or height are not properly specified or one of the channel names
- * is empty or one of the channel lines does not follow the specification, an
+ * is empty or one of the channel lines does not follow the specification, a
  * warning dialog is shown.
  */
 SepFile SepSource::parseSep(const std::string &file_name) {
+    std::cerr << file_name << "\n";
     std::ifstream file(file_name);
-    const auto parent_dir = SepSource::findPath(file_name);
+    std::string line;
 
     SepFile sep_file;
-    std::string line;
-    std::string errors = "";
+    std::string warnings = "";
+    const auto parent_dir = SepSource::findParentDir(file_name);
 
     // Read the first two lines of the file seperately, since they follow
     // a slightly different format (i.e. don't have a colon) and are to be
@@ -56,13 +52,15 @@ SepFile SepSource::parseSep(const std::string &file_name) {
         std::getline(file, line);
         sep_file.height = std::stoul(line);
     } catch (const std::exception &e) {
-        errors += "PANIC: Width or height have not been provided correctly!\n";
+        sep_file.height = 0;  // to trigger the error case in SepPresention::load()
+        warnings += "WARNING: Width or height have not been provided correctly!\n";
     }
 
-    // Make sure the required channels exist (albeit with empty paths). We
-    // can then later check for this value as an error value.
+    // Make sure the required channels exist (albeit with empty paths).
+    // Channels with empty paths are ignored during loading.
     sep_file.files = {{"C", ""}, {"M", ""}, {"Y", ""}, {"K", ""}};
 
+    // read lines of the file
     while (std::getline(file, line)) {
         std::vector<std::string> result;
         boost::split(result, line, boost::is_any_of(":"));
@@ -70,8 +68,15 @@ SepFile SepSource::parseSep(const std::string &file_name) {
         boost::algorithm::trim(result[1]);
 
         if (result.size() != 2 || result[1].empty() || (result[0].empty() && !result[1].empty())) {
-            // Remember the warning and skip this line
-            errors += "PANIC: One of the channels has not been provided correctly!\n";
+            // Remember the warning and skip this line / channel
+            warnings += "WARNING: One of the channels has not been provided correctly!\n";
+            continue;
+        }
+
+        // store the full file path to each file
+        if (result[0] != "C" && result[0] != "M" && result[0] != "Y" && result[0] != "K" && result[0] != "V" && result[0] != "W") {
+            // Unsupported channel
+            warnings += "WARNING: The .sep file defines an unknown channel (not C, M, Y, K, V or W)!\n";
             continue;
         }
 
@@ -87,13 +92,12 @@ SepFile SepSource::parseSep(const std::string &file_name) {
     sep_file.white_ink_choice = 0;
     if (sep_file.files.count("W") == 1) {
         auto choice_dialog = gtk_dialog_new_with_buttons(
-            "Please specify the effect the white ink in "
-            "this image should have.", nullptr,
+            "White Ink Effect",
+            nullptr,
             GTK_DIALOG_DESTROY_WITH_PARENT,
             "Subtractive", GTK_RESPONSE_ACCEPT,
             "Multiplicative", GTK_RESPONSE_REJECT,
-            nullptr
-        );
+            nullptr);
 
         auto choice = gtk_dialog_run(GTK_DIALOG(choice_dialog));
         sep_file.white_ink_choice = choice == GTK_RESPONSE_ACCEPT ? 1 : 2;
@@ -101,18 +105,20 @@ SepFile SepSource::parseSep(const std::string &file_name) {
         gtk_widget_destroy(choice_dialog);
     }
 
-    if (!errors.empty()) {
-        std::cerr << errors;
-        ShowWarning(errors);
+    // show errors if there are any
+    if (!warnings.empty()) {
+        std::cerr << warnings;
+        ShowWarning(warnings);
     }
 
     return sep_file;
 }
 
 void SepSource::getForOneChannel(struct tiff *channel, uint16_t &unit, float &x_resolution, float &y_resolution) {
-    if (TIFFGetField(channel, TIFFTAG_XRESOLUTION, &x_resolution) &&
-            TIFFGetField(channel, TIFFTAG_YRESOLUTION, &y_resolution) &&
-            TIFFGetField(channel, TIFFTAG_RESOLUTIONUNIT, &unit)) {
+    if (channel != nullptr &&
+        TIFFGetField(channel, TIFFTAG_XRESOLUTION, &x_resolution) &&
+        TIFFGetField(channel, TIFFTAG_YRESOLUTION, &y_resolution) &&
+        TIFFGetField(channel, TIFFTAG_RESOLUTIONUNIT, &unit)) {
         if (unit == RESUNIT_NONE) {
             return;
         }
@@ -148,20 +154,18 @@ bool SepSource::getResolution(uint16_t &unit, float &x_resolution, float &y_reso
         this->getForOneChannel(channel, channel_res_unit, channel_res_x, channel_res_y);
         // check if the same as first values
         // if not, set status flag and continue
-        warning |= (channel_res_x != x_resolution) ||
-                  (channel_res_y != y_resolution) ||
-                  (channel_res_unit != unit);
+        warning |= std::abs(channel_res_x - x_resolution) > 1e-3 ||
+                   std::abs(channel_res_y - y_resolution) > 1e-3 ||
+                   channel_res_unit != unit;
     }
 
-    return ! warning;
+    return !warning;
 }
 
 TransformationData::Ptr SepSource::getTransform() {
     uint16_t unit;
     float file_res_x, file_res_y;
     this->getResolution(unit, file_res_x, file_res_y);
-
-    std::cout << "Resolution: " << 1 / file_res_x << " * " << 1 / file_res_y << "\n";
 
     TransformationData::Ptr data = TransformationData::create();
     data->setAspectRatio(1 / file_res_x, 1 / file_res_y);
@@ -177,7 +181,6 @@ void SepSource::fillSliLayer(SliLayer::Ptr sli) {
 
     sli->height = values.height;
     sli->width = values.width;
-
     sli->spp = 4;
     sli->bps = 8;
 
@@ -223,25 +226,22 @@ void SepSource::openFiles() {
     // open white ink and varnish channels
     if (sep_file.files.count("W") == 1) {
         this->white_ink = TIFFOpen(this->sep_file.files["W"].string().c_str(), "r");
-        show_warning |= this->white_ink == nullptr;
+        show_warning |= (this->white_ink == nullptr);
     }
 
     if (sep_file.files.count("V") == 1) {
         this->varnish = TIFFOpen(this->sep_file.files["V"].string().c_str(), "r");
-        show_warning |= this->varnish == nullptr;
+        show_warning |= (this->varnish == nullptr);
     }
 
     if (show_warning) {
-        printf("PANIC: One of the provided files is not valid, or could not be opened!");
+        printf("PANIC: One of the provided files is not valid, or could not be opened!\n");
         ShowWarning("PANIC: One of the provided files is not valid, or could not be opened!");
     }
 }
 
-int TIFFReadScanline_(tiff *file, void *buf, uint32 row, uint16 sample = 0) {
-    if (file == nullptr) {
-        return -1;
-    }
-    return TIFFReadScanline(file, buf, row, sample);
+int SepSource::TIFFReadScanline_(tiff *file, void *buf, uint32 row, uint16 sample) {
+    return file == nullptr ? -1 : TIFFReadScanline(file, buf, row, sample);
 }
 
 void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr) {
@@ -257,13 +257,15 @@ void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr) {
     }
 
     auto w_line = std::vector<uint8_t>(size);
-    auto v_line = std::vector<uint8_t>(size);
     TIFFReadScanline_(white_ink, w_line.data(), line_nr);
+
+    // NOTE: Support for varnish is not used at the moment
+    auto v_line = std::vector<uint8_t>(size);
     TIFFReadScanline_(varnish, v_line.data(), line_nr);
 
     for (size_t i = 0; i < size; i++) {
         for (size_t j = 0; j < nr_channels; j++) {
-            out[4 * i + j] = SepSource::applyWhiteInk(w_line[i], lines[j][i], this->sep_file.white_ink_choice);
+            out[nr_channels * i + j] = SepSource::applyWhiteInk(w_line[i], lines[j][i], this->sep_file.white_ink_choice);
         }
     }
 }
@@ -272,7 +274,7 @@ uint8_t SepSource::applyWhiteInk(uint8_t white, uint8_t color, int type) {
     if (type == 1)  // 1 means subtractive model
         return white >= color ? 0 : color - white;
     else if (type == 2)  // 2 means multiplicative model
-        return white > 0 ? color / white : color;
+        return white > 0 ? (color * white) / 255 : color; // 255 is the maximum white value
     else  // 0 means white ink is not present
         return color;
 }
