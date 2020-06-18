@@ -34,7 +34,7 @@ std::string Sep::getPluginVersion() {
 ////////////////////////////////////////////////////////////////////////
 
 void Sep::registerCapabilities(ScroomPluginInterface::Ptr host) {
-    host->registerOpenInterface("SEP and SLI", shared_from_this<Sep>());
+    host->registerOpenInterface(this->getPluginName(), shared_from_this<Sep>());
 }
 
 ////////////////////////////////////////////////////////////////////////
