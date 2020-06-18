@@ -88,7 +88,7 @@ private:
   virtual void convertCmyk(uint8_t *surfacePointer, uint32_t *targetPointer, int topLeftOffset, int bottomRightOffset);
 
   /* Convert the CMYK data on the surface to ARGB */
-  virtual void convertCmykXoffset(uint8_t *surfacePointer, uint32_t *targetPointer, int topLeftOffset, int bottomRightOffset, Scroom::Utils::Rectangle<int> toggledRect, int imageBound, int stride);
+  virtual void convertCmykXoffset(uint8_t *surfacePointer, uint32_t *targetPointer, int topLeftOffset, int bottomRightOffset, int toggledWidth, int toggledBound, int stride);
 
 public:
   /** Destructor */

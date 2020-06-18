@@ -169,7 +169,7 @@ void SliSource::reduceRgb(int zoom)
   rgbCache[zoom] = targetSurface;
 }
 
-void SliSource::convertCmykXoffset(uint8_t *surfacePointer, uint32_t *targetPointer, int topLeftOffset, int bottomRightOffset, Scroom::Utils::Rectangle<int> toggledRect, int imageBound, int stride)
+void SliSource::convertCmykXoffset(uint8_t *surfacePointer, uint32_t *targetPointer, int topLeftOffset, int bottomRightOffset, int toggledWidth, int toggledBound, int stride)
 {
   double black;
   uint8_t C, M, Y, K, A, R, G, B;
@@ -191,9 +191,9 @@ void SliSource::convertCmykXoffset(uint8_t *surfacePointer, uint32_t *targetPoin
     i += 4; // SPP = 4
 
     // we are past the image bounds; go to the next next line
-    if (i % stride == imageBound)
+    if (i % stride == toggledBound)
     {
-      i += stride - toggledRect.getWidth();
+      i += stride - toggledWidth;
     }
   }
 }
@@ -316,8 +316,9 @@ void SliSource::computeRgb()
   int bottomRightOffset = pointToOffset(toggledRect.getBottomRight(), stride) - stride;
   if (hasXoffsets)
   {
-    int imageBound = toggledRect.getRight() % stride;
-    convertCmykXoffset(surfaceBegin, targetBegin, topLeftOffset, bottomRightOffset, toggledRect, imageBound, stride);
+    int toggledBound = toggledRect.getRight() % stride;
+    int toggledWidth = toggledRect.getWidth();
+    convertCmykXoffset(surfaceBegin, targetBegin, topLeftOffset, bottomRightOffset, toggledWidth, toggledBound, stride);
   }
   else
   {
