@@ -26,7 +26,7 @@ public:
   TransformationData::Ptr transformationData;
 
 private:
-  /** The properties defined for this presentation*/
+  /** The properties defined for this presentation */
   std::map<std::string, std::string> properties;
 
   /** The views associated with this presentation */
@@ -38,7 +38,7 @@ private:
   /** Reference to the associated SliControlPanel */
   SliControlPanel::Ptr controlPanel;
   
-  /** Contains and manages all the bitmap data of this presentation*/
+  /** Contains and manages all the bitmap data of this presentation */
   SliSource::Ptr source;
 
   /** Callback to the own triggerRedraw function. Is passed to other classes to allow them to redraw. */

@@ -78,6 +78,18 @@ private:
   /** Clear the last modified area of the bottom surface */
   virtual void clearBottomSurface();
 
+  /* Draw the CMYK data on the surface (more efficient) */
+  virtual void drawCmyk(uint8_t *surfacePointer, uint8_t *bitmap, int bitmapStart, int bitmapOffset);
+
+  /* Draw the CMYK data on the surface */
+  virtual void drawCmykXoffset(uint8_t *surfacePointer, uint8_t *bitmap, int bitmapStart, int bitmapOffset, Scroom::Utils::Rectangle<int> layerRect, Scroom::Utils::Rectangle<int> intersectRect, int layerBound, int stride);
+
+  /* Convert the CMYK data on the surface to ARGB (more efficient) */
+  virtual void convertCmyk(uint8_t *surfacePointer, uint32_t *targetPointer, int topLeftOffset, int bottomRightOffset);
+
+  /* Convert the CMYK data on the surface to ARGB */
+  virtual void convertCmykXoffset(uint8_t *surfacePointer, uint32_t *targetPointer, int topLeftOffset, int bottomRightOffset, Scroom::Utils::Rectangle<int> toggledRect, int imageBound, int stride);
+
 public:
   /** Destructor */
   virtual ~SliSource();
@@ -113,16 +125,4 @@ public:
    *  for which the relevant bytes are simply turned to 0s.
    */
   virtual void wipeCache();
-
-  /* Draw the CMYK data on the surface (more efficient) */
-  virtual void drawCmyk(uint8_t *surfacePointer, uint8_t *bitmap, int bitmapStart, int bitmapOffset);
-
-  /* Draw the CMYK data on the surface */
-  virtual void drawCmykXoffset(uint8_t *surfacePointer, uint8_t *bitmap, int bitmapStart, int bitmapOffset, Scroom::Utils::Rectangle<int> layerRect, Scroom::Utils::Rectangle<int> intersectRect, int layerBound, int stride);
-
-  /* Convert the CMYK data on the surface to ARGB (more efficient) */
-  virtual void convertCmyk(uint8_t *surfacePointer, uint32_t *targetPointer, int topLeftOffset, int bottomRightOffset);
-
-  /* Convert the CMYK data on the surface to ARGB */
-  virtual void convertCmykXoffset(uint8_t *surfacePointer, uint32_t *targetPointer, int topLeftOffset, int bottomRightOffset, Scroom::Utils::Rectangle<int> toggledRect, int imageBound, int stride);
 };
