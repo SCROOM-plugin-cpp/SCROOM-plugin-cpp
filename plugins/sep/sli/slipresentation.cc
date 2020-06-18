@@ -261,49 +261,48 @@ std::set<ViewInterface::WeakPtr> SliPresentation::getViews()
 // // PipetteViewInterface
 // ////////////////////////////////////////////////////////////////////////
 
-// TODO include when pipette is ready
-// PipetteLayerOperations::PipetteColor SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area)
-// {
-//   if (getArea(area) <= 0)
-//     return {};
+PipetteLayerOperations::PipetteColor SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area)
+{
+  if (getArea(area) <= 0)
+    return {};
 
-//   auto surfaceWrapper = source->getSurface(0);
-//   int stride = surfaceWrapper->getStride();
-//   uint8_t* surfaceBegin =  cairo_image_surface_get_data(source->getSurface(0)->surface);
-//   Scroom::Utils::Rectangle<int> intersectionPixels = area.intersection(surfaceWrapper->toRectangle());
-//   Scroom::Utils::Rectangle<int> intersectionBytes = toBytesRectangle(intersectionPixels);
-//   int offset = pointToOffset(intersectionBytes.getTopLeft(), stride);
-//   int offsetEnd = pointToOffset(intersectionBytes.getBottomRight(), stride) - stride;
-//   double R, G, B, c, m, y, k;
-//   double C = 0, Y = 0, M = 0, K = 0;
+  auto surfaceWrapper = source->getSurface(0);
+  int stride = surfaceWrapper->getStride();
+  uint8_t* surfaceBegin =  cairo_image_surface_get_data(source->getSurface(0)->surface);
+  Scroom::Utils::Rectangle<int> intersectionPixels = area.intersection(surfaceWrapper->toRectangle());
+  Scroom::Utils::Rectangle<int> intersectionBytes = toBytesRectangle(intersectionPixels);
+  int offset = pointToOffset(intersectionBytes.getTopLeft(), stride);
+  int offsetEnd = pointToOffset(intersectionBytes.getBottomRight(), stride) - stride;
+  double R, G, B, c, m, y, k;
+  double C = 0, Y = 0, M = 0, K = 0;
 
-//   for (; offset < offsetEnd; offset += 4) // SPP = 4
-//   {
-//     if (offset % stride == intersectionBytes.getRight() % stride)
-//       offset += stride - intersectionBytes.getWidth();
+  for (; offset < offsetEnd; offset += 4) // SPP = 4
+  {
+    if (offset % stride == intersectionBytes.getRight() % stride)
+      offset += stride - intersectionBytes.getWidth();
 
-//     B = surfaceBegin[offset+0];
-//     G = surfaceBegin[offset+1];
-//     R = surfaceBegin[offset+2];
-//     // A = surfaceBegin[offset+3]; // don't need this
+    B = surfaceBegin[offset+0];
+    G = surfaceBegin[offset+1];
+    R = surfaceBegin[offset+2];
+    // A = surfaceBegin[offset+3]; // don't need this
 
-//     c = (255.0 - R);
-//     m = (255.0 - G);
-//     y = (255.0 - B);
-//     k = std::min({c, m, y});
+    c = (255.0 - R);
+    m = (255.0 - G);
+    y = (255.0 - B);
+    k = std::min({c, m, y});
 
-//     C += c - k;
-//     M += m - k;
-//     Y += y - k;
-//     K += k;
-//   }
+    C += c - k;
+    M += m - k;
+    Y += y - k;
+    K += k;
+  }
 
-//   PipetteLayerOperations::PipetteColor result = {
-//     {"C", C / getArea(intersectionPixels)},
-//     {"M", M / getArea(intersectionPixels)},
-//     {"Y", Y / getArea(intersectionPixels)},
-//     {"K", K / getArea(intersectionPixels)}
-//   };
+  PipetteLayerOperations::PipetteColor result = {
+    {"C", C / getArea(intersectionPixels)},
+    {"M", M / getArea(intersectionPixels)},
+    {"Y", Y / getArea(intersectionPixels)},
+    {"K", K / getArea(intersectionPixels)}
+  };
 
-//   return result;
-// }
+  return result;
+}
