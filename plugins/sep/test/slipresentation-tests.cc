@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(slipresentation_load_sli_tiffonly)
 {
   SliPresentation::Ptr presentation = createPresentation();
   presentation->load(testFileDir + "sli_tiffonly.sli");
-  BOOST_REQUIRE(presentation->source->layers.size() == SLI_NOF_LAYERS);
+  BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
 }
 
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(slipresentation_load_sli_seponly)
 {
   SliPresentation::Ptr presentation = createPresentation();
   presentation->load(testFileDir + "sli_seponly.sli");
-  BOOST_REQUIRE(presentation->source->layers.size() == SLI_NOF_LAYERS);
+  BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
 }
 
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(slipresentation_load_sli_septiffmixed)
 {
   SliPresentation::Ptr presentation = createPresentation();
   presentation->load(testFileDir + "sli_septiffmixed.sli");
-  BOOST_REQUIRE(presentation->source->layers.size() == SLI_NOF_LAYERS);
+  BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
 }
 
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(slipresentation_load_sli_scale)
 {
   SliPresentation::Ptr presentation = createPresentation();
   presentation->load(testFileDir + "sli_scale.sli");
-  BOOST_REQUIRE(presentation->source->layers.size() == SLI_NOF_LAYERS);
+  BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
 }
 
@@ -86,8 +86,31 @@ BOOST_AUTO_TEST_CASE(slipresentation_load_sli_xoffset)
 {
   SliPresentation::Ptr presentation = createPresentation();
   presentation->load(testFileDir + "sli_xoffset.sli");
-  BOOST_REQUIRE(presentation->source->layers.size() == SLI_NOF_LAYERS);
+  BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
+}
+
+BOOST_AUTO_TEST_CASE(slipresentation_presentationinterface_inherited)
+{
+  SliPresentation::Ptr presentation = createPresentation();
+
+  std::string nameStr = "testname";
+  std::string valueStr;
+
+  BOOST_REQUIRE(presentation->isPropertyDefined(nameStr) == false);
+  BOOST_REQUIRE(presentation->getProperty(nameStr, valueStr) == false);
+  BOOST_REQUIRE(valueStr == "");
+
+  presentation->properties["testname"] = "testvalue";
+
+  BOOST_REQUIRE(presentation->isPropertyDefined(nameStr) == true);
+  BOOST_REQUIRE(presentation->getProperty(nameStr, valueStr) == true);
+  BOOST_REQUIRE(valueStr == "testvalue");
+
+  BOOST_REQUIRE(presentation->getTitle() == "slipresentation");
+
+  presentation.reset();
+
 }
 
 BOOST_AUTO_TEST_SUITE_END()
