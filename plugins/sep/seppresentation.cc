@@ -20,7 +20,6 @@ SepPresentation::Ptr SepPresentation::create(ScroomInterface::Ptr interface) {
 
 /**
  * TODO: check if this function meets the requirements.
- * TODO: Support different resolutions.
  * TODO: Support varnish.
  * TODO: Support pipette.
  */
