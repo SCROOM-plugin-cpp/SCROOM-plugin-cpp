@@ -76,6 +76,7 @@ void Varnish::registerButton(ViewInterface::WeakPtr viewWeak)
   GtkWidget *expander_box = gtk_vbox_new(false, 0);
   colorpicker = gtk_color_selection_new();
   check_show_background = gtk_check_button_new_with_label("Show background");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_show_background), true);
   gtk_color_selection_set_has_palette(GTK_COLOR_SELECTION(colorpicker), false);
   // Set a default color for the overlay
   GdkColor color;
@@ -83,7 +84,7 @@ void Varnish::registerButton(ViewInterface::WeakPtr viewWeak)
   gtk_color_selection_set_current_color(GTK_COLOR_SELECTION(colorpicker), &color);
   // Add radio buttons for each display mode
   radio_disabled = gtk_radio_button_new_with_label(NULL, "Disabled");
-  radio_enabled = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radio_disabled), "Enabled");
+  radio_enabled = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radio_disabled), "Normal");
   radio_inverted = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radio_disabled), "Inverted");
   // trigger a redraw when disabled is checked/unchecked
   g_signal_connect(static_cast<gpointer>(radio_disabled), "toggled", G_CALLBACK(varnish_toggled), this);
