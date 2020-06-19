@@ -342,7 +342,7 @@ void SliSource::clearBottomSurface()
   if (toggled.all() && rgbCache.count(0))
   {
     rgbCache[0]->clearSurface();
-    printf("Complete redraw! Area: %d pixels.\n", getArea(rgbCache[0]->toRectangle()));
+    // printf("Complete redraw! Area: %d pixels.\n", getArea(rgbCache[0]->toRectangle()));
     return;
   }
 
@@ -351,6 +351,6 @@ void SliSource::clearBottomSurface()
   if (rgbCache.count(0))
   {
     rgbCache[0]->clearSurface(spannedRect);
-    printf("Partial redraw! Area: %d pixels.\n", getArea(spannedRect));
+    // printf("Partial redraw! Area: %d pixels.\n", getArea(spannedRect));
   }
 }
