@@ -74,13 +74,15 @@ plugins_sep_test_sep_tests_SOURCES = \
 	plugins/sep/test/main.cc \
 	plugins/sep/test/slipresentation-tests.cc \
 	plugins/sep/test/sepsource-test.cc \
-	plugins/sep/test/slihelpers-tests.cc
+	plugins/sep/test/slihelpers-tests.cc \
+	plugins/sep/test/varnish-tests.cc
 
 plugins_sep_test_sep_tests_LDADD = \
 	@BOOSTTESTLIB@ @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ @THREADPOOLLIB@ -ltiff -ldl \
 	plugins/sep/src/libspsep.la \
 	plugins/sep/*.lo \
-	plugins/sep/sli/*.lo
+	plugins/sep/sli/*.lo \
+	plugins/sep/varnish/*.lo
 
 endif BOOST_UNITTESTS
 
