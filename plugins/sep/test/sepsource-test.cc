@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(fill_sli_1) {
     BOOST_CHECK_EQUAL(sli->height, 1024);
     BOOST_CHECK_EQUAL(sli->spp, 4);
     BOOST_CHECK_EQUAL(sli->bps, 8);
-
+    BOOST_CHECK(sli->bitmap != nullptr);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
