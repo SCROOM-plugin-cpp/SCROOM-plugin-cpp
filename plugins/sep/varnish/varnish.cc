@@ -23,7 +23,6 @@ Varnish::Ptr Varnish::create(SliLayer::Ptr layer)
 
 Varnish::~Varnish()
 {
-  delete layer.get();
   cairo_surface_destroy(surface);
 }
 
