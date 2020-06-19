@@ -6,7 +6,7 @@
   if (1 != TIFFGetField(file, field, ##__VA_ARGS__)) \
     throw std::invalid_argument("Field not present in tiff file: " #field)
 
-void fillVarnishOverlay(SliLayer::Ptr layer)
+bool fillVarnishOverlay(SliLayer::Ptr layer)
 {
   // We only support simple K Tiffs with 1 SPP and 8 BPS
   const uint16 allowedSpp = 1;
@@ -17,7 +17,7 @@ void fillVarnishOverlay(SliLayer::Ptr layer)
     if (!tif)
     {
       printf("PANIC: Failed to open file %s\n", layer->filepath.c_str());
-      return;
+      return false;
     }
 
     if (1 != TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &layer->spp))
@@ -25,14 +25,14 @@ void fillVarnishOverlay(SliLayer::Ptr layer)
     if (layer->spp != allowedSpp)
     {
       printf("PANIC: Samples per pixel is not %d, but %d. Giving up\n", allowedSpp, layer->spp);
-      return;
+      return false;
     }
 
     TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &layer->bps);
     if (layer->bps != allowedBps)
     {
       printf("PANIC: Bits per sample is not %d, but %d. Giving up\n", allowedBps, layer->bps);
-      return;
+      return false;
     }
 
     float resolutionX;
@@ -79,6 +79,9 @@ void fillVarnishOverlay(SliLayer::Ptr layer)
   catch (const std::exception &ex)
   {
     printf("PANIC: %s\n", ex.what());
-    return;
+    return false;
   }
+
+  // Till Fill was successful
+  return true;
 }

@@ -96,9 +96,16 @@ bool SliPresentation::parseSli(const std::string &sliFileName)
         if (fs::exists(imagePath)) {
           printf("varnish file exists.\n");
           SliLayer::Ptr varnishLayer = SliLayer::create(imagePath.string(), varnishFile, 0, 0);
-          fillVarnishOverlay(varnishLayer);
-          varnish = Varnish::create(varnishLayer);
-        } else {
+          if (fillVarnishOverlay(varnishLayer))
+          {
+            varnish = Varnish::create(varnishLayer);
+          } else
+          {
+            printf("[PANIC] varnish file could not be loaded successfully\n");
+          }
+          
+        } else 
+        {
           printf("[PANIC] varnish file not found: %s\n", imagePath.c_str());
         }
       }

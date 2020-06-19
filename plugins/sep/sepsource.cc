@@ -234,10 +234,11 @@ void SepSource::openFiles() {
     // open varnish channel
     if (sep_file.files.count("V") == 1) {
         SliLayer::Ptr varnishLayer = SliLayer::create(sep_file.files["V"].string(), "Varnish", 0, 0);
-        fillVarnishOverlay(varnishLayer);
-        this->varnish = Varnish::create(varnishLayer);
-        // TODO; find a nice way to check whether the above succeeded
-        // show_warning |= (this->varnish);
+        if (fillVarnishOverlay(varnishLayer)) {
+            this->varnish = Varnish::create(varnishLayer);
+        } else {
+            show_warning = true;
+        }
     }
 
     if (show_warning) {

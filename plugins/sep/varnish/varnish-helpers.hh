@@ -11,5 +11,5 @@
 
 #include "../sli/slilayer.hh"
 
-void fillVarnishOverlay(SliLayer::Ptr layer);
+bool fillVarnishOverlay(SliLayer::Ptr layer);
 #endif
