@@ -72,47 +72,44 @@ bool SliPresentation::parseSli(const std::string &sliFileName)
   {
     std::sregex_token_iterator i(line.begin(), line.end(), e, -1);
     // Iterate over the whitespace-separated tokens of the line
-    while(i != j)
+    std::string firstToken = *i++;
+    if (firstToken == "Xresolution:" && i != j)
     {
-      std::string firstToken = *i++;
-      if (firstToken == "Xresolution:")
+      Xresolution = std::stof(*i++);
+      printf("xresolution: %f\n", Xresolution);
+    }
+    else if (firstToken == "Yresolution:" && i != j)
+    {
+      Yresolution = std::stof(*i++);
+      printf("yresolution: %f\n", Yresolution);
+    }
+    else if (fs::exists(fs::path(dirPath) /= firstToken))
+    {
+      // Line contains name of an existing file
+      if (i != j && *i == ":")
       {
-        Xresolution = std::stof(*i++);
-        printf("xresolution: %f\n", Xresolution);
+        i++; // discard the colon
       }
-      else if (firstToken == "Yresolution:")
+      int xOffset = 0;
+      int yOffset = 0;
+      if (i != j)
       {
-        Yresolution = std::stof(*i++);
-        printf("yresolution: %f\n", Yresolution);
+        xOffset = std::stoi(*i++);
       }
-      else if (fs::exists(fs::path(dirPath) /= firstToken))
+      if (i != j)
       {
-        // Line contains name of an existing file
-        if (*i == ":")
-        {
-          i++; // discard the colon
-        }
-        int xOffset = 0;
-        int yOffset = 0;
-        if (i != j)
-        {
-          xOffset = std::stoi(*i++);
-        }
-        if (i != j)
-        {
-          yOffset = std::stoi(*i++);
-        }
-        fs::path imagePath = fs::path(dirPath) /= firstToken;
-        if (! source->addLayer(imagePath.string(), firstToken, xOffset, yOffset))
-        {
-          return false;
-        }
+        yOffset = std::stoi(*i++);
       }
-      else
+      fs::path imagePath = fs::path(dirPath) /= firstToken;
+      if (! source->addLayer(imagePath.string(), firstToken, xOffset, yOffset))
       {
-        printf("Error: Token '%s' in SLI file is not an existing file\n", firstToken.c_str());
         return false;
       }
+    }
+    else
+    {
+      printf("Error: Token '%s' in SLI file is not an existing file\n", firstToken.c_str());
+      return false;
     }
   }
   if (Xresolution > 0 && Yresolution > 0 && source->layers.size() > 0)
