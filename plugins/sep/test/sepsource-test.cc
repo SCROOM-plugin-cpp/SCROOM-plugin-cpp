@@ -5,6 +5,7 @@
 #define private public
 
 #include "../sepsource.hh"
+#include "../sli/slilayer.hh"
 
 const auto testFileDir = boost::dll::program_location().parent_path().parent_path() / boost::filesystem::path("testfiles");
 
@@ -106,6 +107,21 @@ BOOST_AUTO_TEST_CASE(apply_white_no_effect_1) {
 BOOST_AUTO_TEST_CASE(tiff_wrapper_nullptr) {
     auto res = SepSource::TIFFReadScanline_(nullptr, nullptr, 1);
     BOOST_CHECK(res == -1);
+}
+
+BOOST_AUTO_TEST_CASE(tiff_wrapper_2) {
+    auto res = SepSource::TIFFReadScanline_(nullptr, nullptr, 1);
+    BOOST_CHECK(res == -1);
+}
+
+BOOST_AUTO_TEST_CASE(fill_sli_1) {
+    SliLayer::Ptr sli = SliLayer::create("/home/ubuntu/Documents/swathStack_4pass_ONYX_Quality_Evaluation/swath_009.sep", "swath_009.sep", 0, 0);
+    SepSource::fillSliLayer(sli);
+    BOOST_CHECK_EQUAL(sli->width, 20704);
+    BOOST_CHECK_EQUAL(sli->height, 1024);
+    BOOST_CHECK_EQUAL(sli->spp, 4);
+    BOOST_CHECK_EQUAL(sli->bps, 8);
+    BOOST_CHECK(sli->bitmap != nullptr);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
