@@ -38,7 +38,7 @@ public:
   std::string filepath;
 
   /** The memory chunk containing the bitmap */
-  uint8_t* bitmap;
+  uint8_t* bitmap = 0x0;
 
 private:
   SliLayer();
