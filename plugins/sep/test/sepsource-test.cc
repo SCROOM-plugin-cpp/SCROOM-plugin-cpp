@@ -1,5 +1,5 @@
-#include <boost/test/unit_test.hpp>
 #include <boost/dll.hpp>
+#include <boost/test/unit_test.hpp>
 
 // Make all private members accessible for testing
 #define private public
@@ -90,11 +90,16 @@ BOOST_AUTO_TEST_CASE(apply_white_subtract_2) {
 
 BOOST_AUTO_TEST_CASE(apply_white_multiply_1) {
     auto res = SepSource::applyWhiteInk(100, 100, 2);
-    BOOST_CHECK(res == 39);
+    BOOST_CHECK(res == 60);
 }
 
 BOOST_AUTO_TEST_CASE(apply_white_multiply_2) {
     auto res = SepSource::applyWhiteInk(0, 100, 2);
+    BOOST_CHECK(res == 100);
+}
+
+BOOST_AUTO_TEST_CASE(apply_white_no_effect_1) {
+    auto res = SepSource::applyWhiteInk(0, 100, 0);
     BOOST_CHECK(res == 100);
 }
 
