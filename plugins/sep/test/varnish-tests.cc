@@ -115,6 +115,24 @@ BOOST_AUTO_TEST_CASE(varnish_load_invalid_tiff)
   BOOST_REQUIRE(test_varnishLayer->bitmap == nullptr);
 }
 
+BOOST_AUTO_TEST_CASE(varnish_load_zero_res_tiff)
+{
+  // This test file is missinga width tag
+  SliLayer::Ptr test_varnishLayer = SliLayer::create(testFileDir+"v_invalid_no_width.tif", "Another Title", 0, 0);
+  // Tif handling should fail here
+  BOOST_REQUIRE(!fillVarnishOverlay(test_varnishLayer));
+  // Properties set correctly?
+  BOOST_REQUIRE(test_varnishLayer->name == "Another Title");
+  BOOST_REQUIRE(test_varnishLayer->filepath == testFileDir+"v_invalid_no_width.tif");
+  BOOST_REQUIRE(test_varnishLayer->width == 0);
+  BOOST_REQUIRE(test_varnishLayer->height == 0);
+  BOOST_REQUIRE(test_varnishLayer->xoffset == 0);
+  BOOST_REQUIRE(test_varnishLayer->yoffset == 0);
+  BOOST_REQUIRE(test_varnishLayer->xAspect == 0.0f);
+  BOOST_REQUIRE(test_varnishLayer->yAspect == 0.0f);
+  BOOST_REQUIRE(test_varnishLayer->bitmap == nullptr);
+}
+
 BOOST_AUTO_TEST_CASE(varnish_load_corrupted_tiff)
 {
   // This test files magic number and file data was randomly edited.
