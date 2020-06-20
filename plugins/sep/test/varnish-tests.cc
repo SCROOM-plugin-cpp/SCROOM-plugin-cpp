@@ -63,6 +63,44 @@ BOOST_AUTO_TEST_CASE(varnish_load_ui)
   test_varnish->invertSurface();
   // trigger a button callback
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->check_show_background), true);
+  // drawoverlay
+  cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 100, 100);
+  cairo_t* cr = cairo_create(surface);
+  Scroom::Utils::Rectangle<double> rect(5.0, 5.0, 100.0, 100.0);
+  // call the draw function at several zoom levels
+  test_varnish->fixVarnishState(); // Normally this is executed as a call-back
+  test_varnish->drawOverlay(nullptr, cr, rect, -1);
+  test_varnish->drawOverlay(nullptr, cr, rect, 1);
+  test_varnish->drawOverlay(nullptr, cr, rect, 2);
+  // Disable transparency and redraw
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->check_show_background), false);
+  test_varnish->drawOverlay(nullptr, cr, rect, -1);
+  test_varnish->drawOverlay(nullptr, cr, rect, 1);
+  test_varnish->drawOverlay(nullptr, cr, rect, 2);
+  // Enable varnish and redraw
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->radio_enabled), true);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->check_show_background), true);
+  test_varnish->fixVarnishState(); // Normally this is executed as a call-back
+  test_varnish->drawOverlay(nullptr, cr, rect, -1);
+  test_varnish->drawOverlay(nullptr, cr, rect, 1);
+  test_varnish->drawOverlay(nullptr, cr, rect, 2);
+  // Disable transparency and redraw
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->check_show_background), false);
+  test_varnish->drawOverlay(nullptr, cr, rect, -1);
+  test_varnish->drawOverlay(nullptr, cr, rect, 1);
+  test_varnish->drawOverlay(nullptr, cr, rect, 2);
+  // Invert varnish and redraw
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->radio_inverted), true);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->check_show_background), true);
+  test_varnish->fixVarnishState(); // Normally this is executed as a call-back
+  test_varnish->drawOverlay(nullptr, cr, rect, -1);
+  test_varnish->drawOverlay(nullptr, cr, rect, 1);
+  test_varnish->drawOverlay(nullptr, cr, rect, 2);
+  // Disable transparency and redraw
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->check_show_background), false);
+  test_varnish->drawOverlay(nullptr, cr, rect, -1);
+  test_varnish->drawOverlay(nullptr, cr, rect, 1);
+  test_varnish->drawOverlay(nullptr, cr, rect, 2);
 }
 BOOST_AUTO_TEST_SUITE_END()
 
