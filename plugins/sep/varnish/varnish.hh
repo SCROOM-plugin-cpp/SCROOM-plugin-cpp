@@ -1,5 +1,5 @@
-#ifndef _varnish_HH
-#define _varnish_HH
+#pragma once
+
 #include <gtk/gtk.h>
 #include "../sli/slilayer.hh"
 
@@ -17,7 +17,7 @@ private:
   GtkWidget *colorpicker;
   ViewInterface::WeakPtr viewWeak;
   void invertSurface();
-  void registerButton(ViewInterface::WeakPtr view);
+  void registerUI(ViewInterface::WeakPtr view);
   SliLayer::Ptr layer;
   cairo_surface_t* surface;
   bool inverted;
@@ -32,5 +32,3 @@ public:
   void drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
               Scroom::Utils::Rectangle<double> presentationArea, int zoom);
 };
-
-#endif

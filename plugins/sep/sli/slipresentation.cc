@@ -99,12 +99,14 @@ bool SliPresentation::parseSli(const std::string &sliFileName)
           if (fillVarnishOverlay(varnishLayer))
           {
             varnish = Varnish::create(varnishLayer);
-          } else
+          } 
+          else
           {
             printf("[PANIC] varnish file could not be loaded successfully\n");
           }
           
-        } else 
+        } 
+        else 
         {
           printf("[PANIC] varnish file not found: %s\n", imagePath.c_str());
         }

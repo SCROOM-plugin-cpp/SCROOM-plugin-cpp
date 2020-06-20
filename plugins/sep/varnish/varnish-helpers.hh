@@ -1,5 +1,4 @@
-#ifndef _varnishhelpers_HH_
-#define _varnishhelpers_HH_
+#pragma once
 
 #include <cairo.h>
 
@@ -12,4 +11,3 @@
 #include "../sli/slilayer.hh"
 
 bool fillVarnishOverlay(SliLayer::Ptr layer);
-#endif

@@ -28,7 +28,7 @@ Varnish::~Varnish()
 
 void Varnish::setView(ViewInterface::WeakPtr viewWeak)
 {
-  registerButton(viewWeak);
+  registerUI(viewWeak);
   this->viewWeak = viewWeak;
 }
 
@@ -69,7 +69,7 @@ void Varnish::fixVarnishState()
   }
 }
 
-void Varnish::registerButton(ViewInterface::WeakPtr viewWeak)
+void Varnish::registerUI(ViewInterface::WeakPtr viewWeak)
 {
   GtkWidget *box = gtk_vbox_new(false, 0);
   GtkWidget *expander = gtk_expander_new("Overlay properties");
@@ -147,9 +147,6 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
   } else {
     cairo_scale(cr, pow(2.0, zoom), pow(2.0, zoom));
   }
-
-  
-
 
   // Read the overlay color and alpha
   GdkColor color;
