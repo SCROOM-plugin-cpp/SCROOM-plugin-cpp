@@ -78,6 +78,26 @@ BOOST_AUTO_TEST_CASE(varnish_load_valid_tiff_centimeter)
   BOOST_REQUIRE(test_varnish->surface);
 }
 
+BOOST_AUTO_TEST_CASE(varnish_load_valid_tiff_no_spp_tag)
+{
+  // This test file does not have a SamplePerPixel tag set, but should default to 1 spp
+  SliLayer::Ptr test_varnishLayer = SliLayer::create(testFileDir+"v_valid_no_spp_tag.tif", "SomeCoolTitle", 0, 0);
+  fillVarnishOverlay(test_varnishLayer);
+  Varnish::Ptr test_varnish = Varnish::create(test_varnishLayer);
+  // Properties set correctly?
+  BOOST_REQUIRE(test_varnish->layer->name == "SomeCoolTitle");
+  BOOST_REQUIRE(test_varnish->layer->filepath == testFileDir+"v_valid_no_spp_tag.tif");
+  BOOST_REQUIRE(test_varnish->layer->width == 20);
+  BOOST_REQUIRE(test_varnish->layer->height == 20);
+  BOOST_REQUIRE(test_varnish->layer->xoffset == 0);
+  BOOST_REQUIRE(test_varnish->layer->yoffset == 0);
+  BOOST_REQUIRE(test_varnish->layer->xAspect == 1);
+  BOOST_REQUIRE(test_varnish->layer->yAspect == 1);
+  BOOST_REQUIRE(test_varnish->inverted == false);
+  // Valid cairo surface?
+  BOOST_REQUIRE(test_varnish->surface);
+}
+
 BOOST_AUTO_TEST_CASE(varnish_load_invalid_tiff)
 {
   SliLayer::Ptr test_varnishLayer = SliLayer::create(testFileDir+"v_invalidrgb.tif", "Another Title", 0, 0);
@@ -86,6 +106,24 @@ BOOST_AUTO_TEST_CASE(varnish_load_invalid_tiff)
   // Properties set correctly?
   BOOST_REQUIRE(test_varnishLayer->name == "Another Title");
   BOOST_REQUIRE(test_varnishLayer->filepath == testFileDir+"v_invalidrgb.tif");
+  BOOST_REQUIRE(test_varnishLayer->width == 0);
+  BOOST_REQUIRE(test_varnishLayer->height == 0);
+  BOOST_REQUIRE(test_varnishLayer->xoffset == 0);
+  BOOST_REQUIRE(test_varnishLayer->yoffset == 0);
+  BOOST_REQUIRE(test_varnishLayer->xAspect == 0.0f);
+  BOOST_REQUIRE(test_varnishLayer->yAspect == 0.0f);
+  BOOST_REQUIRE(test_varnishLayer->bitmap == nullptr);
+}
+
+BOOST_AUTO_TEST_CASE(varnish_load_corrupted_tiff)
+{
+  // This test files magic number and file data was randomly edited.
+  SliLayer::Ptr test_varnishLayer = SliLayer::create(testFileDir+"v_corrupted.tif", "Another Title", 0, 0);
+  // Tif handling should fail here
+  BOOST_REQUIRE(!fillVarnishOverlay(test_varnishLayer));
+  // Properties set correctly?
+  BOOST_REQUIRE(test_varnishLayer->name == "Another Title");
+  BOOST_REQUIRE(test_varnishLayer->filepath == testFileDir+"v_corrupted.tif");
   BOOST_REQUIRE(test_varnishLayer->width == 0);
   BOOST_REQUIRE(test_varnishLayer->height == 0);
   BOOST_REQUIRE(test_varnishLayer->xoffset == 0);
