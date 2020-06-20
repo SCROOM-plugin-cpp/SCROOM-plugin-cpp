@@ -101,6 +101,13 @@ BOOST_AUTO_TEST_CASE(varnish_load_ui)
   test_varnish->drawOverlay(nullptr, cr, rect, -1);
   test_varnish->drawOverlay(nullptr, cr, rect, 1);
   test_varnish->drawOverlay(nullptr, cr, rect, 2);
+  // Move from inverted to normal and redraw
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->radio_enabled), true);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->check_show_background), true);
+  test_varnish->fixVarnishState(); // Normally this is executed as a call-back
+  test_varnish->drawOverlay(nullptr, cr, rect, -1);
+  test_varnish->drawOverlay(nullptr, cr, rect, 1);
+  test_varnish->drawOverlay(nullptr, cr, rect, 2);
 }
 BOOST_AUTO_TEST_SUITE_END()
 
