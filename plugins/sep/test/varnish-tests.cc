@@ -61,6 +61,22 @@ BOOST_AUTO_TEST_CASE(varnish_load_ui)
   test_varnish->setView(dvi);
   test_varnish->forceRedraw();
   test_varnish->invertSurface();
+
+  // Inverting twice should return the same thing.
+  // Inverting once shouldn't, because the sample image isn't gray
+  int surface_data_before = cairo_image_surface_get_data(test_varnish->surface)[0];
+  test_varnish->invertSurface();
+  int surface_data_after = cairo_image_surface_get_data(test_varnish->surface)[0];
+  BOOST_REQUIRE(surface_data_before == surface_data_after^255);
+  BOOST_REQUIRE(surface_data_before != surface_data_after);
+
+  test_varnish->invertSurface();
+  int surface_data_twice = cairo_image_surface_get_data(test_varnish->surface)[0];
+  BOOST_REQUIRE(surface_data_after == surface_data_twice^255);
+  BOOST_REQUIRE(surface_data_after != surface_data_twice);
+  BOOST_REQUIRE(surface_data_before == surface_data_twice);
+
+  BOOST_REQUIRE(!test_varnish->inverted);
   // trigger a button callback
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->check_show_background), true);
   // drawoverlay
@@ -68,7 +84,6 @@ BOOST_AUTO_TEST_CASE(varnish_load_ui)
   cairo_t* cr = cairo_create(surface);
   Scroom::Utils::Rectangle<double> rect(5.0, 5.0, 100.0, 100.0);
   // call the draw function at several zoom levels
-  test_varnish->fixVarnishState(); // Normally this is executed as a call-back
   test_varnish->drawOverlay(nullptr, cr, rect, -1);
   test_varnish->drawOverlay(nullptr, cr, rect, 1);
   test_varnish->drawOverlay(nullptr, cr, rect, 2);
@@ -79,8 +94,8 @@ BOOST_AUTO_TEST_CASE(varnish_load_ui)
   test_varnish->drawOverlay(nullptr, cr, rect, 2);
   // Enable varnish and redraw
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->radio_enabled), true);
+  BOOST_REQUIRE(!test_varnish->inverted);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->check_show_background), true);
-  test_varnish->fixVarnishState(); // Normally this is executed as a call-back
   test_varnish->drawOverlay(nullptr, cr, rect, -1);
   test_varnish->drawOverlay(nullptr, cr, rect, 1);
   test_varnish->drawOverlay(nullptr, cr, rect, 2);
@@ -91,8 +106,8 @@ BOOST_AUTO_TEST_CASE(varnish_load_ui)
   test_varnish->drawOverlay(nullptr, cr, rect, 2);
   // Invert varnish and redraw
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->radio_inverted), true);
+  BOOST_REQUIRE(test_varnish->inverted);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->check_show_background), true);
-  test_varnish->fixVarnishState(); // Normally this is executed as a call-back
   test_varnish->drawOverlay(nullptr, cr, rect, -1);
   test_varnish->drawOverlay(nullptr, cr, rect, 1);
   test_varnish->drawOverlay(nullptr, cr, rect, 2);
@@ -103,8 +118,8 @@ BOOST_AUTO_TEST_CASE(varnish_load_ui)
   test_varnish->drawOverlay(nullptr, cr, rect, 2);
   // Move from inverted to normal and redraw
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->radio_enabled), true);
+  BOOST_REQUIRE(!test_varnish->inverted);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->check_show_background), true);
-  test_varnish->fixVarnishState(); // Normally this is executed as a call-back
   test_varnish->drawOverlay(nullptr, cr, rect, -1);
   test_varnish->drawOverlay(nullptr, cr, rect, 1);
   test_varnish->drawOverlay(nullptr, cr, rect, 2);
