@@ -8,35 +8,66 @@
 #include "../varnish/varnish.hh"
 #include "../varnish/varnish-helpers.hh"
 #include <scroom/scroominterface.hh>
+#include <scroom/viewinterface.hh>
 
 const std::string testFileDir = boost::dll::program_location().parent_path().parent_path().string() + "/testfiles/";
 
 ///////////////////////////////////////////////////////////////////////////////
-// Helper functions
+// Helper object
 
-/*
-void dummyFunc() {};
-
-void dummyRedraw(SliPresentation::Ptr presentation)
+class DummyViewInterface : public ViewInterface
 {
-  // Create dummy objects to call redraw() with
-  cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 100, 100);
-  cairo_t* cr = cairo_create(surface);
-  Scroom::Utils::Rectangle<double> rect(5.0, 5.0, 100.0, 100.0);
 
-  // redraw() for all zoom levels from 5 to -2 and check whether cache has been computed
-  for (int zoom = 5; zoom > -3; zoom--)
+public:
+  DummyViewInterface() {};
+  ~DummyViewInterface() {};
+  void invalidate() {};
+  ProgressInterface::Ptr getProgressInterface() {};
+
+  static ViewInterface::Ptr create()
   {
-    presentation->redraw(nullptr, cr, rect, zoom);
-    boost::this_thread::sleep(boost::posix_time::millisec(500)); // Very liberal, shouldn't fail beause of time
-    BOOST_REQUIRE(presentation->source->rgbCache[std::min(0, zoom)]);
+    return ViewInterface::Ptr(new DummyViewInterface());
   }
-  BOOST_REQUIRE(presentation);
-}
-*/
+
+  void addSideWidget(std::string title, GtkWidget* w)
+  {
+    // Add the widget to a fresh GTK box instead.
+    // This won't verify UI integrity, but it should
+    // at least allow the code to run once in headless CI
+    GtkWidget *box = gtk_vbox_new(false, 0);
+    gtk_box_pack_start_defaults(GTK_BOX(box), w);
+  }
+  void removeSideWidget(GtkWidget* w) {};
+  void addToToolbar(GtkToolItem* ti) {};
+  void removeFromToolbar(GtkToolItem* ti) {};
+  void registerSelectionListener(SelectionListener::Ptr) {};
+  void registerPostRenderer(PostRenderer::Ptr) {};
+  void setStatusMessage(const std::string&) {};
+  boost::shared_ptr<PresentationInterface> getCurrentPresentation() {return nullptr;};
+  void addToolButton(GtkToggleButton*, ToolStateListener::Ptr) {};
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////
-// Tests
+// Tests for varnish ui construction
+
+BOOST_AUTO_TEST_SUITE(varnish_ui_tests)
+BOOST_AUTO_TEST_CASE(varnish_load_ui)
+{
+  ViewInterface::Ptr dvi = DummyViewInterface::create();
+  SliLayer::Ptr test_varnishLayer = SliLayer::create(testFileDir+"v_valid.tif", "SomeCoolTitle", 0, 0);
+  fillVarnishOverlay(test_varnishLayer);
+  Varnish::Ptr test_varnish = Varnish::create(test_varnishLayer);
+  test_varnish->setView(dvi);
+  test_varnish->forceRedraw();
+  test_varnish->invertSurface();
+  // trigger a button callback
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->check_show_background), true);
+}
+BOOST_AUTO_TEST_SUITE_END()
+
+///////////////////////////////////////////////////////////////////////////////
+// Tests for varnish loading
 
 BOOST_AUTO_TEST_SUITE(varnish_tests)
 
