@@ -7,7 +7,7 @@
 #include "../sepsource.hh"
 #include "../sli/slilayer.hh"
 
-const auto testFileDir = boost::dll::program_location().parent_path().parent_path() / boost::filesystem::path("testfiles");
+const auto testFileDir = boost::dll::program_location().parent_path().parent_path().parent_path().parent_path().parent_path().parent_path() / "plugins/sep/test/testfiles";
 
 BOOST_AUTO_TEST_SUITE(Sep_Tests)
 
@@ -111,6 +111,14 @@ BOOST_AUTO_TEST_CASE(tiff_wrapper_nullptr) {
 BOOST_AUTO_TEST_CASE(tiff_wrapper_2) {
     auto res = SepSource::TIFFReadScanline_(nullptr, nullptr, 1);
     BOOST_CHECK(res == -1);
+}
+
+BOOST_AUTO_TEST_CASE(fill_sli_empty) {
+    SliLayer::Ptr sli = SliLayer::create("", "name", 0, 0);
+    sli->height = 42;
+    sli->bitmap = nullptr; // TODO: this is a workaround for a bug - please remove
+    SepSource::fillSliLayer(sli);
+    BOOST_CHECK(sli->height == 42);
 }
 
 BOOST_AUTO_TEST_CASE(fill_sli_1) {
