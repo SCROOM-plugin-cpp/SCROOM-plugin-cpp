@@ -33,6 +33,32 @@ BOOST_AUTO_TEST_CASE(parse_sep) {
     BOOST_CHECK(file.white_ink_choice == 0);
 }
 
+BOOST_AUTO_TEST_CASE(get_for_none) {
+    uint16_t unit;
+    float x_res, y_res;
+    auto source = SepSource::create();
+
+    source->getForOneChannel(nullptr, unit, x_res, y_res);
+
+    BOOST_CHECK(unit == RESUNIT_NONE);
+    BOOST_CHECK(std::abs(x_res - 1.0) < 1e-4);
+    BOOST_CHECK(std::abs(y_res - 1.0) < 1e-4);
+}
+
+BOOST_AUTO_TEST_CASE(get_resolution_null) {
+    uint16_t unit;
+    float x_res, y_res;
+    auto source = SepSource::create();
+
+    source->channel_files["C"] = nullptr;
+    source->channel_files["M"] = nullptr;
+    source->channel_files["Y"] = nullptr;
+    source->channel_files["K"] = nullptr;
+
+    auto res = source->getResolution(unit, x_res, y_res);
+    BOOST_CHECK(res == true);
+}
+
 BOOST_AUTO_TEST_CASE(set_data) {
     // Preparation
     auto source = SepSource::create();
