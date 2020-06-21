@@ -24,7 +24,7 @@ SepSource::Ptr SepSource::create() {
 }
 
 boost::filesystem::path SepSource::findParentDir(const std::string &file_path) {
-    return boost::filesystem::path{file_path}.parent_path();
+    return boost::filesystem::path(file_path).parent_path();
 }
 
 /**
