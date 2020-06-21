@@ -22,7 +22,6 @@ BOOST_AUTO_TEST_CASE(parent_dir) {
 
 BOOST_AUTO_TEST_CASE(parse_sep) {
     SepFile file = SepSource::parseSep((testFileDir / "sep_cmyk.sep").string());
-    printf("%ld\n", file.files.size());
     BOOST_CHECK(file.files.size() == 4);
 
     for (const std::string& colour : {"C", "M", "Y", "K"}) {
