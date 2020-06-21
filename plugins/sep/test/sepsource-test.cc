@@ -17,7 +17,8 @@ BOOST_AUTO_TEST_CASE(create) {
 }
 
 BOOST_AUTO_TEST_CASE(parent_dir) {
-    BOOST_CHECK(true);
+    auto abctest = SepSource::findParentDir("abc/test/removed");
+    BOOST_CHECK(abctest == "abc/test");
 }
 
 BOOST_AUTO_TEST_CASE(parse_sep) {
