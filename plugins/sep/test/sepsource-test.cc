@@ -7,7 +7,7 @@
 #include "../sepsource.hh"
 #include "../sli/slilayer.hh"
 
-const auto testFileDir = boost::dll::program_location().parent_path().parent_path().parent_path().parent_path().parent_path().parent_path() / "plugins/sep/test/testfiles";
+const auto testFileDir = boost::dll::program_location().parent_path().parent_path() / "testfiles";
 
 BOOST_AUTO_TEST_SUITE(Sep_Tests)
 
