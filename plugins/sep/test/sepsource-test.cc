@@ -87,10 +87,10 @@ BOOST_AUTO_TEST_CASE(apply_white_subtract_2) {
     auto res = SepSource::applyWhiteInk(100, 101, 1);
     BOOST_CHECK(res == 1);
 }
-/*
+
 BOOST_AUTO_TEST_CASE(apply_white_multiply_1) {
     auto res = SepSource::applyWhiteInk(100, 100, 2);
-    BOOST_CHECK(res == 60);
+    BOOST_CHECK(res == 61);
 }
 
 BOOST_AUTO_TEST_CASE(apply_white_multiply_2) {
@@ -114,13 +114,15 @@ BOOST_AUTO_TEST_CASE(tiff_wrapper_2) {
 }
 
 BOOST_AUTO_TEST_CASE(fill_sli_1) {
-    SliLayer::Ptr sli = SliLayer::create("/home/ubuntu/Documents/swathStack_4pass_ONYX_Quality_Evaluation/swath_009.sep", "swath_009.sep", 0, 0);
+    SliLayer::Ptr sli = SliLayer::create((testFileDir / "sep_cmyk.sep").string(), "name", 0, 0);
     SepSource::fillSliLayer(sli);
-    BOOST_CHECK_EQUAL(sli->width, 20704);
-    BOOST_CHECK_EQUAL(sli->height, 1024);
-    BOOST_CHECK_EQUAL(sli->spp, 4);
-    BOOST_CHECK_EQUAL(sli->bps, 8);
+    BOOST_CHECK(sli->width == 600);
+    BOOST_CHECK(sli->height == 400);
+    BOOST_CHECK(sli->spp == 4);
+    BOOST_CHECK(sli->bps == 8);
     BOOST_CHECK(sli->bitmap != nullptr);
+    BOOST_CHECK(std::abs(sli->xAspect - 1.0) < 1e-4);
+    BOOST_CHECK(std::abs(sli->yAspect - 1.0) < 1e-4);
 }
-*/
+
 BOOST_AUTO_TEST_SUITE_END()
