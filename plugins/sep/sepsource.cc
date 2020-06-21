@@ -60,19 +60,21 @@ SepFile SepSource::parseSep(const std::string &file_name) {
     // Channels with empty paths are ignored during loading.
     sep_file.files = {{"C", ""}, {"M", ""}, {"Y", ""}, {"K", ""}};
 
-    // read lines of the file
-
-            // TODO: Crashes if there is an empty line
+    // Read lines of the file
     while (std::getline(file, line)) {
         std::vector<std::string> result;
         boost::split(result, line, boost::is_any_of(":"));
+
+        if (result.size() != 2) {
+            // Malformed line: Wrong number of colons.
+            continue;
+        }
+
         boost::algorithm::trim(result[0]);
         boost::algorithm::trim(result[1]);
 
-
-        if (result.size() != 2 || result[0].empty() || result[1].empty()) {
-            // Remember the warning and skip this line / channel
-            // warnings += "WARNING: One of the channels has not been provided correctly!\n";
+        if (result[0].empty() || result[1].empty()) {
+            // Malformed line: nothing before or after the colon.
             continue;
         }
 
