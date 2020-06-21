@@ -148,6 +148,28 @@ BOOST_AUTO_TEST_CASE(open_files_twice) {
     }
 }
 
+BOOST_AUTO_TEST_CASE(open_files_extra) {
+    // Preparation
+    auto source = SepSource::create();
+    SepFile file = SepSource::parseSep((testFileDir / "sep_cmykv.sep").string());
+    source->setData(file);
+    // Set white manually to avoid white choice popup dialog which
+    // crashes when executed during tests.
+    source->sep_file.files["W"] = testFileDir / "C.tif";
+
+    // Tested call
+    source->openFiles();
+
+    // Check that all the CMYK files have been opened
+    for (const std::string& colour : {"C", "M", "Y", "K"}) {
+        BOOST_CHECK(source->channel_files[colour] != nullptr);
+    }
+
+    // Check that white ink and varnish have also been opened
+    BOOST_CHECK(source->white_ink != nullptr);
+    BOOST_CHECK(source->varnish != nullptr);
+}
+
 BOOST_AUTO_TEST_CASE(apply_white_nowhite) {
     auto res = SepSource::applyWhiteInk(100, 100, 0);
     BOOST_CHECK(res == 100);
