@@ -126,6 +126,28 @@ BOOST_AUTO_TEST_CASE(open_files) {
     BOOST_CHECK(source->varnish == nullptr);
 }
 
+BOOST_AUTO_TEST_CASE(open_files_twice) {
+    // Preparation
+    auto source = SepSource::create();
+    SepFile file = SepSource::parseSep((testFileDir / "sep_cmyk.sep").string());
+    source->setData(file);
+    source->openFiles();
+
+    // Save the TIFF pointers to make sure they don't change
+    std::map<std::string, tiff*> files;
+    for (const std::string& colour : {"C", "M", "Y", "K"}) {
+        files[colour] = source->channel_files[colour];
+    }
+
+    // Tested call
+    source->openFiles();
+
+    // Check that all the CMYK files have not been opened again
+    for (const std::string& colour : {"C", "M", "Y", "K"}) {
+        BOOST_CHECK(source->channel_files[colour] == files[colour]);
+    }
+}
+
 BOOST_AUTO_TEST_CASE(apply_white_nowhite) {
     auto res = SepSource::applyWhiteInk(100, 100, 0);
     BOOST_CHECK(res == 100);

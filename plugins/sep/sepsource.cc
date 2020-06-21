@@ -215,7 +215,7 @@ void SepSource::setData(SepFile file) {
 void SepSource::openFiles() {
     for (auto c : channels) {
         if (channel_files[c] != nullptr) {
-            printf("PANIC: %s file has already been initialized. Cannot open it again.\n", c.c_str());
+            printf("WARNING: %s file has already been initialized. Cannot open it again.\n", c.c_str());
             return;
         }
     }
@@ -225,7 +225,6 @@ void SepSource::openFiles() {
     // open CMYK channels
     for (auto c : channels) {
         channel_files[c] = TIFFOpen(this->sep_file.files[c].string().c_str(), "r");
-        // show_warning |= channel_files[c] == nullptr;
     }
 
     // open white ink and varnish channels
