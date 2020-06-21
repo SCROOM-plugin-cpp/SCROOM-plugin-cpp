@@ -60,6 +60,19 @@ BOOST_AUTO_TEST_CASE(get_resolution_null) {
     BOOST_CHECK(res == true);
 }
 
+BOOST_AUTO_TEST_CASE(get_transformation) {
+    auto source = SepSource::create();
+
+    source->channel_files["C"] = nullptr;
+    source->channel_files["M"] = nullptr;
+    source->channel_files["Y"] = nullptr;
+    source->channel_files["K"] = nullptr;
+
+    auto res = source->getTransform()->getAspectRatio();
+    BOOST_CHECK(std::abs(res.x - 1.0) < 1e4);
+    BOOST_CHECK(std::abs(res.y - 1.0) < 1e4);
+}
+
 BOOST_AUTO_TEST_CASE(set_data) {
     // Preparation
     auto source = SepSource::create();
