@@ -34,6 +34,19 @@ BOOST_AUTO_TEST_CASE(parse_sep) {
     BOOST_CHECK(file.white_ink_choice == 0);
 }
 
+BOOST_AUTO_TEST_CASE(parse_sep_empty_line) {
+    SepFile file = SepSource::parseSep((testFileDir / "sep_empty_line.sep").string());
+    BOOST_CHECK(file.files.size() == 4);
+
+    for (const std::string& colour : {"C", "M", "Y", "K"}) {
+        BOOST_CHECK(file.files[colour] == testFileDir / (colour + ".tif"));
+    }
+
+    BOOST_CHECK(file.width == 600);
+    BOOST_CHECK(file.height == 400);
+    BOOST_CHECK(file.white_ink_choice == 0);
+}
+
 BOOST_AUTO_TEST_CASE(get_for_none) {
     uint16_t unit;
     float x_res, y_res;
