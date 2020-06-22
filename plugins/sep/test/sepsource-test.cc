@@ -227,10 +227,17 @@ BOOST_AUTO_TEST_CASE(tiff_wrapper_2) {
     BOOST_CHECK(res == -1);
 }
 
+BOOST_AUTO_TEST_CASE(tiff_wrapper_3) {
+    auto file = TIFFOpen((testFileDir / "M_9.tif").string().c_str(), "r");
+    auto lines = std::vector<uint8_t>(TIFFScanlineSize(file));
+    int res = SepSource::TIFFReadScanline_(file, lines.data(), 1);
+    BOOST_CHECK(res != -1);
+}
+
 BOOST_AUTO_TEST_CASE(fill_sli_empty) {
     SliLayer::Ptr sli = SliLayer::create("", "name", 0, 0);
     sli->height = 42;
-    sli->bitmap = nullptr; // TODO: this is a workaround for a bug - please remove
+    sli->bitmap = nullptr;  // TODO: this is a workaround for a bug - please remove
     SepSource::fillSliLayer(sli);
     BOOST_CHECK(sli->height == 42);
 }
