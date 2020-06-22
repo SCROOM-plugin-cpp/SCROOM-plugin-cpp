@@ -15,8 +15,7 @@
 #include <mutex>
 #include <atomic>
 
-class PipetteHandler : public ToolStateListener, public PostRenderer, public SelectionListener, virtual public Scroom::Utils::Base
-{
+class PipetteHandler : public ToolStateListener, public PostRenderer, public SelectionListener, virtual public Scroom::Utils::Base {
 public:
   PipetteHandler();
 
@@ -60,8 +59,7 @@ public:
   virtual void displayValues(ViewInterface::Ptr view, Scroom::Utils::Rectangle<int> rect, PipetteLayerOperations::PipetteColor colors);
 };
 
-class Pipette : public PluginInformationInterface, public ViewObserver, virtual public  Scroom::Utils::Base
-{
+class Pipette : public PluginInformationInterface, public ViewObserver, virtual public  Scroom::Utils::Base {
 public:
   typedef boost::shared_ptr<Pipette> Ptr;
 
