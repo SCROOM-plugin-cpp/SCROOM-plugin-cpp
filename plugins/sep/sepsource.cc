@@ -51,7 +51,8 @@ SepFile SepSource::parseSep(const std::string &file_name) {
         std::getline(file, line);
         sep_file.height = std::stoul(line);
     } catch (const std::exception &e) {
-        sep_file.height = 0;  // to trigger the error case in SepPresention::load()
+        sep_file.width = 0;
+        sep_file.height = 0;
         warnings += "WARNING: Width or height have not been provided correctly!\n";
     }
 
@@ -240,6 +241,41 @@ void SepSource::openFiles() {
     if (show_warning) {
         printf("PANIC: One of the provided files is not valid, or could not be opened!\n");
         ShowWarning("PANIC: One of the provided files is not valid, or could not be opened!");
+    }
+}
+
+void SepSource::checkFiles() {
+    uint16_t spp, bps;
+    std::string warning = "";
+
+    // check CMYK
+    for (auto c : channels) {
+        if (channel_files[c] != nullptr && \
+                TIFFGetField(channel_files[c], TIFFTAG_SAMPLESPERPIXEL, &spp) == 1 && \
+                spp != 1) {
+            warning += "ERROR: Samples per pixel is not 1!\n";
+        }
+        if (channel_files[c] != nullptr && \
+                TIFFGetField(channel_files[c], TIFFTAG_BITSPERSAMPLE, &bps) == 1 && \
+                bps != 8) {
+            warning += "ERROR: Bits per sample is not 8!\n";
+        }
+    }
+
+    // check white ink
+    if (this->white_ink != nullptr) {
+        if (TIFFGetField(this->white_ink, TIFFTAG_SAMPLESPERPIXEL, &spp) == 1 && \
+                spp != 1) {
+            warning += "ERROR: White ink samples per pixel is not 1!\n";
+        }
+        if (TIFFGetField(this->white_ink, TIFFTAG_BITSPERSAMPLE, &bps) == 1 && \
+                bps != 8) {
+            warning += "ERROR: White ink bits per sample is not 8!\n";
+        }
+    }
+
+    if (! warning.empty()) {
+        ShowWarning(warning);
     }
 }
 

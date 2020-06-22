@@ -94,6 +94,14 @@ class SepSource : public SourcePresentation {
     void openFiles();
 
     /**
+     * Checks the opened files and shows a warning popup if there
+     * are any problems.
+     *
+     * @pre `openFiles` has been called.
+     */
+    void checkFiles();
+
+    /**
      * Applies the effect of white ink.
      * @param white - value of white pixel
      * @param color - value of colored pixel
