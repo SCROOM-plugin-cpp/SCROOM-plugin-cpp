@@ -37,3 +37,4 @@ plugin-build
 .autotools
 .cproject
 .settings
+/.vscode

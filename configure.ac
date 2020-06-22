@@ -23,10 +23,6 @@ esac
 AM_CONDITIONAL([LINUX], [test "$build_linux" = "yes"])
 AM_CONDITIONAL([WINDOWS], [test "$build_windows" = "yes"])
 
-# Make sure the configure script finds the compiler    
-AM_COND_IF([WINDOWS], 
-    [export PATH=$PATH:/c/msys64/mingw64/bin]) 
-
 AM_INIT_AUTOMAKE([-Wall -Werror foreign silent-rules subdir-objects])
 AM_SILENT_RULES([yes])
 AM_PROG_AR
@@ -55,7 +51,6 @@ dnl SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wconversion])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wpointer-arith])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wwrite-strings])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wunused])
-SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wredundant-decls])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wuninitialized])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Winit-self])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wcast-qual])
@@ -68,10 +63,18 @@ SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Woverloaded-virtual])
 SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wsign-promo])
 SCROOM_TEST_ISYSTEM
     
-# The .pc files are at a weird place so make sure pkg-config finds them
-AM_COND_IF([WINDOWS], 
-    [export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/mingw64/lib/pkgconfig])    
-    
+# Disabled warnings
+AM_COND_IF([LINUX], [
+    # - Lots of warnings on Windows
+    SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wredundant-decls])
+])   
+AM_COND_IF([WINDOWS], [
+    # - Warns for C pointer declarations - On windows there are a lot of those in gtk headers
+    SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wno-parentheses])
+    # - On Windows, gtk uses deprecated glib stuff - need to move to gtk3 ;-)
+    SCROOM_ADD_CXXFLAGS_IF_SUPPORTED([-Wno-deprecated-declarations])
+])  
+
 # This flag is used in Makefile.am and needed for properly generating DLLs on Windows
 loadflag=""
 AM_COND_IF([WINDOWS], 

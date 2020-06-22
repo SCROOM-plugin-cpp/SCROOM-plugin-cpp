@@ -1,0 +1,3 @@
+[submodule "scroom"]
+	path = scroom
+	url = https://github.com/SCROOM-plugin-cpp/scroom.git
