@@ -170,6 +170,23 @@ BOOST_AUTO_TEST_CASE(open_files_extra) {
     BOOST_CHECK(source->varnish != nullptr);
 }
 
+BOOST_AUTO_TEST_CASE(check_files) {
+    // Preparation
+    auto source = SepSource::create();
+    SepFile file = SepSource::parseSep((testFileDir / "sep_cmykv.sep").string());
+    source->setData(file);
+    // Set white manually to avoid white choice popup dialog which
+    // crashes when executed during tests.
+    source->sep_file.files["W"] = testFileDir / "C.tif";
+    source->openFiles();
+
+    // Tested call
+    source->checkFiles();
+
+    // Check that it did not crash -> did not throw warnings
+    BOOST_CHECK(true);
+}
+
 BOOST_AUTO_TEST_CASE(apply_white_nowhite) {
     auto res = SepSource::applyWhiteInk(100, 100, 0);
     BOOST_CHECK(res == 100);
