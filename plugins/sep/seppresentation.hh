@@ -33,7 +33,7 @@ private:
 
     std::map<std::string, std::string> properties;
 
-    boost::shared_ptr<PipetteCommonOperationsCMYK> layer_operations;
+    PipetteCommonOperationsCMYK::Ptr layer_operations;
 
 private:
     /**
