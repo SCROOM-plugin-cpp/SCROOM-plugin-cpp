@@ -1,6 +1,9 @@
 #include "varnish-helpers.hh"
+#include "../sep-helpers.hh"
 #include <scroom/cairo-helpers.hh>
+
 #include <tiffio.h>
+#include <boost/format.hpp>
 
 #define TIFFGetFieldChecked(file, field, ...)        \
   if (1 != TIFFGetField(file, field, ##__VA_ARGS__)) \
@@ -16,7 +19,10 @@ bool fillVarnishOverlay(SliLayer::Ptr layer)
     TIFF *tif = TIFFOpen(layer->filepath.c_str(), "r");
     if (!tif)
     {
-      printf("PANIC: Failed to open file %s\n", layer->filepath.c_str());
+      boost::format errorFormat = boost::format(
+          "Error: Failed to open file %s") % layer->filepath.c_str();
+      printf("%s\n", errorFormat.str().c_str());
+      Show(errorFormat.str(), GTK_MESSAGE_ERROR);
       return false;
     }
 
@@ -24,14 +30,22 @@ bool fillVarnishOverlay(SliLayer::Ptr layer)
       layer->spp = 1; // Default value, according to tiff spec
     if (layer->spp != allowedSpp)
     {
-      printf("PANIC: Samples per pixel is not %d, but %d. Giving up\n", allowedSpp, layer->spp);
+      boost::format errorFormat = boost::format(
+          "Error: Samples per pixel of file %s is not %d, but %d") 
+          % layer->filepath.c_str() % allowedSpp % layer->spp;
+      printf("%s\n", errorFormat.str().c_str());
+      Show(errorFormat.str(), GTK_MESSAGE_ERROR);
       return false;
     }
 
     TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &layer->bps);
     if (layer->bps != allowedBps)
     {
-      printf("PANIC: Bits per sample is not %d, but %d. Giving up\n", allowedBps, layer->bps);
+      boost::format errorFormat = boost::format(
+          "Error: Bits per sample of file %s is not %d, but %d") 
+          % layer->filepath.c_str() % allowedBps % layer->bps;
+      printf("%s\n", errorFormat.str().c_str());
+      Show(errorFormat.str(), GTK_MESSAGE_ERROR);
       return false;
     }
 
@@ -78,7 +92,9 @@ bool fillVarnishOverlay(SliLayer::Ptr layer)
   }
   catch (const std::exception &ex)
   {
-    printf("PANIC: %s\n", ex.what());
+    boost::format errorFormat = boost::format("Error: %s") % ex.what();
+    printf("%s\n", errorFormat.str().c_str());
+    Show(errorFormat.str(), GTK_MESSAGE_ERROR);
     return false;
   }
 

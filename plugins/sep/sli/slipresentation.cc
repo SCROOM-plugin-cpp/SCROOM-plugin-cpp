@@ -106,7 +106,7 @@ bool SliPresentation::parseSli(const std::string &sliFileName)
         } 
         else
         {
-          std::string error = "[PANIC] varnish file could not be loaded successfully";
+          std::string error = "Error: Varnish file could not be loaded successfully";
           printf("%s\n", error.c_str());
           Show(error, GTK_MESSAGE_ERROR);
           return false;
@@ -115,7 +115,7 @@ bool SliPresentation::parseSli(const std::string &sliFileName)
       else 
       {
         boost::format errorFormat = boost::format(
-          "[PANIC] varnish file not found: %s") % imagePath.c_str();
+          "Error: Varnish file not found: %s") % imagePath.c_str();
         printf("%s\n", errorFormat.str().c_str());
         Show(errorFormat.str(), GTK_MESSAGE_ERROR);
         return false;
