@@ -23,10 +23,10 @@ struct SepFile {
  * dependencies.
  */
 class SepSource : public SourcePresentation {
-  public:
+   public:
     typedef boost::shared_ptr<SepSource> Ptr;
 
-  private:
+   private:
     /** Data structure to represent the opened SEP file in memory. */
     SepFile sep_file;
 
@@ -47,7 +47,7 @@ class SepSource : public SourcePresentation {
     /** Constructor */
     SepSource();
 
-  public:
+   public:
     /** Destructor */
     ~SepSource();
 
@@ -142,7 +142,7 @@ class SepSource : public SourcePresentation {
      */
     void done() override;
 
-  private:
+   private:
     /**
      * Fills the passed parameters with the correct resolution for this sep
      * file.

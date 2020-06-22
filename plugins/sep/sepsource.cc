@@ -26,7 +26,7 @@ SepSource::Ptr SepSource::create() {
 }
 
 boost::filesystem::path SepSource::findParentDir(const std::string &file_path) {
-    return boost::filesystem::path{file_path}.parent_path();
+    return boost::filesystem::path(file_path).parent_path();
 }
 
 /**
@@ -62,26 +62,31 @@ SepFile SepSource::parseSep(const std::string &file_name) {
     // Channels with empty paths are ignored during loading.
     sep_file.files = {{"C", ""}, {"M", ""}, {"Y", ""}, {"K", ""}};
 
-    // read lines of the file
+    // Read lines of the file
     while (std::getline(file, line)) {
         std::vector<std::string> result;
         boost::split(result, line, boost::is_any_of(":"));
-        boost::algorithm::trim(result[0]);
-        boost::algorithm::trim(result[1]);
 
-        if (result.size() != 2 || result[1].empty() || (result[0].empty() && !result[1].empty())) {
-            // Remember the warning and skip this line / channel
-            warnings += "WARNING: One of the channels has not been provided correctly!\n";
+        if (result.size() != 2) {
+            // Malformed line: Wrong number of colons.
             continue;
         }
 
-        // store the full file path to each file
+        boost::algorithm::trim(result[0]);
+        boost::algorithm::trim(result[1]);
+
+        if (result[0].empty() || result[1].empty()) {
+            // Malformed line: nothing before or after the colon.
+            continue;
+        }
+
         if (result[0] != "C" && result[0] != "M" && result[0] != "Y" && result[0] != "K" && result[0] != "V" && result[0] != "W") {
             // Unsupported channel
             warnings += "WARNING: The .sep file defines an unknown channel (not C, M, Y, K, V or W)!\n";
             continue;
         }
 
+        // store the full file path to each file
         sep_file.files[result[0]] = parent_dir / result[1];
     }
 
@@ -212,7 +217,7 @@ void SepSource::setData(SepFile file) {
 void SepSource::openFiles() {
     for (auto c : channels) {
         if (channel_files[c] != nullptr) {
-            printf("PANIC: %s file has already been initialized. Cannot open it again.\n", c.c_str());
+            printf("WARNING: %s file has already been initialized. Cannot open it again.\n", c.c_str());
             return;
         }
     }
@@ -222,7 +227,6 @@ void SepSource::openFiles() {
     // open CMYK channels
     for (auto c : channels) {
         channel_files[c] = TIFFOpen(this->sep_file.files[c].string().c_str(), "r");
-        show_warning |= channel_files[c] == nullptr;
     }
 
     // open white ink channel
@@ -276,9 +280,9 @@ void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr) {
 uint8_t SepSource::applyWhiteInk(uint8_t white, uint8_t color, int type) {
     if (type == 1)  // 1 means subtractive model
         return white >= color ? 0 : color - white;
-    else if (type == 2)  // 2 means multiplicative model
-        return white > 0 ? (color * white) / 255 : color; // 255 is the maximum white value
-    else  // 0 means white ink is not present
+    else if (type == 2)                      // 2 means multiplicative model
+        return color - color * white / 255;  // 255 is the maximum white value
+    else                                     // 0 means white ink is not present
         return color;
 }
 

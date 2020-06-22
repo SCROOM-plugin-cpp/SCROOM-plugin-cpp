@@ -75,70 +75,66 @@ bool SliPresentation::parseSli(const std::string &sliFileName)
   {
     std::sregex_token_iterator i(line.begin(), line.end(), e, -1);
     // Iterate over the whitespace-separated tokens of the line
-    while(i != j)
+    std::string firstToken = *i++;
+    if (firstToken == "Xresolution:" && i != j)
     {
-      std::string firstToken = *i++;
-      if (firstToken == "Xresolution:")
-      {
-        Xresolution = std::stof(*i++);
-        printf("xresolution: %f\n", Xresolution);
-      }
-      else if (firstToken == "Yresolution:")
-      {
-        Yresolution = std::stof(*i++);
-        printf("yresolution: %f\n", Yresolution);
-      }
-      else if (firstToken == "varnish_file:")
-      {
-        std::string varnishFile = std::string(*i++);
-        printf("varnish_file: %s\n", varnishFile.c_str());
-        fs::path imagePath = fs::path(dirPath) /= varnishFile;
-        if (fs::exists(imagePath)) {
-          printf("varnish file exists.\n");
-          SliLayer::Ptr varnishLayer = SliLayer::create(imagePath.string(), varnishFile, 0, 0);
-          if (fillVarnishOverlay(varnishLayer))
-          {
-            varnish = Varnish::create(varnishLayer);
-          } 
-          else
-          {
-            printf("[PANIC] varnish file could not be loaded successfully\n");
-          }
-          
+      Xresolution = std::stof(*i++);
+      printf("xresolution: %f\n", Xresolution);
+    }
+    else if (firstToken == "Yresolution:" && i != j)
+    {
+      Yresolution = std::stof(*i++);
+      printf("yresolution: %f\n", Yresolution);
+    }
+    else if (firstToken == "varnish_file:")
+    {
+      std::string varnishFile = std::string(*i++);
+      printf("varnish_file: %s\n", varnishFile.c_str());
+      fs::path imagePath = fs::path(dirPath) /= varnishFile;
+      if (fs::exists(imagePath)) {
+        printf("varnish file exists.\n");
+        SliLayer::Ptr varnishLayer = SliLayer::create(imagePath.string(), varnishFile, 0, 0);
+        if (fillVarnishOverlay(varnishLayer))
+        {
+          varnish = Varnish::create(varnishLayer);
         } 
-        else 
+        else
         {
-          printf("[PANIC] varnish file not found: %s\n", imagePath.c_str());
+          printf("[PANIC] varnish file could not be loaded successfully\n");
         }
       }
-      else if (fs::exists(fs::path(dirPath) /= firstToken))
+      else 
       {
-        // Line contains name of an existing file
-        if (*i == ":")
-        {
-          i++; // discard the colon
-        }
-        int xOffset = 0;
-        int yOffset = 0;
-        if (i != j)
-        {
-          xOffset = std::stoi(*i++);
-        }
-        if (i != j)
-        {
-          yOffset = std::stoi(*i++);
-        }
-        fs::path imagePath = fs::path(dirPath) /= firstToken;
-        if (! source->addLayer(imagePath.string(), firstToken, xOffset, yOffset))
-        {
-          return false;
-        }
+        printf("[PANIC] varnish file not found: %s\n", imagePath.c_str());
       }
-      else
+    }
+    else if (fs::exists(fs::path(dirPath) /= firstToken))
+    {
+      // Line contains name of an existing file
+      if (i != j && *i == ":")
       {
-        printf("Error: Token '%s' in SLI file is not an existing file\n", firstToken.c_str());
+        i++; // discard the colon
+      }
+      int xOffset = 0;
+      int yOffset = 0;
+      if (i != j)
+      {
+        xOffset = std::stoi(*i++);
+      }
+      if (i != j)
+      {
+        yOffset = std::stoi(*i++);
+      }
+      fs::path imagePath = fs::path(dirPath) /= firstToken;
+      if (! source->addLayer(imagePath.string(), firstToken, xOffset, yOffset))
+      {
         return false;
       }
+    }
+    else
+    {
+      printf("Error: Token '%s' in SLI file is not an existing file\n", firstToken.c_str());
+      return false;
     }
   }
   if (Xresolution > 0 && Yresolution > 0 && source->layers.size() > 0)

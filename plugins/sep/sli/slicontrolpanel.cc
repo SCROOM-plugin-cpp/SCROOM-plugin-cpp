@@ -1,3 +1,4 @@
+#include <gdk/gdkkeysyms.h>
 #include <scroom/unused.hh>
 #include <boost/dynamic_bitset.hpp>
 
@@ -11,6 +12,20 @@ gboolean scroll_event (GtkWidget *widget, GdkEvent *event, gpointer user_data)
   UNUSED(event);
   UNUSED(user_data);
   return TRUE;
+}
+
+/* Remove focus from the widget when the ESC key is pressed */
+gboolean escape_key_pressed(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+  UNUSED(user_data);
+
+  if (event->keyval == GDK_KEY_Escape) {
+    gtk_widget_set_sensitive(widget, FALSE);
+    gtk_widget_set_sensitive(widget, TRUE);
+    return TRUE;
+  }
+
+  return FALSE;
 }
 
 /* Check whether the constraint defined by the sliders' bounds are respected */
@@ -142,7 +157,7 @@ gboolean slider_event_handler(GtkWidget *widget, GdkEvent *event, SliControlPane
 }
 
 /* Makes sure a slider can't go above or below the other slider's value */
-static gboolean change_value(GtkRange *range,
+gboolean change_value(GtkRange *range,
                              GtkScrollType scroll,
                              gdouble this_value,
                              SliControlPanel *cPanel)
@@ -167,7 +182,7 @@ static gboolean change_value(GtkRange *range,
 }
 
 /* Updates the Tree Model and triggers a redraw when a checkmark is toggled */
-static void on_toggle(GtkCellRendererToggle *renderer, gchar *path, SliControlPanel *cPanel)
+void on_toggle(GtkCellRendererToggle *renderer, gchar *path, SliControlPanel *cPanel)
 {
   UNUSED(renderer);
   GtkTreeModel *model;
@@ -250,13 +265,12 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
   SliPresentationInterface::Ptr presPtr = presentation.lock();
   std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
   n_layers = layers.size();
-
   ViewInterface::Ptr view(viewWeak);
 
   GtkWidget *hbox = gtk_hbox_new(false, 10);
-
   GtkWidget* treeview = gtk_tree_view_new();
   widgets[TREEVIEW] = treeview;
+  
   create_view_and_model();
   gtk_box_pack_start(GTK_BOX(hbox), treeview, false, false, 0);
 
@@ -279,12 +293,14 @@ SliControlPanel::SliControlPanel(ViewInterface::WeakPtr viewWeak, SliPresentatio
     g_signal_connect(slider_low, "focus-out-event", G_CALLBACK(slider_event_handler), this);
     g_signal_connect(slider_low, "key-release-event", G_CALLBACK(slider_event_handler), this);
     g_signal_connect(slider_low, "scroll-event", G_CALLBACK(scroll_event), NULL);
+    g_signal_connect(slider_low, "key-press-event", G_CALLBACK(escape_key_pressed), NULL);
 
     g_signal_connect(slider_high, "change-value", G_CALLBACK(change_value), this);
     g_signal_connect(slider_high, "button-release-event", G_CALLBACK(slider_event_handler), this);
     g_signal_connect(slider_high, "focus-out-event", G_CALLBACK(slider_event_handler), this);
     g_signal_connect(slider_high, "key-release-event", G_CALLBACK(slider_event_handler), this);
     g_signal_connect(slider_high, "scroll-event", G_CALLBACK(scroll_event), NULL);
+    g_signal_connect(slider_high, "key-press-event", G_CALLBACK(escape_key_pressed), NULL);
 
     // Set the number of decimal places to display for each widget.
     gtk_scale_set_digits(GTK_SCALE(slider_low), 0);
