@@ -20,9 +20,6 @@ public:
     typedef boost::shared_ptr<SepPresentation> Ptr;
 
 private:
-    // This variable is only set in the constructor and never used.
-    // TODO: reconsider the existence of this variable.
-    ScroomInterface::Ptr scroom_interface;
     SepSource::Ptr sep_source;
 
     TiledBitmapInterface::Ptr tbi;
@@ -43,7 +40,7 @@ private:
      * Constructor for a standalone SepPresentation to be passed to
      * the Scroom core.
      */
-    SepPresentation(ScroomInterface::Ptr interface);
+    SepPresentation();
 
 public:
     virtual ~SepPresentation();
@@ -52,7 +49,7 @@ public:
      * Constructor to be called for a standalone SepPresentation to
      * be passed to the Scroom core
      */
-    static Ptr create(ScroomInterface::Ptr interface);
+    static Ptr create();
 
     /**
      * Load the SEP file whose filename is passed as argument.

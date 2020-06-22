@@ -156,9 +156,9 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
   alpha = gtk_color_selection_get_current_alpha(GTK_COLOR_SELECTION(colorpicker));
   // Cairo is expecting doubles as color values, so we have to convert them.
   double r, g, b, a;
-  r = (double)color.red / 65535.0;
-  g = (double)color.green / 65535.0;
-  b = (double)color.blue / 65535.0;
+  r = color.red / 65535.0;
+  g = color.green / 65535.0;
+  b = color.blue / 65535.0;
   a = alpha / 65535.0;
 
   if (!GTK_TOGGLE_BUTTON(check_show_background)->active)

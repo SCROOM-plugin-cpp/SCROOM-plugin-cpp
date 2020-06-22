@@ -24,10 +24,7 @@ SliLayer::SliLayer() : height(0), width(0)
 
 SliLayer::~SliLayer()
 {
-  if (bitmap)
-  {
-    free(bitmap);
-  }
+  free(bitmap);
 }
 
 Scroom::Utils::Rectangle<int> SliLayer::toRectangle()
