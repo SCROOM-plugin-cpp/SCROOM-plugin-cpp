@@ -1,6 +1,10 @@
 *.la
 *.lo
 *.o
+*.exe
+*.gcno
+*.gcda
+*.gcov
 *~
 .deps
 .libs
@@ -32,4 +36,7 @@
 /stamp-h1
 /doc/
 /compile
+plugin-build/*
 /.vscode
+plugins/sep/test/sep-tests
+gmon.out
