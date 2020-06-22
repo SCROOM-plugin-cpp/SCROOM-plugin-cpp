@@ -1,7 +1,5 @@
 #include <boost/dll.hpp>
 #include <boost/test/unit_test.hpp>
-#include "scroom/blockallocator.hh"
-#include "scroom/tiledbitmaplayer.hh"
 
 // Make all private members accessible for testing
 #define private public
@@ -234,16 +232,16 @@ BOOST_AUTO_TEST_CASE(fill_sli_1) {
 
 BOOST_AUTO_TEST_CASE(fill_tiles) {
     // Preparation
-    auto source = SepSource::create();
-    SepFile file = SepSource::parseSep((testFileDir / "sep_cmyk.sep").string());
-    source->setData(file);
-    source->openFiles();
+    // auto source = SepSource::create();
+    // SepFile file = SepSource::parseSep((testFileDir / "sep_cmyk.sep").string());
+    // source->setData(file);
+    // source->openFiles();
 
-    auto blockiface = Scroom::MemoryBlocks::getBlockFactoryInterface()->create(1, TILESIZE);
-    auto provider = blockiface->getPages().front().get();
-    auto alloc = std::allocator<Tile::Ptr>();
-    auto tiles = std::vector<Tile::Ptr>(alloc);
-    tiles.push_back(Tile::create(TILESIZE, TILESIZE, 8, provider));
+    // auto blockiface = Scroom::MemoryBlocks::getBlockFactoryInterface()->create(1, TILESIZE);
+    // auto provider = blockiface->getPages().front().get();
+    // auto alloc = std::allocator<Tile::Ptr>();
+    // auto tiles = std::vector<Tile::Ptr>(alloc);
+    // tiles.push_back(Tile::create(TILESIZE, TILESIZE, 8, provider));
 
     // Tested call
     // Currently segfaults due to the weird tiles setup.

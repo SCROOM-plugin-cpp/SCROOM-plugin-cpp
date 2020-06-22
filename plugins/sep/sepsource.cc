@@ -35,7 +35,6 @@ boost::filesystem::path SepSource::findParentDir(const std::string &file_path) {
  * warning dialog is shown.
  */
 SepFile SepSource::parseSep(const std::string &file_name) {
-    std::cerr << file_name << "\n";
     std::ifstream file(file_name);
     std::string line;
 
