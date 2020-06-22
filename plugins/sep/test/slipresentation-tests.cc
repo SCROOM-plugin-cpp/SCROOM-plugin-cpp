@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(slipresentation_load_sli_septiffmixed)
   BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
 }
-/*
+
 BOOST_AUTO_TEST_CASE(slipresentation_load_sli_scale)
 {
   SliPresentation::Ptr presentation = createPresentation();
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(slipresentation_load_sli_scale)
   BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
 }
-*/
+
 BOOST_AUTO_TEST_CASE(slipresentation_load_sli_xoffset)
 {
   SliPresentation::Ptr presentation = createPresentation();

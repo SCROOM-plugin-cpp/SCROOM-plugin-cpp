@@ -1,6 +1,11 @@
 #include "sep-helpers.hh"
 
 int Show(std::string message, GtkMessageType type_gtk) {
+    if (! gdk_display_get_default())
+    {
+        // We're running headless, don't open the popup
+        return 0;
+    }
     // We don't have a pointer to the parent window, so nullptr should suffice
     GtkWidget *dialog = gtk_message_dialog_new(
         nullptr, GTK_DIALOG_DESTROY_WITH_PARENT,
