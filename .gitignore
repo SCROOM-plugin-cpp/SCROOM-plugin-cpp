@@ -2,6 +2,9 @@
 *.lo
 *.o
 *.exe
+*.gcno
+*.gcda
+*.gcov
 *~
 .deps
 .libs

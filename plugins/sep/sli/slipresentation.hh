@@ -11,6 +11,7 @@
 #include "slicontrolpanel.hh"
 #include "sli-helpers.hh"
 #include "slisource.hh"
+#include "../varnish/varnish.hh"
 
 
 class SliPresentation : public PresentationBase,
@@ -52,6 +53,9 @@ private:
 
   /** The number of pixels per ResolutionUnit in the ImageLength direction */
   float Yresolution = -1;
+
+  /** (Optional) the object used to draw the varnish overlay */
+  Varnish::Ptr varnish;
 
 private:
   /** Constructor */
@@ -112,7 +116,7 @@ public:
   // PresentationBase
   ////////////////////////////////////////////////////////////////////////
 
-  virtual void viewAdded(ViewInterface::WeakPtr viewInterface);
+  virtual void viewAdded(ViewInterface::WeakPtr vi);
   virtual void viewRemoved(ViewInterface::WeakPtr vi);
   virtual std::set<ViewInterface::WeakPtr> getViews();
   

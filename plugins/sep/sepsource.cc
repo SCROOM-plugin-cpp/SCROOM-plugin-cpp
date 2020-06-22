@@ -5,7 +5,10 @@
 #include <fstream>
 #include <iostream>
 
+
+#include "varnish/varnish-helpers.hh"
 #include "sep-helpers.cc"
+
 
 SepSource::SepSource() {}
 SepSource::~SepSource() {}
@@ -218,15 +221,20 @@ void SepSource::openFiles() {
         channel_files[c] = TIFFOpen(this->sep_file.files[c].string().c_str(), "r");
     }
 
-    // open white ink and varnish channels
+    // open white ink channel
     if (sep_file.files.count("W") == 1) {
         this->white_ink = TIFFOpen(this->sep_file.files["W"].string().c_str(), "r");
         show_warning |= (this->white_ink == nullptr);
     }
 
+    // open varnish channel
     if (sep_file.files.count("V") == 1) {
-        this->varnish = TIFFOpen(this->sep_file.files["V"].string().c_str(), "r");
-        show_warning |= (this->varnish == nullptr);
+        SliLayer::Ptr varnishLayer = SliLayer::create(sep_file.files["V"].string(), "Varnish", 0, 0);
+        if (fillVarnishOverlay(varnishLayer)) {
+            this->varnish = Varnish::create(varnishLayer);
+        } else {
+            show_warning = true;
+        }
     }
 
     if (show_warning) {
@@ -288,10 +296,6 @@ void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr) {
 
     auto w_line = std::vector<uint8_t>(size);
     TIFFReadScanline_(white_ink, w_line.data(), line_nr);
-
-    // NOTE: Support for varnish is not used at the moment
-    auto v_line = std::vector<uint8_t>(size);
-    TIFFReadScanline_(varnish, v_line.data(), line_nr);
 
     for (size_t i = 0; i < size; i++) {
         for (size_t j = 0; j < nr_channels; j++) {

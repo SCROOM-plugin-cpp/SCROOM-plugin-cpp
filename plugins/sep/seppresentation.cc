@@ -20,7 +20,6 @@ SepPresentation::Ptr SepPresentation::create(ScroomInterface::Ptr interface) {
 
 /**
  * TODO: check if this function meets the requirements.
- * TODO: Support varnish.
  * TODO: Support pipette.
  */
 bool SepPresentation::load(const std::string &file_name) {
@@ -66,6 +65,11 @@ void SepPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
     drawOutOfBoundsWithoutBackground(cr, presentationArea, getRect(), pixelSizeFromZoom(zoom));
     if (this->tbi)
         this->tbi->redraw(vi, cr, presentationArea, zoom);
+
+    // Draw varnish if it exists
+    if (this->sep_source->varnish != nullptr) {
+        this->sep_source->varnish->drawOverlay(vi, cr, presentationArea, zoom);
+    }
 }
 
 bool SepPresentation::getProperty(const std::string &name, std::string &value) {
@@ -102,6 +106,10 @@ void SepPresentation::viewAdded(ViewInterface::WeakPtr interface) {
     }
 
     this->tbi->open(interface);
+
+    if (this->sep_source->varnish != nullptr) {
+        this->sep_source->varnish->setView(interface);
+    }
 }
 
 void SepPresentation::viewRemoved(ViewInterface::WeakPtr interface) {

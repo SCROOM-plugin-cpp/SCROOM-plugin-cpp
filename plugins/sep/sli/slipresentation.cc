@@ -1,6 +1,9 @@
 #include "slipresentation.hh"
 #include "slisource.hh"
 
+#include "../varnish/varnish.hh"
+#include "../varnish/varnish-helpers.hh"
+
 #include <regex>
 #include <boost/filesystem.hpp>
 
@@ -82,6 +85,28 @@ bool SliPresentation::parseSli(const std::string &sliFileName)
     {
       Yresolution = std::stof(*i++);
       printf("yresolution: %f\n", Yresolution);
+    }
+    else if (firstToken == "varnish_file:")
+    {
+      std::string varnishFile = std::string(*i++);
+      printf("varnish_file: %s\n", varnishFile.c_str());
+      fs::path imagePath = fs::path(dirPath) /= varnishFile;
+      if (fs::exists(imagePath)) {
+        printf("varnish file exists.\n");
+        SliLayer::Ptr varnishLayer = SliLayer::create(imagePath.string(), varnishFile, 0, 0);
+        if (fillVarnishOverlay(varnishLayer))
+        {
+          varnish = Varnish::create(varnishLayer);
+        } 
+        else
+        {
+          printf("[PANIC] varnish file could not be loaded successfully\n");
+        }
+      }
+      else 
+      {
+        printf("[PANIC] varnish file not found: %s\n", imagePath.c_str());
+      }
     }
     else if (fs::exists(fs::path(dirPath) /= firstToken))
     {
@@ -199,6 +224,11 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
   }
   cairo_paint(cr);
   cairo_restore(cr);
+
+  /* --> Draw The varnish overlay if it exists */
+  if (varnish) {
+    varnish->drawOverlay(vi, cr, presentationArea, zoom);
+  }
 }
 
 bool SliPresentation::getProperty(const std::string& name, std::string& value)
@@ -232,15 +262,20 @@ std::string SliPresentation::getTitle()
 ////////////////////////////////////////////////////////////////////////
 // PresentationBase
 
-void SliPresentation::viewAdded(ViewInterface::WeakPtr viewInterface)
+void SliPresentation::viewAdded(ViewInterface::WeakPtr vi)
 {
-  controlPanel = SliControlPanel::create(viewInterface, weakPtrToThis);
+  controlPanel = SliControlPanel::create(vi, weakPtrToThis);
 
   // Provide the source with the means to enable and disable the widgets in the sidebar
   source->enableInteractions = boost::bind(&SliControlPanel::enableInteractions, controlPanel);
   source->disableInteractions = boost::bind(&SliControlPanel::disableInteractions, controlPanel);
 
-  views.insert(viewInterface);
+  views.insert(vi);
+
+  if (varnish)
+  {
+    varnish->setView(vi);
+  }
 }
 
 void SliPresentation::viewRemoved(ViewInterface::WeakPtr vi)

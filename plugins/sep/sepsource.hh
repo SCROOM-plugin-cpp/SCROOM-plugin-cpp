@@ -8,6 +8,7 @@
 #include <scroom/transformpresentation.hh>
 
 #include "sli/slilayer.hh"
+#include "varnish/varnish.hh"
 
 struct SepFile {
     size_t width;
@@ -43,15 +44,15 @@ class SepSource : public SourcePresentation {
     /** Pointer to white ink file. */
     tiff *white_ink = nullptr;
 
-    /** Pointer to varnish file. */
-    tiff *varnish = nullptr;
-
     /** Constructor */
     SepSource();
 
    public:
     /** Destructor */
     ~SepSource();
+
+    /** Pointer to varnish layer. */
+    Varnish::Ptr varnish;
 
     /**
      * Create a pointer to SepSource using constructor and return it.
