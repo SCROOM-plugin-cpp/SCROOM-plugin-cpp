@@ -37,7 +37,7 @@ Scroom::Utils::Rectangle<int> SliLayer::toRectangle()
   return rect;
 }
 
-bool SliLayer::fillFromTiff(uint allowedBps, uint allowedSpp)
+bool SliLayer::fillFromTiff(unsigned int allowedBps, unsigned int allowedSpp)
 {
   try
   {
