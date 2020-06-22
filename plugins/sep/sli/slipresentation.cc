@@ -3,7 +3,6 @@
 #include "../sep-helpers.hh"
 
 #include "../varnish/varnish.hh"
-#include "../varnish/varnish-helpers.hh"
 
 #include <regex>
 #include <boost/filesystem.hpp>
@@ -100,7 +99,7 @@ bool SliPresentation::parseSli(const std::string &sliFileName)
       if (fs::exists(imagePath)) {
         printf("varnish file exists.\n");
         SliLayer::Ptr varnishLayer = SliLayer::create(imagePath.string(), varnishFile, 0, 0);
-        if (fillVarnishOverlay(varnishLayer))
+        if (varnishLayer->fillFromTiff(8, 4))
         {
           varnish = Varnish::create(varnishLayer);
         } 

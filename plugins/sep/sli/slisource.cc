@@ -49,7 +49,7 @@ bool SliSource::addLayer(std::string imagePath, std::string filename, int xOffse
   }
   else if (extension == ".tif" || extension == ".tiff")
   {
-    if (!fillFromTiff(layer))
+    if (!layer->fillFromTiff(8, 4))
     {
       return false;
     }

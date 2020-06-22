@@ -80,5 +80,3 @@ int pointToOffset(Scroom::Utils::Rectangle<int> rect, Scroom::Utils::Point<int> 
  * If not, the smallest top-left point of all set layers will be used instead.
  */
 Scroom::Utils::Rectangle<int> spannedRectangle(boost::dynamic_bitset<> bitmap, std::vector<SliLayer::Ptr> layers, bool fromOrigin = false);
-
-bool fillFromTiff(SliLayer::Ptr layer);

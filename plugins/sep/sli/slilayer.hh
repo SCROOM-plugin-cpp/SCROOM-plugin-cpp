@@ -53,4 +53,7 @@ public:
   /** Returns the Rectangle representation of the layer (in pixels) */
   virtual Scroom::Utils::Rectangle<int> toRectangle();
 
+  /** Reads the layers tiff file and returns true if successful */
+  bool fillFromTiff(uint allowedBps, uint allowedSpp);
+
 };

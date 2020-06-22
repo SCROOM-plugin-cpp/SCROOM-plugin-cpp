@@ -52,9 +52,7 @@ plugins_sep_src_libspsep_la_SOURCES = \
 	plugins/sep/sli/sli-helpers.cc \
 	plugins/sep/sli/sli-helpers.hh \
 	plugins/sep/varnish/varnish.cc \
-	plugins/sep/varnish/varnish.hh \
-	plugins/sep/varnish/varnish-helpers.cc \
-	plugins/sep/varnish/varnish-helpers.hh
+	plugins/sep/varnish/varnish.hh
 
 plugins_sep_src_libspsep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ @THREADPOOLLIB@ -ltiff
 

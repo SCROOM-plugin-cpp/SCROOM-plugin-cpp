@@ -5,7 +5,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "varnish/varnish-helpers.hh"
 #include "sep-helpers.hh"
 
 
@@ -230,7 +229,7 @@ void SepSource::openFiles() {
     // open varnish channel
     if (sep_file.files.count("V") == 1) {
         SliLayer::Ptr varnishLayer = SliLayer::create(sep_file.files["V"].string(), "Varnish", 0, 0);
-        if (fillVarnishOverlay(varnishLayer)) {
+        if (varnishLayer->fillFromTiff(8, 1)) {
             varnish = Varnish::create(varnishLayer);
         } else {
             show_warning = true;
