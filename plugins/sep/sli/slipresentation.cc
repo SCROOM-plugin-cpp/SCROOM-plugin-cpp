@@ -1,11 +1,13 @@
 #include "slipresentation.hh"
 #include "slisource.hh"
+#include "../sep-helpers.hh"
 
 #include "../varnish/varnish.hh"
 #include "../varnish/varnish-helpers.hh"
 
 #include <regex>
 #include <boost/filesystem.hpp>
+#include <boost/format.hpp>
 
 #include <scroom/cairo-helpers.hh>
 #include <scroom/unused.hh>
@@ -53,9 +55,13 @@ bool SliPresentation::load(const std::string& fileName)
   {
     if (std::abs((layer->xAspect / layer->yAspect) - (xAspect / yAspect)) > 1e-3)
     {
-      printf("Warning: Aspect ratio mismatch - SLI file defines xAspect=%.3f and yAspect=%.3f "
-             "but layer %s has xAspect=%.3f and yAspect=%.3f\n", 
-             xAspect, yAspect, layer->name.c_str(), layer->xAspect, layer->yAspect);
+      boost::format warningFormat = boost::format(
+        "Warning: Aspect ratio mismatch - SLI file defines xAspect=%.3f and yAspect=%.3f "
+        "but layer %s has xAspect=%.3f and yAspect=%.3f") 
+        % xAspect % yAspect % layer->name.c_str() % layer->xAspect % layer->yAspect;
+
+      printf("%s\n", warningFormat.str().c_str());
+      ShowWarning(warningFormat.str());
     }
   }
   return true;
@@ -100,12 +106,19 @@ bool SliPresentation::parseSli(const std::string &sliFileName)
         } 
         else
         {
-          printf("[PANIC] varnish file could not be loaded successfully\n");
+          std::string error = "[PANIC] varnish file could not be loaded successfully";
+          printf("%s\n", error.c_str());
+          Show(error, GTK_MESSAGE_ERROR);
+          return false;
         }
       }
       else 
       {
-        printf("[PANIC] varnish file not found: %s\n", imagePath.c_str());
+        boost::format errorFormat = boost::format(
+          "[PANIC] varnish file not found: %s") % imagePath.c_str();
+        printf("%s\n", errorFormat.str().c_str());
+        Show(errorFormat.str(), GTK_MESSAGE_ERROR);
+        return false;
       }
     }
     else if (fs::exists(fs::path(dirPath) /= firstToken))
@@ -133,7 +146,10 @@ bool SliPresentation::parseSli(const std::string &sliFileName)
     }
     else
     {
-      printf("Error: Token '%s' in SLI file is not an existing file\n", firstToken.c_str());
+      boost::format errorFormat = boost::format(
+          "Error: Token '%s' in SLI file is not an existing file") % firstToken.c_str();
+      printf("%s\n", errorFormat.str().c_str());
+      Show(errorFormat.str(), GTK_MESSAGE_ERROR);
       return false;
     }
   }
@@ -141,6 +157,9 @@ bool SliPresentation::parseSli(const std::string &sliFileName)
   {
     return true;
   }
+  std::string error = "Error: SLI file does not define all required parameters";
+  printf("%s\n", error.c_str());
+  Show(error, GTK_MESSAGE_ERROR);
   return false;
   
 }

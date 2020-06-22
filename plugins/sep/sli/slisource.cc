@@ -1,7 +1,10 @@
 #include "slisource.hh"
 #include "../sepsource.hh"
+#include "../sep-helpers.hh"
 
 #include <scroom/bitmap-helpers.hh>
+
+#include <boost/format.hpp>
 
 SliSource::SliSource(boost::function<void()> &triggerRedrawFunc) : triggerRedraw(triggerRedrawFunc)
 {
@@ -53,7 +56,10 @@ bool SliSource::addLayer(std::string imagePath, std::string filename, int xOffse
   }
   else
   {
-    printf("Error: File extension of %s is not supported\n", filename.c_str());
+    boost::format errorFormat = boost::format(
+          "Error: File extension of %s is not supported") % filename.c_str();
+    printf("%s\n", errorFormat.str().c_str());
+    Show(errorFormat.str(), GTK_MESSAGE_ERROR);
     return false;
   }
   layers.push_back(layer);
