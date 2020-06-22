@@ -28,48 +28,48 @@ bool SepPresentation::load(const std::string &file_name) {
     const SepFile file_content = SepSource::parseSep(file_name);
     this->file_name = file_name;
 
-    this->width = file_content.width;
-    this->height = file_content.height;
+    width = file_content.width;
+    height = file_content.height;
 
     // not knowing width or height is a critical error
     // so we cannot load the file without it
-    if (this->width == 0 || this->height == 0)
+    if (width == 0 || height == 0)
         return false;
 
-    this->sep_source->setData(file_content);
-    this->sep_source->openFiles();
-    this->sep_source->checkFiles();
+    sep_source->setData(file_content);
+    sep_source->openFiles();
+    sep_source->checkFiles();
 
-    this->transform = this->sep_source->getTransform();
+    transform = sep_source->getTransform();
 
-    this->layer_operations = OperationsCMYK32::create();
+    layer_operations = OperationsCMYK32::create();
 
-    this->tbi = createTiledBitmap(this->width, this->height, {this->layer_operations});
-    this->tbi->setSource(this->sep_source);
+    tbi = createTiledBitmap(width, height, {layer_operations});
+    tbi->setSource(sep_source);
 
     return true;
 }
 
 TransformationData::Ptr SepPresentation::getTransform() {
-    return this->transform;
+    return transform;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // PresentationInterface
 
 Scroom::Utils::Rectangle<double> SepPresentation::getRect() {
-    return {0, 0, static_cast<double>(this->width), static_cast<double>(this->height)};
+    return {0, 0, static_cast<double>(width), static_cast<double>(height)};
 }
 
 void SepPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
                              Scroom::Utils::Rectangle<double> presentationArea, int zoom) {
     drawOutOfBoundsWithoutBackground(cr, presentationArea, getRect(), pixelSizeFromZoom(zoom));
-    if (this->tbi)
-        this->tbi->redraw(vi, cr, presentationArea, zoom);
+    if (tbi)
+        tbi->redraw(vi, cr, presentationArea, zoom);
 
     // Draw varnish if it exists
-    if (this->sep_source->varnish != nullptr) {
-        this->sep_source->varnish->drawOverlay(vi, cr, presentationArea, zoom);
+    if (sep_source->varnish != nullptr) {
+        sep_source->varnish->drawOverlay(vi, cr, presentationArea, zoom);
     }
 }
 
@@ -92,47 +92,47 @@ bool SepPresentation::isPropertyDefined(const std::string &name) {
 }
 
 std::string SepPresentation::getTitle() {
-    return this->file_name;
+    return file_name;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // PresentationBase
 
 void SepPresentation::viewAdded(ViewInterface::WeakPtr interface) {
-    this->views.insert(interface);
+    views.insert(interface);
 
-    if (this->tbi == nullptr) {
+    if (tbi == nullptr) {
         printf("ERROR: SepPresentation::open(): No TiledBitmapInterface available!\n");
         return;
     }
 
-    this->tbi->open(interface);
+    tbi->open(interface);
 
-    if (this->sep_source->varnish != nullptr) {
-        this->sep_source->varnish->setView(interface);
+    if (sep_source->varnish != nullptr) {
+        sep_source->varnish->setView(interface);
     }
 }
 
 void SepPresentation::viewRemoved(ViewInterface::WeakPtr interface) {
-    this->views.erase(interface);
+    views.erase(interface);
 
-    if (this->tbi == nullptr) {
+    if (tbi == nullptr) {
         printf("ERROR: SepPresentation::close(): No TiledBitmapInterface available!\n");
         return;
     }
 
-    this->tbi->close(interface);
+    tbi->close(interface);
 }
 
 std::set<ViewInterface::WeakPtr> SepPresentation::getViews() {
-    return this->views;
+    return views;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // PipetteViewInterface
 
 PipetteLayerOperations::PipetteColor SepPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area) {
-    Scroom::Utils::Rectangle<int> presentationArea = this->getRect().toIntRectangle();
+    Scroom::Utils::Rectangle<int> presentationArea = getRect().toIntRectangle();
     area = area.intersection(presentationArea);
 
     Layer::Ptr bottomLayer = tbi->getBottomLayer();
@@ -159,7 +159,7 @@ PipetteLayerOperations::PipetteColor SepPresentation::getPixelAverages(Scroom::U
 
             Scroom::Utils::Rectangle<int> inter_rect = tile_rectangle.intersection(area - base);
 
-            pipetteColors = sumPipetteColors(pipetteColors, this->layer_operations->sumPixelValues(inter_rect, tile));
+            pipetteColors = sumPipetteColors(pipetteColors, layer_operations->sumPixelValues(inter_rect, tile));
         }
     }
 

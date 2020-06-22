@@ -12,7 +12,7 @@ Varnish::Varnish(SliLayer::Ptr layer)
   surface = cairo_image_surface_create_for_data(layer->bitmap, CAIRO_FORMAT_A8, 
                                                                     layer->width, layer->height, stride);
   // Map is read inverted by cairo, so we invert it here once                                                                  
-  this->invertSurface();
+  invertSurface();
 }
 
 Varnish::Ptr Varnish::create(SliLayer::Ptr layer)
@@ -42,7 +42,7 @@ static void varnish_toggled(GtkToggleButton* button, gpointer varnishP)
 
 void Varnish::forceRedraw()
 {
-  ViewInterface::Ptr view(this->viewWeak);
+  ViewInterface::Ptr view(viewWeak);
   view->invalidate();
 }
 
@@ -54,7 +54,7 @@ void Varnish::fixVarnishState()
     // We need to invert back
     if (GTK_TOGGLE_BUTTON(radio_enabled)->active)
     {
-      this->invertSurface();
+      invertSurface();
       inverted = false;
     }
   } else
@@ -63,7 +63,7 @@ void Varnish::fixVarnishState()
     // We need to invert back
     if (GTK_TOGGLE_BUTTON(radio_inverted)->active)
     {
-      this->invertSurface();
+      invertSurface();
       inverted = true;
     }
   }

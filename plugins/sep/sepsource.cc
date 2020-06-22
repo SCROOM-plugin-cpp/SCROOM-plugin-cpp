@@ -142,14 +142,14 @@ bool SepSource::getResolution(uint16_t &unit, float &x_resolution, float &y_reso
     bool warning = false;
 
     // Use the values for the c channel as baseline
-    this->getForOneChannel(this->channel_files[channels[0]], unit, x_resolution, y_resolution);
+    getForOneChannel(channel_files[channels[0]], unit, x_resolution, y_resolution);
 
-    for (auto channel : {this->channel_files[channels[1]], this->channel_files[channels[2]], this->channel_files[channels[3]]}) {
+    for (auto channel : {channel_files[channels[1]], channel_files[channels[2]], channel_files[channels[3]]}) {
         if (channel == nullptr) {
             continue;
         }
 
-        this->getForOneChannel(channel, channel_res_unit, channel_res_x, channel_res_y);
+        getForOneChannel(channel, channel_res_unit, channel_res_x, channel_res_y);
         // check if the same as first values
         // if not, set status flag and continue
         warning |= std::abs(channel_res_x - x_resolution) > 1e-3 ||
@@ -163,7 +163,7 @@ bool SepSource::getResolution(uint16_t &unit, float &x_resolution, float &y_reso
 TransformationData::Ptr SepSource::getTransform() {
     uint16_t unit;
     float file_res_x, file_res_y;
-    this->getResolution(unit, file_res_x, file_res_y);
+    getResolution(unit, file_res_x, file_res_y);
 
     TransformationData::Ptr data = TransformationData::create();
     data->setAspectRatio(1 / file_res_x, 1 / file_res_y);
@@ -203,7 +203,7 @@ void SepSource::fillSliLayer(SliLayer::Ptr sli) {
 }
 
 void SepSource::setData(SepFile file) {
-    this->sep_file = file;
+    sep_file = file;
 }
 
 void SepSource::openFiles() {
@@ -218,20 +218,20 @@ void SepSource::openFiles() {
 
     // open CMYK channels
     for (auto c : channels) {
-        channel_files[c] = TIFFOpen(this->sep_file.files[c].string().c_str(), "r");
+        channel_files[c] = TIFFOpen(sep_file.files[c].string().c_str(), "r");
     }
 
     // open white ink channel
     if (sep_file.files.count("W") == 1) {
-        this->white_ink = TIFFOpen(this->sep_file.files["W"].string().c_str(), "r");
-        show_warning |= (this->white_ink == nullptr);
+        white_ink = TIFFOpen(sep_file.files["W"].string().c_str(), "r");
+        show_warning |= (white_ink == nullptr);
     }
 
     // open varnish channel
     if (sep_file.files.count("V") == 1) {
         SliLayer::Ptr varnishLayer = SliLayer::create(sep_file.files["V"].string(), "Varnish", 0, 0);
         if (fillVarnishOverlay(varnishLayer)) {
-            this->varnish = Varnish::create(varnishLayer);
+            varnish = Varnish::create(varnishLayer);
         } else {
             show_warning = true;
         }
@@ -262,12 +262,12 @@ void SepSource::checkFiles() {
     }
 
     // check white ink
-    if (this->white_ink != nullptr) {
-        if (TIFFGetField(this->white_ink, TIFFTAG_SAMPLESPERPIXEL, &spp) == 1 && \
+    if (white_ink != nullptr) {
+        if (TIFFGetField(white_ink, TIFFTAG_SAMPLESPERPIXEL, &spp) == 1 && \
                 spp != 1) {
             warning += "ERROR: White ink samples per pixel is not 1!\n";
         }
-        if (TIFFGetField(this->white_ink, TIFFTAG_BITSPERSAMPLE, &bps) == 1 && \
+        if (TIFFGetField(white_ink, TIFFTAG_BITSPERSAMPLE, &bps) == 1 && \
                 bps != 8) {
             warning += "ERROR: White ink bits per sample is not 8!\n";
         }
@@ -299,7 +299,7 @@ void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr) {
 
     for (size_t i = 0; i < size; i++) {
         for (size_t j = 0; j < nr_channels; j++) {
-            out[nr_channels * i + j] = SepSource::applyWhiteInk(w_line[i], lines[j][i], this->sep_file.white_ink_choice);
+            out[nr_channels * i + j] = SepSource::applyWhiteInk(w_line[i], lines[j][i], sep_file.white_ink_choice);
         }
     }
 }
@@ -321,7 +321,7 @@ void SepSource::fillTiles(int startLine, int line_count, int tileWidth, int firs
     const size_t tile_count = tiles.size();
 
     // Buffer for the scanline to be written into
-    auto row = std::vector<byte>(bpp * this->sep_file.width);
+    auto row = std::vector<byte>(bpp * sep_file.width);
 
     // Store the pointers to the beginning of the tiles in a
     // separate vector, so we can update it to point to the
@@ -335,14 +335,14 @@ void SepSource::fillTiles(int startLine, int line_count, int tileWidth, int firs
     const size_t accounted_width = (first_tile + tile_count - 1) * tile_stride;
 
     // The number of remaining bytes
-    const size_t remaining_width = bpp * this->sep_file.width - accounted_width;
+    const size_t remaining_width = bpp * sep_file.width - accounted_width;
 
     // This points to the beginning of the row (taking the starting tile
     // into account).
     const byte *horizontal_offset = row.data() + first_tile * tile_stride;
 
     for (size_t i = 0; i < static_cast<size_t>(line_count); i++) {
-        this->readCombinedScanline(row, i + start_line);
+        readCombinedScanline(row, i + start_line);
 
         // The general case for completely filled tiles. The last tile
         // is the only tile that might not be completely filled, so that
@@ -370,7 +370,7 @@ void SepSource::closeIfNeeded(struct tiff *&file) {
 
 void SepSource::done() {
     // Close all tiff files and reset pointers
-    for (auto &x : this->channel_files) {
+    for (auto &x : channel_files) {
         SepSource::closeIfNeeded(x.second);
     }
 }
