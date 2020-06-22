@@ -2,7 +2,10 @@
 
 #include <scroom/cairo-helpers.hh>
 #include <scroom/layeroperations.hh>
+#include <scroom/tiledbitmaplayer.hh>
 #include <string>
+
+#include "sep-helpers.hh"
 
 /////////////////////////////////////////////////////////
 ///// SepPresentation ///////////////////////////////////
@@ -39,7 +42,9 @@ bool SepPresentation::load(const std::string &file_name) {
 
     this->transform = this->sep_source->getTransform();
 
-    this->tbi = createTiledBitmap(this->width, this->height, {OperationsCMYK32::create()});
+    this->layer_operations = OperationsCMYK32::create();
+
+    this->tbi = createTiledBitmap(this->width, this->height, {this->layer_operations});
     this->tbi->setSource(this->sep_source);
 
     return true;
@@ -121,4 +126,42 @@ void SepPresentation::viewRemoved(ViewInterface::WeakPtr interface) {
 
 std::set<ViewInterface::WeakPtr> SepPresentation::getViews() {
     return this->views;
+}
+
+////////////////////////////////////////////////////////////////////////
+// PipetteViewInterface
+
+PipetteLayerOperations::PipetteColor SepPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area) {
+    Scroom::Utils::Rectangle<int> presentationArea = this->getRect().toIntRectangle();
+    area = area.intersection(presentationArea);
+
+    Layer::Ptr bottomLayer = tbi->getBottomLayer();
+    PipetteLayerOperations::PipetteColor pipetteColors;
+
+    int totalPixels = area.getWidth() * area.getHeight();
+    if (totalPixels == 0) {
+        return {};
+    }
+
+    // Get start tile
+    int tile_pos_x_start = area.getLeft() / TILESIZE;
+    int tile_pos_y_start = area.getTop() / TILESIZE;
+
+    // Get last tile
+    int tile_pos_x_end = (area.getRight() - 1) / TILESIZE;
+    int tile_pos_y_end = (area.getBottom() - 1) / TILESIZE;
+
+    for (int x = tile_pos_x_start; x <= tile_pos_x_end; x++) {
+        for (int y = tile_pos_y_start; y <= tile_pos_y_end; y++) {
+            ConstTile::Ptr tile = bottomLayer->getTile(x, y)->getConstTileSync(); 
+            Scroom::Utils::Rectangle<int> tile_rectangle(0, 0, tile->width, tile->height);
+            Scroom::Utils::Point<int> base(x * TILESIZE, y * TILESIZE);
+
+            Scroom::Utils::Rectangle<int> inter_rect = tile_rectangle.intersection(area - base);
+
+            pipetteColors = sumPipetteColors(pipetteColors, this->layer_operations->sumPixelValues(inter_rect, tile));
+        }
+    }
+
+    return dividePipetteColors(pipetteColors, totalPixels);
 }

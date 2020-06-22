@@ -4,6 +4,7 @@
 #include <string>
 
 #include <scroom/presentationinterface.hh>
+#include <scroom/layeroperations.hh>
 
 #include "sepsource.hh"
 
@@ -11,7 +12,8 @@
 ////////////// SepPresentation
 
 class SepPresentation : public PresentationBase,
-                        public virtual Scroom::Utils::Base
+                        public virtual Scroom::Utils::Base,
+                        public PipetteViewInterface
 {
 
 public:
@@ -33,6 +35,8 @@ private:
     std::set<ViewInterface::WeakPtr> views;
 
     std::map<std::string, std::string> properties;
+
+    boost::shared_ptr<PipetteCommonOperationsCMYK> layer_operations;
 
 private:
     /**
@@ -78,4 +82,9 @@ public:
     void viewAdded(ViewInterface::WeakPtr interface) override;
     void viewRemoved(ViewInterface::WeakPtr interface) override;
     std::set<ViewInterface::WeakPtr> getViews() override;
+
+    ////////////////////////////////////////////////////////////////////////
+    // PipetteViewInterface
+    ////////////////////////////////////////////////////////////////////////
+    PipetteLayerOperations::PipetteColor getPixelAverages(Scroom::Utils::Rectangle<int> area) override;
 };

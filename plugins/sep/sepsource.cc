@@ -6,7 +6,7 @@
 #include <iostream>
 
 #include "varnish/varnish-helpers.hh"
-#include "sep-helpers.cc"
+#include "sep-helpers.hh"
 
 
 SepSource::SepSource() {}
