@@ -19,7 +19,6 @@ SepPresentation::Ptr SepPresentation::create(ScroomInterface::Ptr interface) {
 }
 
 /**
- * TODO: check if this function meets the requirements.
  * TODO: Support pipette.
  */
 bool SepPresentation::load(const std::string &file_name) {
@@ -40,9 +39,6 @@ bool SepPresentation::load(const std::string &file_name) {
 
     this->transform = this->sep_source->getTransform();
 
-    // TODO: a future update to the main scroom repo will cause
-    // the OperationsCMYK32::create to no longer take any arguments.
-    // Remove the 8 in the below line when that happens.
     this->tbi = createTiledBitmap(this->width, this->height, {OperationsCMYK32::create()});
     this->tbi->setSource(this->sep_source);
 
