@@ -5,7 +5,6 @@
 #include <fstream>
 #include <iostream>
 
-
 #include "varnish/varnish-helpers.hh"
 #include "sep-helpers.cc"
 
@@ -189,6 +188,7 @@ void SepSource::fillSliLayer(SliLayer::Ptr sli) {
     auto source = SepSource::create();
     source->setData(values);
     source->openFiles();
+    source->checkFiles();
 
     uint16_t unit;
     source->getResolution(unit, sli->xAspect, sli->yAspect);
