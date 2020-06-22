@@ -32,12 +32,11 @@ pipette_plugin_libs = \
 plugins_pipette_src_libsppipette_la_CPPFLAGS = @PIPETTEPLUGIN_CFLAGS@
 
 plugins_pipette_src_libsppipette_la_SOURCES = \
-	plugins/pipette/pipette.cc \
-	plugins/pipette/pipette.hh \
-	plugins/pipette/main.cc
+	plugins/pipette/src/pipette.cc \
+	plugins/pipette/src/pipette.hh \
+	plugins/pipette/src/main.cc
 
-
-plugins_pipette_src_libsppipette_la_LIBADD = @PIPETTEPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@
+plugins_pipette_src_libsppipette_la_LIBADD = @PIPETTEPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @THREADPOOLLIB@
 
 plugins_pipette_src_libsppipette_la_LDFLAGS = $(loadflag)
 
