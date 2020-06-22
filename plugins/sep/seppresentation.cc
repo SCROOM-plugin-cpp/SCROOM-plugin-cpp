@@ -36,6 +36,7 @@ bool SepPresentation::load(const std::string &file_name) {
 
     this->sep_source->setData(file_content);
     this->sep_source->openFiles();
+    this->sep_source->checkFiles();
 
     this->transform = this->sep_source->getTransform();
 

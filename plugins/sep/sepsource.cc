@@ -5,18 +5,10 @@
 #include <fstream>
 #include <iostream>
 
+
 #include "varnish/varnish-helpers.hh"
+#include "sep-helpers.cc"
 
-int ShowWarning(std::string message, GtkMessageType type_gtk = GTK_MESSAGE_WARNING) {
-    // We don't have a pointer to the parent window, so nullptr should suffice
-    GtkWidget *dialog = gtk_message_dialog_new(
-        nullptr, GTK_DIALOG_DESTROY_WITH_PARENT,
-        type_gtk, GTK_BUTTONS_CLOSE, message.c_str());
-
-    int signal = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-    return signal;  // return the received signal
-}
 
 SepSource::SepSource() {}
 SepSource::~SepSource() {}
@@ -37,7 +29,6 @@ boost::filesystem::path SepSource::findParentDir(const std::string &file_path) {
  * warning dialog is shown.
  */
 SepFile SepSource::parseSep(const std::string &file_name) {
-    std::cerr << file_name << "\n";
     std::ifstream file(file_name);
     std::string line;
 
@@ -54,7 +45,8 @@ SepFile SepSource::parseSep(const std::string &file_name) {
         std::getline(file, line);
         sep_file.height = std::stoul(line);
     } catch (const std::exception &e) {
-        sep_file.height = 0;  // to trigger the error case in SepPresention::load()
+        sep_file.width = 0;
+        sep_file.height = 0;
         warnings += "WARNING: Width or height have not been provided correctly!\n";
     }
 
@@ -248,6 +240,41 @@ void SepSource::openFiles() {
     if (show_warning) {
         printf("PANIC: One of the provided files is not valid, or could not be opened!\n");
         ShowWarning("PANIC: One of the provided files is not valid, or could not be opened!");
+    }
+}
+
+void SepSource::checkFiles() {
+    uint16_t spp, bps;
+    std::string warning = "";
+
+    // check CMYK
+    for (auto c : channels) {
+        if (channel_files[c] != nullptr && \
+                TIFFGetField(channel_files[c], TIFFTAG_SAMPLESPERPIXEL, &spp) == 1 && \
+                spp != 1) {
+            warning += "ERROR: Samples per pixel is not 1!\n";
+        }
+        if (channel_files[c] != nullptr && \
+                TIFFGetField(channel_files[c], TIFFTAG_BITSPERSAMPLE, &bps) == 1 && \
+                bps != 8) {
+            warning += "ERROR: Bits per sample is not 8!\n";
+        }
+    }
+
+    // check white ink
+    if (this->white_ink != nullptr) {
+        if (TIFFGetField(this->white_ink, TIFFTAG_SAMPLESPERPIXEL, &spp) == 1 && \
+                spp != 1) {
+            warning += "ERROR: White ink samples per pixel is not 1!\n";
+        }
+        if (TIFFGetField(this->white_ink, TIFFTAG_BITSPERSAMPLE, &bps) == 1 && \
+                bps != 8) {
+            warning += "ERROR: White ink bits per sample is not 8!\n";
+        }
+    }
+
+    if (! warning.empty()) {
+        ShowWarning(warning);
     }
 }
 
