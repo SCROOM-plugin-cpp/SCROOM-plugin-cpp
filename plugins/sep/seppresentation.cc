@@ -43,7 +43,7 @@ bool SepPresentation::load(const std::string &file_name) {
     // TODO: a future update to the main scroom repo will cause
     // the OperationsCMYK32::create to no longer take any arguments.
     // Remove the 8 in the below line when that happens.
-    this->tbi = createTiledBitmap(this->width, this->height, {OperationsCMYK32::create(8)});
+    this->tbi = createTiledBitmap(this->width, this->height, {OperationsCMYK32::create()});
     this->tbi->setSource(this->sep_source);
 
     return true;
