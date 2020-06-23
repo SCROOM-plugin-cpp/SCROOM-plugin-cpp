@@ -1,5 +1,6 @@
 #include <boost/dll.hpp>
 #include <boost/test/unit_test.hpp>
+#include <cmath>
 #include <iostream>
 
 // Make all private members accessible for testing
@@ -21,6 +22,13 @@ BOOST_AUTO_TEST_CASE(create) {
 BOOST_AUTO_TEST_CASE(load_false) {
     SepPresentation::Ptr presentation = SepPresentation::create();
     BOOST_CHECK_EQUAL(presentation->load((testFileDir / "sep_test.sep").string()), false);
+    BOOST_CHECK_EQUAL(presentation->width, 0);
+    BOOST_CHECK_EQUAL(presentation->height, 0);
+}
+
+BOOST_AUTO_TEST_CASE(load_false_2) {
+    SepPresentation::Ptr presentation = SepPresentation::create();
+    BOOST_CHECK_EQUAL(presentation->load(""), false);
     BOOST_CHECK_EQUAL(presentation->width, 0);
     BOOST_CHECK_EQUAL(presentation->height, 0);
 }
@@ -59,27 +67,29 @@ BOOST_AUTO_TEST_CASE(getRect) {
 
 BOOST_AUTO_TEST_CASE(getViews) {
     SepPresentation::Ptr presentation = SepPresentation::create();
-    presentation->load((testFileDir / "sep_cmyk.sep").string());
     auto views = presentation->getViews();
     BOOST_CHECK(views.empty());
 }
 
-// BOOST_AUTO_TEST_CASE(pipette) {
-//     SepPresentation::Ptr presentation = SepPresentation::create();
-//     BOOST_CHECK_EQUAL(presentation->load((testFileDir / "sep_cmyk.sep").string()), true);
-//     Scroom::Utils::Rectangle<int> rect = presentation->getRect();
-//     BOOST_CHECK(rect.getTop() == 0);
-//     BOOST_CHECK(rect.getLeft() == 0);
-//     BOOST_CHECK(rect.getWidth() == 600);
-//     BOOST_CHECK(rect.getHeight() == 400);
+BOOST_AUTO_TEST_CASE(pipette) {
+    SepPresentation::Ptr presentation = SepPresentation::create();
+    BOOST_CHECK_EQUAL(presentation->load((testFileDir / "sep_cmyk.sep").string()), true);
+    auto rect = presentation->getRect();
+    BOOST_CHECK(rect.getTop() == 0);
+    BOOST_CHECK(rect.getLeft() == 0);
+    BOOST_CHECK(rect.getWidth() == 600);
+    BOOST_CHECK(rect.getHeight() == 400);
 
-//     for (auto c : presentation->sep_source->channels) {
-//         BOOST_CHECK(presentation->sep_source->channel_files[c] != nullptr);
-//     }
+    for (auto c : presentation->sep_source->channels) {
+        BOOST_CHECK(presentation->sep_source->channel_files[c] != nullptr);
+    }
 
-//     auto averages = presentation->getPixelAverages(rect);
+    auto averages = presentation->getPixelAverages(rect.toIntRectangle());
 
-//     BOOST_CHECK(averages != nullptr);
-// }
+    for (auto& avg : averages) {
+        BOOST_CHECK(!avg.first.empty());
+        BOOST_CHECK(!std::isnan(avg.second));
+    }
+}
 
 BOOST_AUTO_TEST_SUITE_END()

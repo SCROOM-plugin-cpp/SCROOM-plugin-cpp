@@ -152,7 +152,7 @@ PipetteLayerOperations::PipetteColor SepPresentation::getPixelAverages(Scroom::U
 
     for (int x = tile_pos_x_start; x <= tile_pos_x_end; x++) {
         for (int y = tile_pos_y_start; y <= tile_pos_y_end; y++) {
-            ConstTile::Ptr tile = bottomLayer->getTile(x, y)->getConstTileSync(); 
+            ConstTile::Ptr tile = bottomLayer->getTile(x, y)->getConstTileSync();
             Scroom::Utils::Rectangle<int> tile_rectangle(0, 0, tile->width, tile->height);
             Scroom::Utils::Point<int> base(x * TILESIZE, y * TILESIZE);
 
