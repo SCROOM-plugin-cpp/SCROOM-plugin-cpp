@@ -10,14 +10,15 @@
 /////////////////////////////////////////////////////////
 ///// SepPresentation ///////////////////////////////////
 
-SepPresentation::SepPresentation() : sep_source(SepSource::create()) {
+SepPresentation::SepPresentation(ScroomInterface::Ptr interface)
+    : scroom_interface(interface), sep_source(SepSource::create()) {
 }
 
 SepPresentation::~SepPresentation() {
 }
 
-SepPresentation::Ptr SepPresentation::create() {
-    return Ptr(new SepPresentation());
+SepPresentation::Ptr SepPresentation::create(ScroomInterface::Ptr interface) {
+    return Ptr(new SepPresentation(interface));
 }
 
 /**
