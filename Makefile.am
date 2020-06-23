@@ -80,9 +80,32 @@ plugins_pipette_src_libsppipette_la_SOURCES = \
 	plugins/pipette/src/pipette.hh \
 	plugins/pipette/src/main.cc
 
-plugins_pipette_src_libsppipette_la_LIBADD = @PIPETTEPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @THREADPOOLLIB@
+plugins_pipette_src_libsppipette_la_LIBADD = @PIPETTEPLUGIN_LIBS@ @BOOSTTHREADLIB@ @SCROOMLIB@ @THREADPOOLLIB@
 
 plugins_pipette_src_libsppipette_la_LDFLAGS = $(loadflag)
+
+if BOOST_UNITTESTS
+
+pipette_plugin_tests = \
+	plugins/pipette/test/pipette-tests
+
+pipette_plugin_check_programs = \
+	plugins/pipette/test/pipette-tests
+
+plugins_pipette_test_pipette_tests_CPPFLAGS = @PIPETTEPLUGIN_CFLAGS@
+
+plugins_pipette_test_pipette_tests_LDFLAGS = -pthread
+
+plugins_pipette_test_pipette_tests_SOURCES = \
+	plugins/pipette/test/main.cc \
+	plugins/pipette/test/pipette-tests.cc
+
+plugins_pipette_test_pipette_tests_LDADD = \
+	@BOOSTTESTLIB@ @PIPETTEPLUGIN_LIBS@ @BOOSTTHREADLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ @THREADPOOLLIB@ -ldl \
+	plugins/pipette/src/libsppipette.la \
+	plugins/pipette/src/*.lo
+
+endif BOOST_UNITTESTS
 
 ########################################################################
 ### Wrapping up
@@ -90,8 +113,8 @@ plugins_pipette_src_libsppipette_la_LDFLAGS = $(loadflag)
 
 ### Plugins
 plugin_LTLIBRARIES = $(pipette_plugin_libs) $(sep_plugin_libs)
-plugins_check_programs = $(sep_plugin_check_programs)
-plugins_tests = $(sep_plugin_tests)
+plugins_check_programs = $(sep_plugin_check_programs) $(pipette_plugin_check_programs) 
+plugins_tests = $(sep_plugin_tests) $(pipette_plugin_tests)
 
 ########################################################################
 ### Root
@@ -101,5 +124,5 @@ EXTRA_DIST = \
 	build-aux/git-version-gen \
 	.project-version
 
-check_PROGRAMS = $(plugins_check_programs) 
+check_PROGRAMS = $(plugins_check_programs)
 TESTS = $(plugins_tests) 
