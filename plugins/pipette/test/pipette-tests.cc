@@ -8,9 +8,24 @@
 
 BOOST_AUTO_TEST_SUITE(Pipette_Tests)
 
+class DummyPresentation : public PresentationInterface, public PipetteViewInterface {
+	Scroom::Utils::Rectangle<double> getRect() { return Scroom::Utils::Rectangle<int>(0, 0, 0, 0); }
+	void redraw(ViewInterface::Ptr const&, cairo_t*, Scroom::Utils::Rectangle<double>, int) {}
+	bool getProperty(const std::string&, std::string&) { return false; }
+	bool isPropertyDefined(const std::string&) { return false; }
+	std::string getTitle() { return nullptr; }
+	void open(ViewInterface::WeakPtr) {};
+	void close(ViewInterface::WeakPtr) {};
+	PipetteLayerOperations::PipetteColor getPixelAverages(Scroom::Utils::Rectangle<int>) {
+        return {{"C", 1.0}};
+	}
+};
+
 static int reg_sel = 0;
 static int reg_post = 0;
 static int tool_btn = 0;
+static PresentationInterface::Ptr presentation;
+static int msg_set = 0;
 
 class DummyView : public ViewInterface {
 	void invalidate() {}
@@ -22,6 +37,7 @@ class DummyView : public ViewInterface {
 	void registerSelectionListener(SelectionListener::Ptr) { reg_sel++; }
 	void registerPostRenderer(PostRenderer::Ptr) { reg_post++; }
 	void setStatusMessage(const std::string& msg) {
+		msg_set++;
 		//known text
 		if (msg.compare("Computing color values...") || msg.compare("Pipette is not supported for this presentation.")) {
 			return;
@@ -34,26 +50,45 @@ class DummyView : public ViewInterface {
 
 		BOOST_CHECK(false);
 	}
-	boost::shared_ptr<PresentationInterface> getCurrentPresentation() { return nullptr; }
+	PresentationInterface::Ptr getCurrentPresentation() { return presentation; }
 	void addToolButton(GtkToggleButton*, ToolStateListener::Ptr) { tool_btn++; }
 };
 
-class DummyPresentation : public PresentationInterface, public PipetteViewInterface {
-	Scroom::Utils::Rectangle<double> getRect() { return Scroom::Utils::Rectangle<int>(0, 0, 0, 0); }
-	void redraw(ViewInterface::Ptr const&, cairo_t*, Scroom::Utils::Rectangle<double>, int) {}
-	bool getProperty(const std::string& name, std::string&) { return false; }
-	bool isPropertyDefined(const std::string&) { return false; }
-	std::string getTitle() { return nullptr; }
-	PipetteLayerOperations::PipetteColor getPixelAverages(Scroom::Utils::Rectangle<int>) {
-        return {{"C", 1.0}};
-	}
+static int view_observers = 0;
+
+class DummyPluginInterface : public ScroomPluginInterface{
+  void registerNewPresentationInterface(const std::string&, NewPresentationInterface::Ptr) {};
+  void registerNewAggregateInterface(const std::string&, NewAggregateInterface::Ptr) {};
+  void registerOpenPresentationInterface(const std::string&, OpenPresentationInterface::Ptr) {};
+  void registerOpenInterface(const std::string&, OpenInterface::Ptr) {};
+  void registerViewObserver(const std::string&, ViewObserver::Ptr) { view_observers++; };
+  void registerPresentationObserver(const std::string&, PresentationObserver::Ptr) {};
 };
+
+BOOST_AUTO_TEST_CASE(metadata) {
+	Pipette::Ptr pipette = Pipette::create();
+
+	int pre_view_observers = view_observers;
+
+	pipette->registerCapabilities(ScroomPluginInterface::Ptr(new DummyPluginInterface()));
+
+	//maybe not worth testing
+	BOOST_CHECK(pipette->getPluginName() == "Pipette");
+	BOOST_CHECK(!pipette->getPluginVersion().empty());
+    BOOST_CHECK(pre_view_observers + 1 == view_observers);
+}
 
 BOOST_AUTO_TEST_CASE(value_display) {
 	PipetteHandler::Ptr handler = PipetteHandler::create();
 
+	presentation = PresentationInterface::Ptr(new DummyPresentation());
+
+	int pre_msg_set = msg_set;
+
 	//test will fail via event handlers
     handler->computeValues(ViewInterface::Ptr(new DummyView), Scroom::Utils::Rectangle<int>(10, 11, 12, 13));
+
+    BOOST_CHECK(pre_msg_set + 1 == msg_set);
 }
 
 BOOST_AUTO_TEST_CASE(view_add) {
