@@ -4,12 +4,12 @@
 
 #include <iostream>
 
+// Make all private members accessible for testing
+#define private public
 #include "../sli/slilayer.hh"
 #include "../sli/sli-helpers.hh"
 #include <scroom/scroominterface.hh>
 
-// Make all private members accessible for testing
-#define private public
 
 ///////////////////////////////////////////////////////////////////////////////
 // Helper functions
