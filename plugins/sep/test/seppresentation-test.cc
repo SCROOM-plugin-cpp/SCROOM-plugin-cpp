@@ -64,22 +64,22 @@ BOOST_AUTO_TEST_CASE(getViews) {
     BOOST_CHECK(views.empty());
 }
 
-BOOST_AUTO_TEST_CASE(pipette) {
-    SepPresentation::Ptr presentation = SepPresentation::create();
-    BOOST_CHECK_EQUAL(presentation->load((testFileDir / "sep_cmyk.sep").string()), true);
-    Scroom::Utils::Rectangle<int> rect = presentation->getRect();
-    BOOST_CHECK(rect.getTop() == 0);
-    BOOST_CHECK(rect.getLeft() == 0);
-    BOOST_CHECK(rect.getWidth() == 600);
-    BOOST_CHECK(rect.getHeight() == 400);
+// BOOST_AUTO_TEST_CASE(pipette) {
+//     SepPresentation::Ptr presentation = SepPresentation::create();
+//     BOOST_CHECK_EQUAL(presentation->load((testFileDir / "sep_cmyk.sep").string()), true);
+//     Scroom::Utils::Rectangle<int> rect = presentation->getRect();
+//     BOOST_CHECK(rect.getTop() == 0);
+//     BOOST_CHECK(rect.getLeft() == 0);
+//     BOOST_CHECK(rect.getWidth() == 600);
+//     BOOST_CHECK(rect.getHeight() == 400);
 
-    for (auto c : presentation->sep_source->channels) {
-        BOOST_CHECK(presentation->sep_source->channel_files[c] != nullptr);
-    }
+//     for (auto c : presentation->sep_source->channels) {
+//         BOOST_CHECK(presentation->sep_source->channel_files[c] != nullptr);
+//     }
 
-    auto averages = presentation->getPixelAverages(rect);
+//     auto averages = presentation->getPixelAverages(rect);
 
-    BOOST_CHECK(averages != nullptr);
-}
+//     BOOST_CHECK(averages != nullptr);
+// }
 
 BOOST_AUTO_TEST_SUITE_END()
