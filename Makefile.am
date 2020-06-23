@@ -74,6 +74,7 @@ plugins_sep_test_sep_tests_SOURCES = \
 	plugins/sep/test/main.cc \
 	plugins/sep/test/slipresentation-tests.cc \
 	plugins/sep/test/sepsource-tests.cc \
+	plugins/sep/test/sephelpers-tests.cc \
 	plugins/sep/test/slihelpers-tests.cc \
 	plugins/sep/test/varnish-tests.cc \
 	plugins/sep/test/seppresentation-tests.cc
