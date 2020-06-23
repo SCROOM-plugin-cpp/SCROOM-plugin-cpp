@@ -36,6 +36,10 @@
 /stamp-h1
 /doc/
 /compile
+.project
+.autotools
+.cproject
+.settings
 plugin-build/*
 /.vscode
 plugins/sep/test/sep-tests

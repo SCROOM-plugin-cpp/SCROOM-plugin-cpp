@@ -32,7 +32,7 @@ LT_PREREQ([2.2])
 LT_INIT([dlopen win32-dll])
 
 AC_CONFIG_MACRO_DIR([m4])
-AC_CONFIG_SRCDIR([plugins/example/example.hh])
+AC_CONFIG_SRCDIR([plugins/sep/sep.hh])
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
@@ -102,7 +102,7 @@ DX_PS_FEATURE(OFF)
 DX_INIT_DOXYGEN([$PACKAGE_NAME], [doxyfile], [doc])
   
 # Checks for packages.
-PKG_CHECK_MODULES([EXAMPLEPLUGIN], [gtk+-2.0 >= 2.0.0, cairo])
+PKG_CHECK_MODULES([PIPETTEPLUGIN], [gtk+-2.0 >= 2.0.0, cairo])
 PKG_CHECK_MODULES([SEPPLUGIN], [gtk+-2.0 >= 2.0.0, cairo])
 
 # Checks for libraries.
