@@ -98,7 +98,7 @@ void PipetteHandler::displayValues(ViewInterface::Ptr view, Scroom::Utils::Recta
   if (!colors.empty()) {
     info << ", Colors:";
     for (auto element : colors) {
-      info << ' ' << element.first << ": " << std::fixed << element.second;
+      info << " " << element.first << ": " << std::fixed << element.second;
     }
   }
 
