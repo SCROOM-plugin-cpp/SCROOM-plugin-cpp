@@ -53,9 +53,12 @@ plugins_sep_test_sep_tests_LDFLAGS = -pthread
 plugins_sep_test_sep_tests_SOURCES = \
 	plugins/sep/test/main.cc \
 	plugins/sep/test/slipresentation-tests.cc \
-	plugins/sep/test/sepsource-test.cc \
+	plugins/sep/test/sepsource-tests.cc \
+	plugins/sep/test/sephelpers-tests.cc \
 	plugins/sep/test/slihelpers-tests.cc \
-	plugins/sep/test/varnish-tests.cc
+	plugins/sep/test/varnish-tests.cc \
+	plugins/sep/test/seppresentation-tests.cc \
+	plugins/sep/test/sep-tests.cc
 
 plugins_sep_test_sep_tests_LDADD = \
 	@BOOSTTESTLIB@ @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ @THREADPOOLLIB@ -ltiff -ldl \

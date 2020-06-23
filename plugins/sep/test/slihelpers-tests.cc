@@ -4,12 +4,12 @@
 
 #include <iostream>
 
+// Make all private members accessible for testing
+#define private public
 #include "../sli/slilayer.hh"
 #include "../sli/sli-helpers.hh"
 #include <scroom/scroominterface.hh>
 
-// Make all private members accessible for testing
-#define private public
 
 ///////////////////////////////////////////////////////////////////////////////
 // Helper functions
@@ -135,29 +135,31 @@ BOOST_AUTO_TEST_CASE(slihelpers_point_to_offset)
   BOOST_CHECK(pointToOffset(rect, p2) == 6);
 }
 
-// TODO why does this segment fault?
-// BOOST_AUTO_TEST_CASE(slihelpers_spanned_rectangle)
-// {
-//   unsigned int n_layers = 2;
-//   boost::dynamic_bitset<> bitmap {n_layers};
-//   bitmap.set();
-//   std::vector<SliLayer::Ptr> layers;
-//   for (unsigned int i = 0; i < n_layers; i++)
-//   {
-//     layers.push_back(SliLayer::create("Layer", "Layer", 0, 0));
-//   }
-//   layers[0]->xoffset = 0;
-//   layers[0]->yoffset = 0;
-//   layers[0]->width = 100;
-//   layers[0]->height = 100;
-//   layers[1]->xoffset = 10;
-//   layers[1]->yoffset = 10;
-//   layers[1]->width = 100;
-//   layers[1]->height = 100;
+BOOST_AUTO_TEST_CASE(slihelpers_spanned_rectangle)
+{
+  unsigned int n_layers = 2;
+  boost::dynamic_bitset<> bitmap {n_layers};
+  std::vector<SliLayer::Ptr> layers;
 
-//   auto spanRect = spannedRectangle(bitmap, layers);
+  layers.push_back(SliLayer::create("", "Layer", 0, 0));
+  layers[0]->xoffset = 0;
+  layers[0]->yoffset = 0;
+  layers[0]->width = 100;
+  layers[0]->height = 100;
+  bitmap.set(0);
 
-//   BOOST_CHECK(getArea(spanRect) == 110*110);
-// }
+  auto spanRect1 = spannedRectangle(bitmap, layers, false);
+  BOOST_CHECK(getArea(spanRect1) == 100*100);
+
+  layers.push_back(SliLayer::create("", "Layer", 0, 0));
+  layers[1]->xoffset = 10;
+  layers[1]->yoffset = 10;
+  layers[1]->width = 100;
+  layers[1]->height = 100;
+  bitmap.set(1);
+
+  auto spanRect2 = spannedRectangle(bitmap, layers, false);
+  BOOST_CHECK(getArea(spanRect2) == 110*110);
+}
 
 BOOST_AUTO_TEST_SUITE_END()

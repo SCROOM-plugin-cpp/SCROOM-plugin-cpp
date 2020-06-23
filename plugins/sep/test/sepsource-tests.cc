@@ -1,5 +1,6 @@
 #include <boost/dll.hpp>
 #include <boost/test/unit_test.hpp>
+#include <iostream>
 
 // Make all private members accessible for testing
 #define private public
@@ -8,6 +9,8 @@
 #include "../sli/slilayer.hh"
 
 const auto testFileDir = boost::dll::program_location().parent_path().parent_path() / "testfiles";
+
+/** Test cases for sepsource.hh */
 
 BOOST_AUTO_TEST_SUITE(Sep_Tests)
 
@@ -42,6 +45,49 @@ BOOST_AUTO_TEST_CASE(parse_sep_empty_line) {
         BOOST_CHECK(file.files[colour] == testFileDir / (colour + ".tif"));
     }
 
+    BOOST_CHECK(file.width == 600);
+    BOOST_CHECK(file.height == 400);
+    BOOST_CHECK(file.white_ink_choice == 0);
+}
+
+BOOST_AUTO_TEST_CASE(parse_sep_empty_line_2) {
+    SepFile file = SepSource::parseSep((testFileDir / "sep_empty_line_2.sep").string());
+    BOOST_CHECK(file.files.size() == 4);
+
+    for (const std::string& colour : {"C", "M", "Y", "K"}) {
+        BOOST_CHECK(file.files[colour] == testFileDir / (colour + ".tif"));
+    }
+
+    BOOST_CHECK(file.width == 600);
+    BOOST_CHECK(file.height == 400);
+    BOOST_CHECK(file.white_ink_choice == 0);
+}
+
+BOOST_AUTO_TEST_CASE(parse_sep_missing_channel) {
+    // Y channel is not defined in this file
+    SepFile file = SepSource::parseSep((testFileDir / "sep_missing_channel.sep").string());
+    BOOST_CHECK(file.files.size() == 4);
+
+    for (const std::string& colour : {"C", "M", "K"}) {
+        BOOST_CHECK(file.files[colour] == testFileDir / (colour + ".tif"));
+    }
+
+    BOOST_CHECK(file.files["Y"].empty());
+    BOOST_CHECK(file.width == 600);
+    BOOST_CHECK(file.height == 400);
+    BOOST_CHECK(file.white_ink_choice == 0);
+}
+
+BOOST_AUTO_TEST_CASE(parse_sep_missing_channel_2) {
+    // C channel is not defined in this file + empty line
+    SepFile file = SepSource::parseSep((testFileDir / "sep_empty_line_3.sep").string());
+    BOOST_CHECK(file.files.size() == 4);
+
+    for (const std::string& colour : {"M", "Y", "K"}) {
+        BOOST_CHECK(file.files[colour] == testFileDir / (colour + ".tif"));
+    }
+
+    BOOST_CHECK(file.files["C"].empty());
     BOOST_CHECK(file.width == 600);
     BOOST_CHECK(file.height == 400);
     BOOST_CHECK(file.white_ink_choice == 0);
@@ -227,11 +273,32 @@ BOOST_AUTO_TEST_CASE(tiff_wrapper_2) {
     BOOST_CHECK(res == -1);
 }
 
+BOOST_AUTO_TEST_CASE(tiff_wrapper_3) {
+    auto file = TIFFOpen((testFileDir / "M_9.tif").string().c_str(), "r");
+    auto lines = std::vector<uint8_t>(TIFFScanlineSize(file));
+    int res = SepSource::TIFFReadScanline_(file, lines.data(), 1);
+    BOOST_CHECK(res != -1);
+}
+
 BOOST_AUTO_TEST_CASE(fill_sli_empty) {
     SliLayer::Ptr sli = SliLayer::create("", "name", 0, 0);
     sli->height = 42;
     SepSource::fillSliLayer(sli);
     BOOST_CHECK(sli->height == 42);
+}
+
+BOOST_AUTO_TEST_CASE(closeIfNeeded_1) {
+    auto file = TIFFOpen((testFileDir / "M_9.tif").string().c_str(), "r");
+    BOOST_CHECK(file != nullptr);
+    SepSource::closeIfNeeded(file);
+    BOOST_CHECK_EQUAL(file, nullptr);
+}
+
+BOOST_AUTO_TEST_CASE(closeIfNeeded_2) {
+    auto file = TIFFOpen(NULL, "r");
+    BOOST_CHECK(file == nullptr);
+    SepSource::closeIfNeeded(file);
+    BOOST_CHECK_EQUAL(file, nullptr);
 }
 
 BOOST_AUTO_TEST_CASE(fill_sli_1) {
