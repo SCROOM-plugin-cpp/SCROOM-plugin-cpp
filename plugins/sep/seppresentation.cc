@@ -20,9 +20,6 @@ SepPresentation::Ptr SepPresentation::create() {
     return Ptr(new SepPresentation());
 }
 
-/**
- * TODO: Support pipette.
- */
 bool SepPresentation::load(const std::string &file_name) {
     const SepFile file_content = SepSource::parseSep(file_name);
     this->file_name = file_name;

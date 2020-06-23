@@ -25,7 +25,7 @@ private:
 public:
   static Ptr create(SliLayer::Ptr layer);
   void setView(ViewInterface::WeakPtr view);
-  void fixVarnishState(); //TODO; This probably shouldn't be public?
+  void fixVarnishState();
   void forceRedraw();
 
   ~Varnish();
