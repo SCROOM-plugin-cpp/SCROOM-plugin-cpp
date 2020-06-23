@@ -64,20 +64,20 @@ public:
   ////////////////////////////////////////////////////////////////////////
   // PostRenderer
 
-  virtual void render(ViewInterface::Ptr const& vi, cairo_t* cr, Scroom::Utils::Rectangle<double> presentationArea, int zoom);
+  void render(ViewInterface::Ptr const& vi, cairo_t* cr, Scroom::Utils::Rectangle<double> presentationArea, int zoom) override;
 
   ////////////////////////////////////////////////////////////////////////
   // SelectionListener
 
-  virtual void onSelectionStart(GdkPoint p, ViewInterface::Ptr view);
-  virtual void onSelectionUpdate(Selection::Ptr s, ViewInterface::Ptr view);
-  virtual void onSelectionEnd(Selection::Ptr s, ViewInterface::Ptr view);
+  void onSelectionStart(GdkPoint p, ViewInterface::Ptr view) override;
+  void onSelectionUpdate(Selection::Ptr s, ViewInterface::Ptr view) override;
+  void onSelectionEnd(Selection::Ptr s, ViewInterface::Ptr view) override;
 
   ////////////////////////////////////////////////////////////////////////
   // ToolStateListener
 
-  virtual void onEnable();
-  virtual void onDisable();
+  void onEnable() override;
+  void onDisable() override;
 
   ////////////////////////////////////////////////////////////////////////
 
@@ -88,7 +88,7 @@ public:
    * @param view The view to compute the average values for.
    * @param sel_rect The user selected presentation area.
    */
-  virtual void computeValues(ViewInterface::Ptr view, Scroom::Utils::Rectangle<int> sel_rect);
+  void computeValues(ViewInterface::Ptr view, Scroom::Utils::Rectangle<int> sel_rect);
   /**
    * Formats and sets the final status message with the pipette results.
    *
@@ -96,7 +96,7 @@ public:
    * @param rect The selected part of the presentation.
    * @param colors The average color values for the selected area.
    */
-  virtual void displayValues(ViewInterface::Ptr view, Scroom::Utils::Rectangle<int> rect, PipetteLayerOperations::PipetteColor colors);
+  void displayValues(ViewInterface::Ptr view, Scroom::Utils::Rectangle<int> rect, PipetteLayerOperations::PipetteColor colors);
 };
 
 /**
@@ -120,14 +120,14 @@ public:
   ////////////////////////////////////////////////////////////////////////
   // PluginInformationInterface
 
-  virtual std::string getPluginName();
-  virtual std::string getPluginVersion();
-  virtual void registerCapabilities(ScroomPluginInterface::Ptr host);
+  std::string getPluginName() override;
+  std::string getPluginVersion() override;
+  void registerCapabilities(ScroomPluginInterface::Ptr host) override;
 
   ////////////////////////////////////////////////////////////////////////
   // ViewObserver
 
-  virtual Scroom::Bookkeeping::Token viewAdded(ViewInterface::Ptr v);
+  Scroom::Bookkeeping::Token viewAdded(ViewInterface::Ptr v) override;
 
   ////////////////////////////////////////////////////////////////////////
 };

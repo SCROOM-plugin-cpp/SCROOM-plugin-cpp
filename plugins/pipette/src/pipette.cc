@@ -3,8 +3,6 @@
 #include <gdk/gdk.h>
 #include <cmath>
 
-#include <scroom/unused.hh>
-
 ////////////////////////////////////////////////////////////////////////
 // Pipette
 ////////////////////////////////////////////////////////////////////////
@@ -92,7 +90,6 @@ void PipetteHandler::computeValues(ViewInterface::Ptr view, Scroom::Utils::Recta
 void PipetteHandler::displayValues(ViewInterface::Ptr view, Scroom::Utils::Rectangle<int> rect, PipetteLayerOperations::PipetteColor colors) {
   std::stringstream info;
   info.precision(2);
-  fixed(info);
 
   info << "Top-left: " << rect.getTopLeft();
   info << ", Bottom-right: " << rect.getBottomRight();
@@ -101,7 +98,7 @@ void PipetteHandler::displayValues(ViewInterface::Ptr view, Scroom::Utils::Recta
   if (!colors.empty()) {
     info << ", Colors:";
     for (auto element : colors) {
-      info << ' ' << element.first << ": " << element.second;
+      info << ' ' << element.first << ": " << std::fixed << element.second;
     }
   }
 
@@ -117,8 +114,7 @@ void PipetteHandler::displayValues(ViewInterface::Ptr view, Scroom::Utils::Recta
 void PipetteHandler::onSelectionStart(GdkPoint, ViewInterface::Ptr) {
 }
 
-void PipetteHandler::onSelectionUpdate(Selection::Ptr s, ViewInterface::Ptr view) {
-  UNUSED(view);
+void PipetteHandler::onSelectionUpdate(Selection::Ptr s, ViewInterface::Ptr) {
   if (enabled && jobMutex.try_lock()) {
     selection = s;
     jobMutex.unlock();
@@ -141,9 +137,7 @@ void PipetteHandler::onSelectionEnd(Selection::Ptr s, ViewInterface::Ptr view) {
 // PostRenderer
 ////////////////////////////////////////////////////////////////////////
 
-void PipetteHandler::render(ViewInterface::Ptr const& vi, cairo_t* cr, Scroom::Utils::Rectangle<double> presentationArea, int zoom) {
-  UNUSED(vi);
-
+void PipetteHandler::render(ViewInterface::Ptr const&, cairo_t* cr, Scroom::Utils::Rectangle<double> presentationArea, int zoom) {
   if (selection) {
     auto start = Scroom::Utils::Point<int>(selection->start) - presentationArea.getTopLeft();
     auto end = Scroom::Utils::Point<int>(selection->end) - presentationArea.getTopLeft();
