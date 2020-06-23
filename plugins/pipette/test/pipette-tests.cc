@@ -69,6 +69,9 @@ class DummyPluginInterface : public ScroomPluginInterface{
 BOOST_AUTO_TEST_CASE(selection_update) {
 	PipetteHandler::Ptr handler = PipetteHandler::create();
 
+	//should not do anything but will be called from the view so should not crash
+	handler->onSelectionStart(nullptr, nullptr);
+
 	Selection::Ptr sel = Selection::Ptr(new Selection(10, 11));
 
 	handler->onSelectionUpdate(sel, nullptr);
@@ -81,10 +84,12 @@ BOOST_AUTO_TEST_CASE(selection_update) {
 
 	cairo_t* cr = cairo_create(cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1));
 	handler->render(nullptr, cr, Scroom::Utils::Rectangle<int>(0, 0, 0, 0), 1);
+	handler->render(nullptr, cr, Scroom::Utils::Rectangle<int>(0, 0, 0, 0), -2);
 
 	handler->onDisable();
 	handler->onSelectionUpdate(sel, nullptr);
 	BOOST_CHECK(handler->selection == nullptr);
+	handler->render(nullptr, cr, Scroom::Utils::Rectangle<int>(0, 0, 0, 0), 1);
 }
 
 BOOST_AUTO_TEST_CASE(enable_disable) {
