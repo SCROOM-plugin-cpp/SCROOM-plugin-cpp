@@ -54,6 +54,6 @@ public:
   virtual Scroom::Utils::Rectangle<int> toRectangle();
 
   /** Reads the layers tiff file and returns true if successful */
-  bool fillFromTiff(uint allowedBps, uint allowedSpp);
+  bool fillFromTiff(unsigned int allowedBps, unsigned int allowedSpp);
 
 };

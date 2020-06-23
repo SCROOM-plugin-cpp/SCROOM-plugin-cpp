@@ -39,3 +39,4 @@
 plugin-build/*
 /.vscode
 plugins/sep/test/sep-tests
+gmon.out
