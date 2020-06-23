@@ -1,6 +1,6 @@
-#include <boost/test/unit_test.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/dll.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/test/unit_test.hpp>
 
 // Make all private members accessible for testing
 #define private public
@@ -10,15 +10,16 @@
 
 #define SLI_NOF_LAYERS 4
 
-const std::string testFileDir = boost::dll::program_location().parent_path().parent_path().string() + "/testfiles/";
+const std::string testFileDir =
+    boost::dll::program_location().parent_path().parent_path().string() +
+    "/testfiles/";
 
 ///////////////////////////////////////////////////////////////////////////////
 // Helper functions
 
-void dummyFunc() {};
+void dummyFunc(){};
 
-SliPresentation::Ptr createPresentation()
-{
+SliPresentation::Ptr createPresentation() {
   SliPresentation::Ptr presentation = SliPresentation::create(nullptr);
   BOOST_REQUIRE(presentation);
   // Assign the callbacks to dummy functions to avoid exceptions
@@ -28,18 +29,19 @@ SliPresentation::Ptr createPresentation()
   return presentation;
 }
 
-void dummyRedraw(SliPresentation::Ptr presentation)
-{
+void dummyRedraw(SliPresentation::Ptr presentation) {
   // Create dummy objects to call redraw() with
-  cairo_surface_t* surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 100, 100);
-  cairo_t* cr = cairo_create(surface);
+  cairo_surface_t *surface =
+      cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 100, 100);
+  cairo_t *cr = cairo_create(surface);
   Scroom::Utils::Rectangle<double> rect(5.0, 5.0, 100.0, 100.0);
 
-  // redraw() for all zoom levels from 5 to -2 and check whether cache has been computed
-  for (int zoom = 5; zoom > -3; zoom--)
-  {
+  // redraw() for all zoom levels from 5 to -2 and check whether cache has been
+  // computed
+  for (int zoom = 5; zoom > -3; zoom--) {
     presentation->redraw(nullptr, cr, rect, zoom);
-    boost::this_thread::sleep(boost::posix_time::millisec(500)); // Very liberal, shouldn't fail beause of time
+    boost::this_thread::sleep(boost::posix_time::millisec(
+        500)); // Very liberal, shouldn't fail beause of time
     BOOST_REQUIRE(presentation->source->rgbCache[std::min(0, zoom)]);
   }
   BOOST_REQUIRE(presentation);
@@ -50,48 +52,42 @@ void dummyRedraw(SliPresentation::Ptr presentation)
 
 BOOST_AUTO_TEST_SUITE(Sli_Tests)
 
-BOOST_AUTO_TEST_CASE(slipresentation_load_sli_tiffonly)
-{
+BOOST_AUTO_TEST_CASE(slipresentation_load_sli_tiffonly) {
   SliPresentation::Ptr presentation = createPresentation();
   presentation->load(testFileDir + "sli_tiffonly.sli");
   BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
 }
 
-BOOST_AUTO_TEST_CASE(slipresentation_load_sli_seponly)
-{
+BOOST_AUTO_TEST_CASE(slipresentation_load_sli_seponly) {
   SliPresentation::Ptr presentation = createPresentation();
   presentation->load(testFileDir + "sli_seponly.sli");
   BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
 }
 
-BOOST_AUTO_TEST_CASE(slipresentation_load_sli_septiffmixed)
-{
+BOOST_AUTO_TEST_CASE(slipresentation_load_sli_septiffmixed) {
   SliPresentation::Ptr presentation = createPresentation();
   presentation->load(testFileDir + "sli_septiffmixed.sli");
   BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
 }
 
-BOOST_AUTO_TEST_CASE(slipresentation_load_sli_scale)
-{
+BOOST_AUTO_TEST_CASE(slipresentation_load_sli_scale) {
   SliPresentation::Ptr presentation = createPresentation();
   presentation->load(testFileDir + "sli_scale.sli");
   BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
 }
 
-BOOST_AUTO_TEST_CASE(slipresentation_load_sli_xoffset)
-{
+BOOST_AUTO_TEST_CASE(slipresentation_load_sli_xoffset) {
   SliPresentation::Ptr presentation = createPresentation();
   presentation->load(testFileDir + "sli_xoffset.sli");
   BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
 }
 
-BOOST_AUTO_TEST_CASE(slipresentation_presentationinterface_inherited)
-{
+BOOST_AUTO_TEST_CASE(slipresentation_presentationinterface_inherited) {
   SliPresentation::Ptr presentation = createPresentation();
 
   std::string nameStr = "testname";
@@ -110,47 +106,43 @@ BOOST_AUTO_TEST_CASE(slipresentation_presentationinterface_inherited)
   BOOST_REQUIRE(presentation->getTitle() == "slipresentation");
 
   presentation.reset();
-
 }
 
-BOOST_AUTO_TEST_CASE(slipresentation_pipette_tool_multiple_colors)
-{
+BOOST_AUTO_TEST_CASE(slipresentation_pipette_tool_multiple_colors) {
   SliPresentation::Ptr presentation = createPresentation();
 
   presentation->load(testFileDir + "sli_pipette.sli");
   BOOST_REQUIRE(presentation->getLayers().size() == 1);
   dummyRedraw(presentation);
   // Testing 4 CMYK pixels + rectangle larger than the canvas
-  Scroom::Utils::Rectangle<int> rect1 {0, 0, 3, 4};
+  Scroom::Utils::Rectangle<int> rect1{0, 0, 3, 4};
   auto result = presentation->getPixelAverages(rect1);
   for (auto r : result)
-    BOOST_REQUIRE(abs(r.second - 63.75) < 0.0001 );
+    BOOST_REQUIRE(abs(r.second - 63.75) < 0.0001);
 }
 
-BOOST_AUTO_TEST_CASE(slipresentation_pipette_tool_one_color)
-{
+BOOST_AUTO_TEST_CASE(slipresentation_pipette_tool_one_color) {
   SliPresentation::Ptr presentation = createPresentation();
 
   presentation->load(testFileDir + "sli_pipette.sli");
   BOOST_REQUIRE(presentation->getLayers().size() == 1);
   dummyRedraw(presentation);
   // C
-  Scroom::Utils::Rectangle<int> rect1 {0, 0, 1, 1};
+  Scroom::Utils::Rectangle<int> rect1{0, 0, 1, 1};
   auto result = presentation->getPixelAverages(rect1);
   BOOST_REQUIRE(abs(result[0].second - 255) < 0.0001);
   // M
-  Scroom::Utils::Rectangle<int> rect2 {1, 0, 1, 1};
+  Scroom::Utils::Rectangle<int> rect2{1, 0, 1, 1};
   result = presentation->getPixelAverages(rect2);
   BOOST_REQUIRE(abs(result[1].second - 255) < 0.0001);
   // Y
-  Scroom::Utils::Rectangle<int> rect3 {0, 1, 1, 1};
+  Scroom::Utils::Rectangle<int> rect3{0, 1, 1, 1};
   result = presentation->getPixelAverages(rect3);
   BOOST_REQUIRE(abs(result[2].second - 255) < 0.0001);
   // K
-  Scroom::Utils::Rectangle<int> rect4 {1, 1, 1, 1};
+  Scroom::Utils::Rectangle<int> rect4{1, 1, 1, 1};
   result = presentation->getPixelAverages(rect4);
   BOOST_REQUIRE(abs(result[3].second - 255) < 0.0001);
 }
-
 
 BOOST_AUTO_TEST_SUITE_END()

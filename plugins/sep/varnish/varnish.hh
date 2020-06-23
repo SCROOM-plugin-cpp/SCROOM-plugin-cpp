@@ -1,10 +1,9 @@
 #pragma once
 
-#include <gtk/gtk.h>
 #include "../sli/slilayer.hh"
+#include <gtk/gtk.h>
 
-class Varnish
-{
+class Varnish {
 public:
   typedef boost::shared_ptr<Varnish> Ptr;
 
@@ -19,7 +18,7 @@ private:
   void invertSurface();
   void registerUI(ViewInterface::WeakPtr view);
   SliLayer::Ptr layer;
-  cairo_surface_t* surface;
+  cairo_surface_t *surface;
   bool inverted;
 
 public:
@@ -30,5 +29,5 @@ public:
 
   ~Varnish();
   void drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
-              Scroom::Utils::Rectangle<double> presentationArea, int zoom);
+                   Scroom::Utils::Rectangle<double> presentationArea, int zoom);
 };

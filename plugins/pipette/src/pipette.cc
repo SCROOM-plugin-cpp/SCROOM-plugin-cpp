@@ -1,28 +1,21 @@
 #include "pipette.hh"
 
-#include <gdk/gdk.h>
 #include <cmath>
+#include <gdk/gdk.h>
 
 ////////////////////////////////////////////////////////////////////////
 // Pipette
 ////////////////////////////////////////////////////////////////////////
 
-Pipette::Ptr Pipette::create()
-{
-  return Ptr(new Pipette());
-}
+Pipette::Ptr Pipette::create() { return Ptr(new Pipette()); }
 
 ////////////////////////////////////////////////////////////////////////
 // PluginInformationInterface
 ////////////////////////////////////////////////////////////////////////
 
-std::string Pipette::getPluginName() {
-  return "Pipette";
-}
+std::string Pipette::getPluginName() { return "Pipette"; }
 
-std::string Pipette::getPluginVersion() {
-  return "0.0";
-}
+std::string Pipette::getPluginVersion() { return "0.0"; }
 
 void Pipette::registerCapabilities(ScroomPluginInterface::Ptr host) {
   host->registerViewObserver("Pipette", shared_from_this<Pipette>());
@@ -37,7 +30,8 @@ Scroom::Bookkeeping::Token Pipette::viewAdded(ViewInterface::Ptr view) {
   view->registerSelectionListener(handler);
   view->registerPostRenderer(handler);
 
-  view->addToolButton(GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label("Pipette")), handler);
+  view->addToolButton(
+      GTK_TOGGLE_BUTTON(gtk_toggle_button_new_with_label("Pipette")), handler);
 
   return Scroom::Bookkeeping::Token();
 }
@@ -47,16 +41,16 @@ Scroom::Bookkeeping::Token Pipette::viewAdded(ViewInterface::Ptr view) {
 ////////////////////////////////////////////////////////////////////////
 
 PipetteHandler::PipetteHandler()
-  : selection(nullptr), enabled(false), currentJob(ThreadPool::Queue::createAsync()) {
-}
-PipetteHandler::~PipetteHandler() {
-}
+    : selection(nullptr), enabled(false),
+      currentJob(ThreadPool::Queue::createAsync()) {}
+PipetteHandler::~PipetteHandler() {}
 
 PipetteHandler::Ptr PipetteHandler::create() {
   return Ptr(new PipetteHandler());
 }
 
-void PipetteHandler::computeValues(ViewInterface::Ptr view, Scroom::Utils::Rectangle<int> sel_rect) {
+void PipetteHandler::computeValues(ViewInterface::Ptr view,
+                                   Scroom::Utils::Rectangle<int> sel_rect) {
   jobMutex.lock();
 
   gdk_threads_enter();
@@ -65,7 +59,8 @@ void PipetteHandler::computeValues(ViewInterface::Ptr view, Scroom::Utils::Recta
 
   // Get the average color within the rectangle
   PresentationInterface::Ptr presentation = view->getCurrentPresentation();
-  auto pipette = boost::dynamic_pointer_cast<PipetteViewInterface>(presentation);
+  auto pipette =
+      boost::dynamic_pointer_cast<PipetteViewInterface>(presentation);
   if (pipette == nullptr) {
     printf("PANIC: Presentation does not implement PipetteViewInterface!\n");
     gdk_threads_enter();
@@ -87,7 +82,9 @@ void PipetteHandler::computeValues(ViewInterface::Ptr view, Scroom::Utils::Recta
   jobMutex.unlock();
 }
 
-void PipetteHandler::displayValues(ViewInterface::Ptr view, Scroom::Utils::Rectangle<int> rect, PipetteLayerOperations::PipetteColor colors) {
+void PipetteHandler::displayValues(
+    ViewInterface::Ptr view, Scroom::Utils::Rectangle<int> rect,
+    PipetteLayerOperations::PipetteColor colors) {
   std::stringstream info;
   info.precision(2);
 
@@ -111,8 +108,7 @@ void PipetteHandler::displayValues(ViewInterface::Ptr view, Scroom::Utils::Recta
 // SelectionListener
 ////////////////////////////////////////////////////////////////////////
 
-void PipetteHandler::onSelectionStart(GdkPoint, ViewInterface::Ptr) {
-}
+void PipetteHandler::onSelectionStart(GdkPoint, ViewInterface::Ptr) {}
 
 void PipetteHandler::onSelectionUpdate(Selection::Ptr s, ViewInterface::Ptr) {
   if (enabled && jobMutex.try_lock()) {
@@ -126,9 +122,14 @@ void PipetteHandler::onSelectionEnd(Selection::Ptr s, ViewInterface::Ptr view) {
     selection = s;
 
     // Get the selection rectangle
-    auto sel_rect = Scroom::Utils::Rectangle<int>(selection->start.x, selection->start.y,
-    		selection->end.x - selection->start.x, selection->end.y - selection->start.y);
-    Sequentially()->schedule(boost::bind(&PipetteHandler::computeValues, shared_from_this<PipetteHandler>(), view, sel_rect), currentJob);
+    auto sel_rect =
+        Scroom::Utils::Rectangle<int>(selection->start.x, selection->start.y,
+                                      selection->end.x - selection->start.x,
+                                      selection->end.y - selection->start.y);
+    Sequentially()->schedule(boost::bind(&PipetteHandler::computeValues,
+                                         shared_from_this<PipetteHandler>(),
+                                         view, sel_rect),
+                             currentJob);
     jobMutex.unlock();
   }
 }
@@ -137,17 +138,21 @@ void PipetteHandler::onSelectionEnd(Selection::Ptr s, ViewInterface::Ptr view) {
 // PostRenderer
 ////////////////////////////////////////////////////////////////////////
 
-void PipetteHandler::render(ViewInterface::Ptr const&, cairo_t* cr, Scroom::Utils::Rectangle<double> presentationArea, int zoom) {
+void PipetteHandler::render(ViewInterface::Ptr const &, cairo_t *cr,
+                            Scroom::Utils::Rectangle<double> presentationArea,
+                            int zoom) {
   if (selection) {
-    auto start = Scroom::Utils::Point<int>(selection->start) - presentationArea.getTopLeft();
-    auto end = Scroom::Utils::Point<int>(selection->end) - presentationArea.getTopLeft();
+    auto start = Scroom::Utils::Point<int>(selection->start) -
+                 presentationArea.getTopLeft();
+    auto end = Scroom::Utils::Point<int>(selection->end) -
+               presentationArea.getTopLeft();
 
-    if (zoom>=0) {
-      const int pixelSize=1<<zoom;
+    if (zoom >= 0) {
+      const int pixelSize = 1 << zoom;
       start *= pixelSize;
       end *= pixelSize;
     } else {
-      const int pixelSize=1<<-zoom;
+      const int pixelSize = 1 << -zoom;
       start /= pixelSize;
       end /= pixelSize;
     }

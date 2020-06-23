@@ -1,120 +1,110 @@
 #include "sli-helpers.hh"
 #include "../sep-helpers.hh"
 
-
-
-SurfaceWrapper::Ptr SurfaceWrapper::create()
-{
+SurfaceWrapper::Ptr SurfaceWrapper::create() {
   SurfaceWrapper::Ptr result(new SurfaceWrapper());
-  
+
   return result;
 }
 
-SurfaceWrapper::Ptr SurfaceWrapper::create(int width, int height, cairo_format_t format)
-{
+SurfaceWrapper::Ptr SurfaceWrapper::create(int width, int height,
+                                           cairo_format_t format) {
   SurfaceWrapper::Ptr result(new SurfaceWrapper(width, height, format));
-  
+
   return result;
 }
 
-SurfaceWrapper::SurfaceWrapper()
-{
+SurfaceWrapper::SurfaceWrapper() {
   clear = true;
   empty = true;
 }
 
-SurfaceWrapper::SurfaceWrapper(int width, int height, cairo_format_t format)
-{
+SurfaceWrapper::SurfaceWrapper(int width, int height, cairo_format_t format) {
   int stride = cairo_format_stride_for_width(format, width);
-  uint8_t* bitmap = static_cast<uint8_t*>(calloc(height * stride, 1));
-  surface = cairo_image_surface_create_for_data(bitmap, CAIRO_FORMAT_ARGB32, width, height, stride);
+  uint8_t *bitmap = static_cast<uint8_t *>(calloc(height * stride, 1));
+  surface = cairo_image_surface_create_for_data(bitmap, CAIRO_FORMAT_ARGB32,
+                                                width, height, stride);
   empty = false;
   clear = true;
 }
 
-int SurfaceWrapper::getHeight()
-{
+int SurfaceWrapper::getHeight() {
   return cairo_image_surface_get_height(surface);
 }
 
-int SurfaceWrapper::getWidth()
-{
+int SurfaceWrapper::getWidth() {
   return cairo_image_surface_get_width(surface);
 }
 
-int SurfaceWrapper::getStride()
-{
+int SurfaceWrapper::getStride() {
   return cairo_image_surface_get_stride(surface);
 }
 
-uint8_t* SurfaceWrapper::getBitmap()
-{
+uint8_t *SurfaceWrapper::getBitmap() {
   return cairo_image_surface_get_data(surface);
 }
 
-Scroom::Utils::Rectangle<int> SurfaceWrapper::toRectangle()
-{
-  Scroom::Utils::Rectangle<int> rect {0, 0, getWidth(), getHeight()};
-  
+Scroom::Utils::Rectangle<int> SurfaceWrapper::toRectangle() {
+  Scroom::Utils::Rectangle<int> rect{0, 0, getWidth(), getHeight()};
+
   return rect;
 }
 
-void SurfaceWrapper::clearSurface()
-{
-  cairo_t* cr = cairo_create(surface);
+void SurfaceWrapper::clearSurface() {
+  cairo_t *cr = cairo_create(surface);
   cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
   cairo_paint(cr);
   cairo_destroy(cr);
   clear = true;
 }
 
-void SurfaceWrapper::clearSurface(Scroom::Utils::Rectangle<int> rect)
-{
-  cairo_t* cr = cairo_create(surface);
+void SurfaceWrapper::clearSurface(Scroom::Utils::Rectangle<int> rect) {
+  cairo_t *cr = cairo_create(surface);
   cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
-  cairo_rectangle(cr, rect.getTopLeft().x, rect.getTopLeft().y, rect.getWidth(), rect.getHeight());
+  cairo_rectangle(cr, rect.getTopLeft().x, rect.getTopLeft().y, rect.getWidth(),
+                  rect.getHeight());
   cairo_fill(cr);
   cairo_destroy(cr);
   clear = true;
 }
 
-Scroom::Utils::Rectangle<int> toBytesRectangle(Scroom::Utils::Rectangle<int> rect, int bpp)
-{
-  Scroom::Utils::Rectangle<int> bytesRect {rect.getLeft()*bpp, rect.getTop(), rect.getWidth()*bpp, rect.getHeight()};
-  
+Scroom::Utils::Rectangle<int>
+toBytesRectangle(Scroom::Utils::Rectangle<int> rect, int bpp) {
+  Scroom::Utils::Rectangle<int> bytesRect{rect.getLeft() * bpp, rect.getTop(),
+                                          rect.getWidth() * bpp,
+                                          rect.getHeight()};
+
   return bytesRect;
 }
 
-int getArea(Scroom::Utils::Rectangle<int> rect)
-{
+int getArea(Scroom::Utils::Rectangle<int> rect) {
   return rect.getHeight() * rect.getWidth();
 }
 
-int pointToOffset(Scroom::Utils::Point<int> p, int stride)
-{
+int pointToOffset(Scroom::Utils::Point<int> p, int stride) {
   return p.y * stride + p.x;
 }
 
-int pointToOffset(Scroom::Utils::Rectangle<int> rect, Scroom::Utils::Point<int> p)
-{
-  return std::max(0, (p.y - rect.getTop()) * rect.getWidth() + (p.x - rect.getLeft()));
+int pointToOffset(Scroom::Utils::Rectangle<int> rect,
+                  Scroom::Utils::Point<int> p) {
+  return std::max(0, (p.y - rect.getTop()) * rect.getWidth() +
+                         (p.x - rect.getLeft()));
 }
 
-Scroom::Utils::Rectangle<int> spannedRectangle(boost::dynamic_bitset<> bitmap, std::vector<SliLayer::Ptr> layers, bool fromOrigin)
-{ 
+Scroom::Utils::Rectangle<int>
+spannedRectangle(boost::dynamic_bitset<> bitmap,
+                 std::vector<SliLayer::Ptr> layers, bool fromOrigin) {
   int min_x0 = INT_MAX;
   int min_y0 = INT_MAX;
   int max_x1 = INT_MIN;
   int max_y1 = INT_MIN;
 
-  if (fromOrigin)
-  {
+  if (fromOrigin) {
     min_x0 = 0;
     min_y0 = 0;
   }
 
-  for (size_t i = 0; i < bitmap.size(); i++)
-  {
+  for (size_t i = 0; i < bitmap.size(); i++) {
     if (!bitmap[i])
       continue;
 
@@ -125,23 +115,22 @@ Scroom::Utils::Rectangle<int> spannedRectangle(boost::dynamic_bitset<> bitmap, s
 
     if (rect.getTop() < min_y0)
       min_y0 = rect.getTop();
-    
+
     if (rect.getRight() > max_x1)
       max_x1 = rect.getRight();
-      
+
     if (rect.getBottom() > max_y1)
-      max_y1= rect.getBottom();
+      max_y1 = rect.getBottom();
   }
-  
-  Scroom::Utils::Rectangle<int> rect {min_x0, min_y0, max_x1 - min_x0, max_y1 - min_y0};
+
+  Scroom::Utils::Rectangle<int> rect{min_x0, min_y0, max_x1 - min_x0,
+                                     max_y1 - min_y0};
 
   return rect;
 }
 
-SurfaceWrapper::~SurfaceWrapper()
-{
-  if (!empty)
-  {
+SurfaceWrapper::~SurfaceWrapper() {
+  if (!empty) {
     free(cairo_image_surface_get_data(surface));
     cairo_surface_destroy(surface);
   }

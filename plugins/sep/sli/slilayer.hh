@@ -2,8 +2,7 @@
 
 #include <scroom/scroominterface.hh>
 
-class SliLayer : public virtual Scroom::Utils::Base
-{
+class SliLayer : public virtual Scroom::Utils::Base {
 public:
   typedef boost::shared_ptr<SliLayer> Ptr;
 
@@ -12,7 +11,7 @@ public:
 
   /** Width of the layer (in pixels) */
   int width;
-  
+
   /** Samples per pixel */
   unsigned int spp = 0;
 
@@ -20,10 +19,10 @@ public:
   unsigned int bps = 0;
 
   /** The 'x' part of the aspect ratio x:y */
-  float xAspect=0;
+  float xAspect = 0;
 
   /** The 'y' part of the aspect ratio x:y */
-  float yAspect=0;
+  float yAspect = 0;
 
   /** Horizontal offset from the top-left point of the canvas (in pixels) */
   int xoffset;
@@ -38,14 +37,15 @@ public:
   std::string filepath;
 
   /** The memory chunk containing the bitmap */
-  uint8_t* bitmap = nullptr;
+  uint8_t *bitmap = nullptr;
 
 private:
   SliLayer();
 
 public:
   /** Constructor */
-  static Ptr create(const std::string &filepath, const std::string &name, int xoffset, int yoffset);
+  static Ptr create(const std::string &filepath, const std::string &name,
+                    int xoffset, int yoffset);
 
   /** Destructor */
   virtual ~SliLayer();
@@ -55,5 +55,4 @@ public:
 
   /** Reads the layers tiff file and returns true if successful */
   bool fillFromTiff(unsigned int allowedBps, unsigned int allowedSpp);
-
 };
