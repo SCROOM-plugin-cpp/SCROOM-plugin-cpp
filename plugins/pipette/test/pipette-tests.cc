@@ -66,11 +66,29 @@ class DummyPluginInterface : public ScroomPluginInterface{
   void registerPresentationObserver(const std::string&, PresentationObserver::Ptr) {};
 };
 
+BOOST_AUTO_TEST_CASE(selection_end) {
+	PipetteHandler::Ptr handler = PipetteHandler::create();
+
+	Selection::Ptr sel = Selection::Ptr(new Selection(10, 11));
+
+	handler->onSelectionEnd(sel, nullptr);
+	BOOST_CHECK(handler->selection == nullptr);
+
+	handler->onEnable();
+	handler->onSelectionEnd(sel, ViewInterface::Ptr(new DummyView()));
+	BOOST_CHECK(handler->selection->start.x == 10);
+	BOOST_CHECK(handler->selection->start.y == 11);
+
+	handler->onDisable();
+	handler->onSelectionEnd(sel, nullptr);
+	BOOST_CHECK(handler->selection == nullptr);
+}
+
 BOOST_AUTO_TEST_CASE(selection_update) {
 	PipetteHandler::Ptr handler = PipetteHandler::create();
 
 	//should not do anything but will be called from the view so should not crash
-	handler->onSelectionStart(nullptr, nullptr);
+	handler->onSelectionStart({0, 0}, nullptr);
 
 	Selection::Ptr sel = Selection::Ptr(new Selection(10, 11));
 
