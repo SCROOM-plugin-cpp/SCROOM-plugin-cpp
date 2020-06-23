@@ -21,7 +21,6 @@ BOOST_AUTO_TEST_CASE(create) {
 
 BOOST_AUTO_TEST_CASE(parent_dir) {
     auto abctest = SepSource::findParentDir("abc/test/removed");
-    std::cout << abctest << std::endl;
     BOOST_CHECK(abctest == "abc/test");
 }
 
