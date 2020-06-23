@@ -79,6 +79,9 @@ BOOST_AUTO_TEST_CASE(selection_update) {
 	BOOST_CHECK(handler->selection->start.x == 10);
 	BOOST_CHECK(handler->selection->start.y == 11);
 
+	cairo_t* cr = cairo_create(cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1));
+	handler->render(nullptr, cr, Scroom::Utils::Rectangle<int>(0, 0, 0, 0), 1);
+
 	handler->onDisable();
 	handler->onSelectionUpdate(sel, nullptr);
 	BOOST_CHECK(handler->selection == nullptr);
