@@ -66,6 +66,34 @@ class DummyPluginInterface : public ScroomPluginInterface{
   void registerPresentationObserver(const std::string&, PresentationObserver::Ptr) {};
 };
 
+BOOST_AUTO_TEST_CASE(selection_update) {
+	PipetteHandler::Ptr handler = PipetteHandler::create();
+
+	Selection::Ptr sel = Selection::Ptr(new Selection(10, 11));
+
+	handler->onSelectionUpdate(sel, nullptr);
+	BOOST_CHECK(handler->selection == nullptr);
+
+	handler->onEnable();
+	handler->onSelectionUpdate(sel, nullptr);
+	BOOST_CHECK(handler->selection->start.x == 10);
+	BOOST_CHECK(handler->selection->start.y == 11);
+
+	handler->onDisable();
+	handler->onSelectionUpdate(sel, nullptr);
+	BOOST_CHECK(handler->selection == nullptr);
+}
+
+BOOST_AUTO_TEST_CASE(enable_disable) {
+	PipetteHandler::Ptr handler = PipetteHandler::create();
+
+	//questionably useful
+	handler->onEnable();
+	BOOST_CHECK(handler->enabled);
+	handler->onDisable();
+	BOOST_CHECK(!handler->enabled);
+}
+
 BOOST_AUTO_TEST_CASE(metadata) {
 	Pipette::Ptr pipette = Pipette::create();
 
