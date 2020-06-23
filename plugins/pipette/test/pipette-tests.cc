@@ -38,6 +38,7 @@ class DummyView : public ViewInterface {
 	void registerPostRenderer(PostRenderer::Ptr) { reg_post++; }
 	void setStatusMessage(const std::string& msg) {
 		msg_set++;
+		printf("%s\n", msg.c_str());
 		//known text
 		if (msg.compare("Computing color values...") || msg.compare("Pipette is not supported for this presentation.")) {
 			return;
@@ -82,13 +83,19 @@ BOOST_AUTO_TEST_CASE(value_display) {
 	PipetteHandler::Ptr handler = PipetteHandler::create();
 
 	presentation = PresentationInterface::Ptr(new DummyPresentation());
-
 	int pre_msg_set = msg_set;
+
+	handler->onEnable();
 
 	//test will fail via event handlers
     handler->computeValues(ViewInterface::Ptr(new DummyView), Scroom::Utils::Rectangle<int>(10, 11, 12, 13));
 
-    BOOST_CHECK(pre_msg_set + 1 == msg_set);
+    BOOST_CHECK(pre_msg_set + 2 == msg_set);
+
+    presentation = nullptr;
+    handler->computeValues(ViewInterface::Ptr(new DummyView), Scroom::Utils::Rectangle<int>(10, 11, 12, 13));
+
+    BOOST_CHECK(pre_msg_set + 4 == msg_set);
 }
 
 BOOST_AUTO_TEST_CASE(view_add) {
