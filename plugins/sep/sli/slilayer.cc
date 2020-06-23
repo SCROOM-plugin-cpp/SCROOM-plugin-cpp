@@ -24,10 +24,7 @@ SliLayer::SliLayer() : height(0), width(0)
 
 SliLayer::~SliLayer()
 {
-  if (bitmap)
-  {
-    free(bitmap);
-  }
+  free(bitmap);
 }
 
 Scroom::Utils::Rectangle<int> SliLayer::toRectangle()
@@ -37,7 +34,7 @@ Scroom::Utils::Rectangle<int> SliLayer::toRectangle()
   return rect;
 }
 
-bool SliLayer::fillFromTiff(uint allowedBps, uint allowedSpp)
+bool SliLayer::fillFromTiff(unsigned int allowedBps, unsigned int allowedSpp)
 {
   try
   {

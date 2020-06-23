@@ -72,13 +72,13 @@ public:
    * Load the SLI file and instruct the Scroom core to display it
    * @param fileName the absolute path of the .sli file to be opened
    */
-  virtual bool load(const std::string& fileName);
+  bool load(const std::string& fileName);
 
   /** 
    * Parse the SLI file and trigger creation of the layers
    * @param fileName the absolute path of the .sli file to be parsed
    */
-  virtual bool parseSli(const std::string &fileName);
+  bool parseSli(const std::string &fileName);
 
   /** Get a reference to the list of all layers in SliSource */
   std::vector<SliLayer::Ptr>& getLayers() {return source->layers;};
@@ -91,38 +91,38 @@ public:
    *  Erase (delete reference) the RGB cache of the SliSource except for the bottom layer
    *  for which the relevant bytes are simply turned to 0s.
    */
-  virtual void wipeCache();
+  void wipeCache() override;
 
   /** Causes the SliPresentation to redraw the current presentation */
-  virtual void triggerRedraw();
+  void triggerRedraw() override;
   
   /** Get a copy of the bitmap encoding the visibility of layers from SliSource */
-  virtual boost::dynamic_bitset<> getVisible();
+  boost::dynamic_bitset<> getVisible() override;
 
   /** Set the bits of the newly toggled bits in the toggled bitmap of SliSource */
-  virtual void setToggled(boost::dynamic_bitset<> bitmap);
+  void setToggled(boost::dynamic_bitset<> bitmap) override;
 
   ////////////////////////////////////////////////////////////////////////
   // PresentationInterface
   ////////////////////////////////////////////////////////////////////////
 
-  virtual Scroom::Utils::Rectangle<double> getRect();
-  virtual void redraw(ViewInterface::Ptr const& vi, cairo_t* cr, Scroom::Utils::Rectangle<double> presentationArea, int zoom);
-  virtual bool getProperty(const std::string& name, std::string& value);
-  virtual bool isPropertyDefined(const std::string& name);
-  virtual std::string getTitle();
+  Scroom::Utils::Rectangle<double> getRect() override;
+  void redraw(ViewInterface::Ptr const& vi, cairo_t* cr, Scroom::Utils::Rectangle<double> presentationArea, int zoom) override;
+  bool getProperty(const std::string& name, std::string& value) override;
+  bool isPropertyDefined(const std::string& name) override;
+  std::string getTitle() override;
 
   ////////////////////////////////////////////////////////////////////////
   // PresentationBase
   ////////////////////////////////////////////////////////////////////////
 
-  virtual void viewAdded(ViewInterface::WeakPtr vi);
-  virtual void viewRemoved(ViewInterface::WeakPtr vi);
-  virtual std::set<ViewInterface::WeakPtr> getViews();
+  void viewAdded(ViewInterface::WeakPtr vi) override;
+  void viewRemoved(ViewInterface::WeakPtr vi) override;
+  std::set<ViewInterface::WeakPtr> getViews() override;
   
   ////////////////////////////////////////////////////////////////////////
   // PipetteViewInterface
   ////////////////////////////////////////////////////////////////////////
 
-  virtual PipetteLayerOperations::PipetteColor getPixelAverages(Scroom::Utils::Rectangle<int> area);
+  PipetteLayerOperations::PipetteColor getPixelAverages(Scroom::Utils::Rectangle<int> area) override;
 };
