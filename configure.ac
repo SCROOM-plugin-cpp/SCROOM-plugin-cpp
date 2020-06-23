@@ -23,7 +23,7 @@ esac
 AM_CONDITIONAL([LINUX], [test "$build_linux" = "yes"])
 AM_CONDITIONAL([WINDOWS], [test "$build_windows" = "yes"])
 
-AM_INIT_AUTOMAKE([-Wall -Werror foreign silent-rules subdir-objects])
+AM_INIT_AUTOMAKE([-Wall -Werror foreign silent-rules subdir-objects serial-tests])
 AM_SILENT_RULES([yes])
 AM_PROG_AR
 LT_PREREQ([2.2])
@@ -32,7 +32,7 @@ LT_PREREQ([2.2])
 LT_INIT([dlopen win32-dll])
 
 AC_CONFIG_MACRO_DIR([m4])
-AC_CONFIG_SRCDIR([plugins/example/example.hh])
+AC_CONFIG_SRCDIR([plugins/sep/sep.hh])
 AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
@@ -102,8 +102,8 @@ DX_PS_FEATURE(OFF)
 DX_INIT_DOXYGEN([$PACKAGE_NAME], [doxyfile], [doc])
   
 # Checks for packages.
-PKG_CHECK_MODULES([EXAMPLEPLUGIN], [gtk+-2.0 >= 2.0.0, cairo])
 PKG_CHECK_MODULES([PIPETTEPLUGIN], [gtk+-2.0 >= 2.0.0, cairo])
+PKG_CHECK_MODULES([SEPPLUGIN], [gtk+-2.0 >= 2.0.0, cairo])
 
 # Checks for libraries.
 have_tiled_bitmap=no
@@ -165,6 +165,28 @@ AC_CHECK_HEADERS([boost/thread.hpp boost/thread/mutex.hpp], [have_boost_thread_h
 have_boost_thread_lib=no
 SCROOM_SEARCH_LIBS([_ZN5boost6thread6detachEv], [boost_thread-mt boost_thread], [have_boost_thread_lib=yes])
 AC_SUBST([BOOSTTHREADLIB], ["$ac_cv_search__ZN5boost6thread6detachEv $ac_cv_search__ZN5boost6system16generic_categoryEv"])
+
+#Checking for boost filesystem
+have_boost_filesystem_lib=no
+have_boost_filesystem_headers=no
+boost_filesystem_ldflags=""
+# Mangled symbol for ubuntu 12.04
+SCROOM_SEARCH_LIBS([_ZNK5boost11filesystem34path11parent_pathEv],
+                   [boost_filesystem-mt boost_filesystem], [have_boost_filesystem_lib=yes])
+if test "x${have_boost_filesystem_lib}" = xyes
+then
+  boost_filesystem_ldflags=${ac_cv_search__ZNK5boost11filesystem34path11parent_pathEv}
+else
+  # Mangled symbol for ubuntu 14.04 onwards
+  SCROOM_SEARCH_LIBS([_ZNK5boost10filesystem4path11parent_pathEv],
+                     [boost_filesystem-mt boost_filesystem], [have_boost_filesystem_lib=yes])
+  if test "x${have_boost_filesystem_lib}" = xyes
+  then
+    boost_filesystem_ldflags=${ac_cv_search__ZNK5boost10filesystem4path11parent_pathEv}
+  fi
+fi
+AC_CHECK_HEADERS([boost/filesystem.hpp], [have_boost_filesystem_headers=yes])
+AC_SUBST([BOOSTFILESYSTEMLIB], [${boost_filesystem_ldflags}])
 
 #checking for boost unittests
 have_boost_test_headers=no
@@ -228,6 +250,14 @@ fi
 if test "x${have_boost_thread_lib}" = xno
 then
   AC_MSG_ERROR([Boost thread library not found.])
+fi
+if test "x${have_boost_filesystem_headers}" = xno
+then
+  AC_MSG_ERROR([Boost filesystem header files not found.])
+fi
+if test "x${have_boost_filesystem_lib}" = xno
+then
+  AC_MSG_ERROR([Boost filesystem library not found.])
 fi
 
 SCROOM_ENABLE_STDCXX_0X

@@ -1,6 +1,10 @@
 *.la
 *.lo
 *.o
+*.exe
+*.gcno
+*.gcda
+*.gcov
 *~
 .deps
 .libs
@@ -33,8 +37,10 @@
 /doc/
 /compile
 .project
-plugin-build
 .autotools
 .cproject
 .settings
+plugin-build/*
 /.vscode
+plugins/sep/test/sep-tests
+gmon.out

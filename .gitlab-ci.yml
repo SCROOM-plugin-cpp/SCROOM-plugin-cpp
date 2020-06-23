@@ -3,14 +3,46 @@ variables:
   SCROOM: next-ci
 
 stages:
-  - build
+  - test
+  - deploy
+
+coverage-test:
+  stage: test
+  image: registry.gitlab.com/sep-group-2/scroom-ci:latest
+  before_script:
+    # Download the latest Scroom artifacts and mirror its path
+    - cd ..
+    - rm -rf scroom
+    - mkdir scroom
+    - cd scroom
+    - curl -o scroom.zip -L "https://gitlab.com/api/v4/projects/18421652/jobs/artifacts/$SCROOM/download?job=linux-dev"
+    - unzip scroom.zip
+    - ls -l
+    - path=$(pwd)/scroom-install
+    - cd ../scroom-plugin-cpp
+    # Build the plugin
+  script:
+    - autoreconf -i
+    - mkdir plugin-build
+    - ./configure --prefix="$(pwd)/plugin-build" CPPFLAGS="-g -O3 -I$path/include/ --coverage" LDFLAGS="--coverage -p -L$path/lib/ -Wl,-z,defs"
+    - make check
+    - mkdir reports
+    - gcovr -s --exclude-unreachable-branches --exclude-throw-branches --html-details -o reports/coverage.html
+  retry:
+    max: 2
+    when: runner_system_failure
+  coverage: '/lines:\ \d+\.\d+\%/'
+  artifacts:
+    name: "Plugin coverage reports"
+    paths:
+      - reports/
 
 build-windows:
   # Due to windows docker issues, we can't configure/build in the volume mount.
   # As a workaround, we clone the repo to C:\ manually
   variables:
     GIT_STRATEGY: none
-  stage: build
+  stage: deploy
   # This is a windows server core docker image with an msys2 install.
   # It includes all required msys packages
   image: registry.gitlab.com/sep-group-2/scroom-ci:windows
@@ -45,7 +77,7 @@ build-windows:
       - plugins/
 
 build-linux:
-  stage: build
+  stage: deploy
   image: registry.gitlab.com/sep-group-2/scroom-ci:latest
   script:
     # Download the latest Scroom artifacts and mirror its path
@@ -63,6 +95,9 @@ build-linux:
     - mkdir plugin-build
     - ./configure --prefix="$(pwd)/plugin-build" CPPFLAGS=-I$path/include/ LDFLAGS="-L$path/lib -Wl,-z,defs"
     - make install
+  retry:
+    max: 2
+    when: runner_system_failure
   artifacts:
     name: "Scroom Plugins Linux"
     paths:
