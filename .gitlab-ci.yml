@@ -1,6 +1,6 @@
 variables:
   # Scroom branch to build against
-  SCROOM: next-ci
+  SCROOM: deliverable
 
 stages:
   - test
