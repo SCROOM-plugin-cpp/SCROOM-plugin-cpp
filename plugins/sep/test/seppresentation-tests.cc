@@ -6,11 +6,11 @@
 // Make all private members accessible for testing
 #define private public
 
-#include "../sep.hh"
 #include "../seppresentation.hh"
-#include "../sepsource.hh"
 
 const auto testFileDir = boost::dll::program_location().parent_path().parent_path() / "testfiles";
+
+/** Test cases for seppresentation.hh */
 
 BOOST_AUTO_TEST_SUITE(SepPresentation_Tests)
 
