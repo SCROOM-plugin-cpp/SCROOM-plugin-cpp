@@ -284,7 +284,6 @@ BOOST_AUTO_TEST_CASE(tiff_wrapper_3) {
 BOOST_AUTO_TEST_CASE(fill_sli_empty) {
     SliLayer::Ptr sli = SliLayer::create("", "name", 0, 0);
     sli->height = 42;
-    sli->bitmap = nullptr;  // TODO: this is a workaround for a bug - please remove
     SepSource::fillSliLayer(sli);
     BOOST_CHECK(sli->height == 42);
 }

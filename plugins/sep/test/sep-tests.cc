@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(getPluginName) {
 
 BOOST_AUTO_TEST_CASE(getVersion) {
     Sep::Ptr sep = Sep::create();
-    BOOST_CHECK(sep->getPluginVersion() == "0.0");
+    BOOST_CHECK(!sep->getPluginVersion().empty());
 }
 
 BOOST_AUTO_TEST_CASE(filters_name) {
