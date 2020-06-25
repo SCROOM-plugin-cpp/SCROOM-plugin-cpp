@@ -38,11 +38,13 @@ bool SliSource::addLayer(std::string imagePath, std::string filename,
   boost::to_lower(extension);
 
   if (extension == ".sep") {
-    SepSource::fillSliLayer(layer);
+    SepSource::fillSliLayerMeta(layer);
+    SepSource::fillSliLayerBitmap(layer);
   } else if (extension == ".tif" || extension == ".tiff") {
-    if (!layer->fillFromTiff(8, 4)) {
+    if (!layer->fillMetaFromTiff(8, 4)) {
       return false;
     }
+    layer->fillBitmapFromTiff();
   } else {
     boost::format errorFormat =
         boost::format("Error: File extension of %s is not supported") %

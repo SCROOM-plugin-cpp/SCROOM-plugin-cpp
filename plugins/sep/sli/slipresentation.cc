@@ -91,7 +91,8 @@ bool SliPresentation::parseSli(const std::string &sliFileName) {
         printf("varnish file exists.\n");
         SliLayer::Ptr varnishLayer =
             SliLayer::create(imagePath.string(), varnishFile, 0, 0);
-        if (varnishLayer->fillFromTiff(8, 1)) {
+        if (varnishLayer->fillMetaFromTiff(8, 1)) {
+          varnishLayer->fillBitmapFromTiff();
           varnish = Varnish::create(varnishLayer);
         } else {
           std::string error =

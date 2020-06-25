@@ -60,12 +60,20 @@ public:
 
   /**
    * This function is only needed when the SepPresentation is used by
-   * the SliPresentation to parse and retrieve a layer of an SLI file.
-   * Upon being called, it fills the bitmap and all other relevant
-   * attributes of the SliLayer.
+   * the SliPresentation to parse a layer of an SLI file.
+   * Upon being called, it fills all relevant
+   * attributes of the SliLayer, except for the bitmap.
    * @param sli - pointer to SliLayer
    */
-  static void fillSliLayer(SliLayer::Ptr sli);
+  static void fillSliLayerMeta(SliLayer::Ptr sli);
+
+  /**
+   * This function is only needed when the SepPresentation is used by
+   * the SliPresentation to retrieve the bitmap of a layer of an SLI file.
+   * Upon being called, it fills the bitmap of the SliLayer.
+   * @param sli - pointer to SliLayer
+   */
+  static void fillSliLayerBitmap(SliLayer::Ptr sli);
 
   /**
    * Helper function to parseSep().
