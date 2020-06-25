@@ -217,13 +217,14 @@ void SepSource::openFiles() {
 
     // open CMYK channels
     for (auto c : channels) {
-        channel_files[c] = TIFFOpen(sep_file.files[c].string().c_str(), "r");
+        channel_files[c] = TIFFOpen(sep_file.files[c].c_str(), "r");
+        show_warning |= channel_files[c] == nullptr;
     }
 
     // open white ink channel
     if (sep_file.files.count("W") == 1) {
-        white_ink = TIFFOpen(sep_file.files["W"].string().c_str(), "r");
-        show_warning |= (white_ink == nullptr);
+        white_ink = TIFFOpen(sep_file.files["W"].c_str(), "r");
+        show_warning |= white_ink == nullptr;
     }
 
     // open varnish channel
