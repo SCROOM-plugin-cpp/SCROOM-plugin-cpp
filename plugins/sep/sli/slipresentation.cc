@@ -33,6 +33,7 @@ SliPresentation::create(ScroomInterface::Ptr scroomInterface_) {
 SliPresentation::~SliPresentation() {}
 
 bool SliPresentation::load(const std::string &fileName) {
+  filepath = fileName;
   if (!parseSli(fileName)) {
     return false;
   }
@@ -239,7 +240,7 @@ bool SliPresentation::isPropertyDefined(const std::string &name) {
   return properties.end() != properties.find(name);
 }
 
-std::string SliPresentation::getTitle() { return "slipresentation"; }
+std::string SliPresentation::getTitle() { return filepath; }
 
 ////////////////////////////////////////////////////////////////////////
 // PresentationBase
