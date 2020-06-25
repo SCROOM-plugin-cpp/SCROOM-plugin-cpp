@@ -88,7 +88,9 @@ BOOST_AUTO_TEST_CASE(slipresentation_load_sli_xoffset) {
 }
 
 BOOST_AUTO_TEST_CASE(slipresentation_presentationinterface_inherited) {
+  std::string testFilePath = testFileDir + "sli_xoffset.sli";
   SliPresentation::Ptr presentation = createPresentation();
+  presentation->load(testFileDir);
 
   std::string nameStr = "testname";
   std::string valueStr;
@@ -103,7 +105,7 @@ BOOST_AUTO_TEST_CASE(slipresentation_presentationinterface_inherited) {
   BOOST_REQUIRE(presentation->getProperty(nameStr, valueStr) == true);
   BOOST_REQUIRE(valueStr == "testvalue");
 
-  BOOST_REQUIRE(presentation->getTitle() == "slipresentation");
+  BOOST_REQUIRE(presentation->getTitle() == testFileDir);
 
   presentation.reset();
 }
