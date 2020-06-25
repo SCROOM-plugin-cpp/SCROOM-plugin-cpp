@@ -57,6 +57,9 @@ private:
   /** (Optional) the object used to draw the varnish overlay */
   Varnish::Ptr varnish;
 
+  /** The absolute path to the SLI file */
+  std::string filepath;
+
 private:
   /** Constructor */
   SliPresentation(ScroomInterface::Ptr scroomInterface);
