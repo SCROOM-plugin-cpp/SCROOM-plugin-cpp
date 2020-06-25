@@ -33,18 +33,17 @@ void SliSource::checkXoffsets() {
 
 bool SliSource::addLayer(std::string imagePath, std::string filename,
                          int xOffset, int yOffset) {
-  SliLayer::Ptr layer = SliLayer::create(imagePath, filename, xOffset, yOffset);
+  
   auto extension = filename.substr(filename.find_last_of("."));
   boost::to_lower(extension);
 
+  SliLayer::Ptr layer = SliLayer::create(imagePath, filename, xOffset, yOffset);
+
   if (extension == ".sep") {
-    SepSource::fillSliLayerMeta(layer);
-    SepSource::fillSliLayerBitmap(layer);
+    sepSources[layer] = SepSource::create();
+    sepSources[layer]->fillSliLayerMeta(layer);
   } else if (extension == ".tif" || extension == ".tiff") {
-    if (!layer->fillMetaFromTiff(8, 4)) {
-      return false;
-    }
-    layer->fillBitmapFromTiff();
+    layer->fillMetaFromTiff(8, 4);
   } else {
     boost::format errorFormat =
         boost::format("Error: File extension of %s is not supported") %
@@ -52,9 +51,31 @@ bool SliSource::addLayer(std::string imagePath, std::string filename,
     printf("%s\n", errorFormat.str().c_str());
     Show(errorFormat.str(), GTK_MESSAGE_ERROR);
     return false;
-  }
+  } 
   layers.push_back(layer);
   return true;
+}
+
+void SliSource::importBitmaps() {
+  for (SliLayer::Ptr layer : layers) {
+    auto extension = layer->name.substr(layer->name.find_last_of("."));
+    boost::to_lower(extension);
+
+    if (extension == ".sep") {
+      sepSources[layer]->fillSliLayerBitmap(layer);
+    } else {
+      layer->fillBitmapFromTiff();
+    }
+  }
+  bitmapsImported = true;
+  enableInteractions();
+  triggerRedraw();
+}
+
+void SliSource::queryImportBitmaps() {
+  CpuBound()->schedule(
+        boost::bind(&SliSource::importBitmaps, shared_from_this<SliSource>()),
+        PRIO_HIGHER, threadQueue);
 }
 
 void SliSource::wipeCache() {
@@ -72,7 +93,9 @@ void SliSource::wipeCache() {
 }
 
 SurfaceWrapper::Ptr SliSource::getSurface(int zoom) {
-  if (!rgbCache.count(std::min(0, zoom)) || rgbCache[0]->clear) {
+  if (! bitmapsImported) {
+    return nullptr;
+  } else if (!rgbCache.count(std::min(0, zoom)) || rgbCache[0]->clear) {
     CpuBound()->schedule(
         boost::bind(&SliSource::fillCache, shared_from_this<SliSource>(), zoom),
         PRIO_HIGHER, threadQueue);

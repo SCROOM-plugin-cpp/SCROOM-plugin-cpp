@@ -39,6 +39,8 @@ public:
   /** The memory chunk containing the bitmap */
   uint8_t *bitmap = nullptr;
 
+  void* sepFileStruct;
+
 private:
   SliLayer();
 

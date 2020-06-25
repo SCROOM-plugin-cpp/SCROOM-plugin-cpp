@@ -137,6 +137,7 @@ bool SliPresentation::parseSli(const std::string &sliFileName) {
     }
   }
   if (Xresolution > 0 && Yresolution > 0 && source->layers.size() > 0) {
+    source->queryImportBitmaps();
     return true;
   }
   std::string error = "Error: SLI file does not define all required parameters";
@@ -247,6 +248,7 @@ std::string SliPresentation::getTitle() { return "slipresentation"; }
 
 void SliPresentation::viewAdded(ViewInterface::WeakPtr vi) {
   controlPanel = SliControlPanel::create(vi, weakPtrToThis);
+  controlPanel->disableInteractions();
 
   // Provide the source with the means to enable and disable the widgets in the
   // sidebar

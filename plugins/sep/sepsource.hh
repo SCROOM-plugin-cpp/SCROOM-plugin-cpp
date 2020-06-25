@@ -65,7 +65,7 @@ public:
    * attributes of the SliLayer, except for the bitmap.
    * @param sli - pointer to SliLayer
    */
-  static void fillSliLayerMeta(SliLayer::Ptr sli);
+  void fillSliLayerMeta(SliLayer::Ptr sli);
 
   /**
    * This function is only needed when the SepPresentation is used by
@@ -73,7 +73,7 @@ public:
    * Upon being called, it fills the bitmap of the SliLayer.
    * @param sli - pointer to SliLayer
    */
-  static void fillSliLayerBitmap(SliLayer::Ptr sli);
+  void fillSliLayerBitmap(SliLayer::Ptr sli);
 
   /**
    * Helper function to parseSep().

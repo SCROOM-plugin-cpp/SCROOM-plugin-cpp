@@ -174,38 +174,28 @@ void SepSource::fillSliLayerMeta(SliLayer::Ptr sli) {
     return;
   }
 
-  const SepFile values = SepSource::parseSep(sli->filepath);
+  const SepFile values = parseSep(sli->filepath);
 
   sli->height = values.height;
   sli->width = values.width;
   sli->spp = 4;
   sli->bps = 8;
 
-  // We don't really need the source yet but we have to create it 
-  // to ensure that all errors are thrown already
-  auto source = SepSource::create();
-  source->setData(values);
-  source->openFiles();
-  source->checkFiles();
-
+  setData(values);
+  openFiles();
+  checkFiles();
 }
 
 void SepSource::fillSliLayerBitmap(SliLayer::Ptr sli) {
-  const SepFile values = SepSource::parseSep(sli->filepath);
-
-  auto source = SepSource::create();
-  source->setData(values);
-  source->openFiles();
-
   uint16_t unit;
-  source->getResolution(unit, sli->xAspect, sli->yAspect);
+  getResolution(unit, sli->xAspect, sli->yAspect);
 
   const int row_width = sli->width * 4; // 4 bytes per pixel
   sli->bitmap = new uint8_t[sli->height * row_width];
 
   auto temp = std::vector<byte>(row_width);
   for (int y = 0; y < sli->height; y++) {
-    source->readCombinedScanline(temp, y);
+    readCombinedScanline(temp, y);
     memcpy(sli->bitmap + y * row_width, temp.data(), row_width);
   }
 }
