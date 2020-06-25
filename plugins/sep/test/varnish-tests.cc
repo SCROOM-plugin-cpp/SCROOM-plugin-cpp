@@ -214,7 +214,6 @@ BOOST_AUTO_TEST_CASE(varnish_load_invalid_tiff) {
       SliLayer::create(testFileDir + "v_invalidrgb.tif", "Another Title", 0, 0);
   // Tif handling should fail here
   BOOST_REQUIRE(!test_varnishLayer->fillMetaFromTiff(8, 1));
-  test_varnishLayer->fillBitmapFromTiff();
   // Properties set correctly?
   BOOST_REQUIRE(test_varnishLayer->name == "Another Title");
   BOOST_REQUIRE(test_varnishLayer->filepath ==
@@ -234,7 +233,6 @@ BOOST_AUTO_TEST_CASE(varnish_load_zero_res_tiff) {
       testFileDir + "v_invalid_no_width.tif", "Another Title", 0, 0);
   // Tif handling should fail here
   BOOST_REQUIRE(!test_varnishLayer->fillMetaFromTiff(8, 1));
-  test_varnishLayer->fillBitmapFromTiff();
   // Properties set correctly?
   BOOST_REQUIRE(test_varnishLayer->name == "Another Title");
   BOOST_REQUIRE(test_varnishLayer->filepath ==
@@ -254,7 +252,6 @@ BOOST_AUTO_TEST_CASE(varnish_load_corrupted_tiff) {
       SliLayer::create(testFileDir + "v_corrupted.tif", "Another Title", 0, 0);
   // Tif handling should fail here
   BOOST_REQUIRE(!test_varnishLayer->fillMetaFromTiff(8, 1));
-  test_varnishLayer->fillBitmapFromTiff();
   // Properties set correctly?
   BOOST_REQUIRE(test_varnishLayer->name == "Another Title");
   BOOST_REQUIRE(test_varnishLayer->filepath == testFileDir + "v_corrupted.tif");
@@ -272,7 +269,6 @@ BOOST_AUTO_TEST_CASE(varnish_load_nonexistent_tiff) {
       testFileDir + "v_nonexistent.tif", "This file doesn't exist", 0, 0);
   // Tif handling should fail here
   BOOST_REQUIRE(!test_varnishLayer->fillMetaFromTiff(8, 1));
-  test_varnishLayer->fillBitmapFromTiff();
   // Properties set correctly?
   BOOST_REQUIRE(test_varnishLayer->name == "This file doesn't exist");
   BOOST_REQUIRE(test_varnishLayer->filepath ==
@@ -292,7 +288,6 @@ BOOST_AUTO_TEST_CASE(varnish_load_1bps_tiff) {
       testFileDir + "v_invalid1bps.tif", "TitleGoesHere", 0, 0);
   // Tif handling should fail here
   BOOST_REQUIRE(!test_varnishLayer->fillMetaFromTiff(8, 1));
-  test_varnishLayer->fillBitmapFromTiff();
   // Properties set correctly?
   BOOST_REQUIRE(test_varnishLayer->name == "TitleGoesHere");
   BOOST_REQUIRE(test_varnishLayer->filepath ==
@@ -312,7 +307,6 @@ BOOST_AUTO_TEST_CASE(varnish_load_invalid_no_bps_tiff) {
       testFileDir + "v_invalid_no_bps_tag.tif", "TitleGoesHere", 0, 0);
   // Tif handling should fail here
   BOOST_REQUIRE(!test_varnishLayer->fillMetaFromTiff(8, 1));
-  test_varnishLayer->fillBitmapFromTiff();
   // Properties set correctly?
   BOOST_REQUIRE(test_varnishLayer->name == "TitleGoesHere");
   BOOST_REQUIRE(test_varnishLayer->filepath ==

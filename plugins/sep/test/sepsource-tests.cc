@@ -313,6 +313,7 @@ BOOST_AUTO_TEST_CASE(fill_sli_1) {
       SliLayer::create((testFileDir / "sep_cmyk.sep").string(), "name", 0, 0);
   SepSource::Ptr sepSource = SepSource::create();
   sepSource->fillSliLayerMeta(sli);
+  sepSource->fillSliLayerBitmap(sli);
   BOOST_CHECK(sli->width == 600);
   BOOST_CHECK(sli->height == 400);
   BOOST_CHECK(sli->spp == 4);

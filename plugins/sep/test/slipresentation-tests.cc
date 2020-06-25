@@ -36,6 +36,7 @@ void dummyRedraw(SliPresentation::Ptr presentation) {
   cairo_t *cr = cairo_create(surface);
   Scroom::Utils::Rectangle<double> rect(5.0, 5.0, 100.0, 100.0);
 
+  boost::this_thread::sleep(boost::posix_time::millisec(500));
   // redraw() for all zoom levels from 5 to -2 and check whether cache has been
   // computed
   for (int zoom = 5; zoom > -3; zoom--) {
