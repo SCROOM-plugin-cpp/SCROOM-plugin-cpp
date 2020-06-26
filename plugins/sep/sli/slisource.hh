@@ -5,6 +5,7 @@
 
 #include <boost/dynamic_bitset.hpp>
 
+#include "../sepsource.hh"
 #include "sli-helpers.hh"
 
 class SliSource : public virtual Scroom::Utils::Base {
@@ -23,6 +24,9 @@ public:
 
   /** Whether any of the layers has an xoffset */
   bool hasXoffsets;
+
+  /** Whether the bitmaps of all layers have been imported from the files yet */
+  bool bitmapsImported = false;
 
   /** Bitmask representing the indexes of the currently visible layers
    * (little-endian) */
@@ -53,6 +57,13 @@ private:
 
   /** Callback to trigger a redraw of the presentation */
   boost::function<void()> triggerRedraw;
+
+  /**
+   * For each layer that represens a SEP file, this map contains the
+   * corresponding SepSource between reading the metadata of the layer and
+   * reading the bitmap. Afterwards, it's cleared out to save memory.
+   */
+  std::map<SliLayer::Ptr, SepSource::Ptr> sepSources;
 
 private:
   /** Constructor */
@@ -146,6 +157,12 @@ private:
                                   int bottomRightOffset, int toggledWidth,
                                   int toggledBound, int stride);
 
+  /**
+   * For each SliLayer in layers, import the bitmap data from the file into the
+   * SliLayer. Computationally intensive, therefore done outside of UI thread.
+   */
+  virtual void importBitmaps();
+
 public:
   /** Destructor */
   virtual ~SliSource();
@@ -186,6 +203,11 @@ public:
    */
   virtual bool addLayer(std::string imagePath, std::string filename,
                         int xOffset, int yOffset);
+
+  /**
+   * Query the execution of importBitmaps() in a separate thread.
+   */
+  virtual void queryImportBitmaps();
 
   /**
    *  Erase the RGB cache of the SliSource except for the bottom layer

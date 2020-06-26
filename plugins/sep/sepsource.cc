@@ -169,36 +169,35 @@ TransformationData::Ptr SepSource::getTransform() {
   return data;
 }
 
-void SepSource::fillSliLayer(SliLayer::Ptr sli) {
+void SepSource::fillSliLayerMeta(SliLayer::Ptr sli) {
   if (sli->filepath.empty()) {
     return;
   }
 
-  const SepFile values = SepSource::parseSep(sli->filepath);
+  const SepFile values = parseSep(sli->filepath);
 
   sli->height = values.height;
   sli->width = values.width;
   sli->spp = 4;
   sli->bps = 8;
 
+  setData(values);
+  openFiles();
+  checkFiles();
+}
+
+void SepSource::fillSliLayerBitmap(SliLayer::Ptr sli) {
+  uint16_t unit;
+  getResolution(unit, sli->xAspect, sli->yAspect);
+
   const int row_width = sli->width * 4; // 4 bytes per pixel
   sli->bitmap = new uint8_t[sli->height * row_width];
 
-  auto source = SepSource::create();
-  source->setData(values);
-  source->openFiles();
-  source->checkFiles();
-
-  uint16_t unit;
-  source->getResolution(unit, sli->xAspect, sli->yAspect);
-
   auto temp = std::vector<byte>(row_width);
   for (int y = 0; y < sli->height; y++) {
-    source->readCombinedScanline(temp, y);
+    readCombinedScanline(temp, y);
     memcpy(sli->bitmap + y * row_width, temp.data(), row_width);
   }
-
-  source->done();
 }
 
 void SepSource::setData(SepFile file) { sep_file = file; }
@@ -230,7 +229,7 @@ void SepSource::openFiles() {
   if (sep_file.files.count("V") == 1) {
     SliLayer::Ptr varnishLayer =
         SliLayer::create(sep_file.files["V"].string(), "Varnish", 0, 0);
-    if (varnishLayer->fillFromTiff(8, 1)) {
+    if (varnishLayer->fillMetaFromTiff(8, 1)) {
       varnish = Varnish::create(varnishLayer);
     } else {
       show_warning = true;

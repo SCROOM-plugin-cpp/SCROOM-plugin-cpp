@@ -92,7 +92,8 @@ bool SliPresentation::parseSli(const std::string &sliFileName) {
         printf("varnish file exists.\n");
         SliLayer::Ptr varnishLayer =
             SliLayer::create(imagePath.string(), varnishFile, 0, 0);
-        if (varnishLayer->fillFromTiff(8, 1)) {
+        if (varnishLayer->fillMetaFromTiff(8, 1)) {
+          varnishLayer->fillBitmapFromTiff();
           varnish = Varnish::create(varnishLayer);
         } else {
           std::string error =
@@ -137,6 +138,7 @@ bool SliPresentation::parseSli(const std::string &sliFileName) {
     }
   }
   if (Xresolution > 0 && Yresolution > 0 && source->layers.size() > 0) {
+    source->queryImportBitmaps();
     return true;
   }
   std::string error = "Error: SLI file does not define all required parameters";
@@ -247,6 +249,7 @@ std::string SliPresentation::getTitle() { return filepath; }
 
 void SliPresentation::viewAdded(ViewInterface::WeakPtr vi) {
   controlPanel = SliControlPanel::create(vi, weakPtrToThis);
+  controlPanel->disableInteractions();
 
   // Provide the source with the means to enable and disable the widgets in the
   // sidebar
