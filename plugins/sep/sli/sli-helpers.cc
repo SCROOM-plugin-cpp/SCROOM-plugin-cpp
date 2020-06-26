@@ -129,6 +129,43 @@ spannedRectangle(boost::dynamic_bitset<> bitmap,
   return rect;
 }
 
+int findBestSegFit(unsigned int nSegments, unsigned int height)
+{
+  int i = 1;
+  while (i * nSegments <= height)
+  {
+    if (i * 2 * nSegments <= height)
+    {
+      i *= 2;
+      continue;
+    }
+
+    break;
+  }
+
+  return i;
+}
+
+boost::dynamic_bitset<> halfSegBitmask(boost::dynamic_bitset<> toggledSegments)
+{
+  auto nSegments = toggledSegments.size();
+  int first = -1, last = -1;
+  boost::dynamic_bitset<> bitmask {nSegments};
+  for (unsigned int i = 0; i < nSegments; i++)
+  {
+    if (toggledSegments[i] && first == -1)
+      first = (int)i;
+
+    if(toggledSegments[i])
+      last = (int)i;
+  }
+
+  for (unsigned int i = first; i < first + (unsigned int)((last-first)/2); i++)
+    bitmask.set(i);
+
+  return bitmask;
+}
+
 SurfaceWrapper::~SurfaceWrapper() {
   if (!empty) {
     free(cairo_image_surface_get_data(surface));

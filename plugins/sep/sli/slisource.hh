@@ -76,18 +76,29 @@ private:
 
   /**
    * Reduces the RGB bitmap and caches the result.
-   * 2x2 pixels of the @param zoom+1 bitmap are combined into one pixel of the
-   * zoom bitmap
+   * The bitmap is divided into roughly 24+ segments whose height is a multiple of 2.
+   * This creates a one-to-one mapping bewteen each pixel of zoom level @param zoom
+   * and a 2x2 square of pixels of zoom level @param zoom+1.
+   * @param multithreading indicates whether more than one thread will "possibly" be used for the reduction.
+   * This choice also depends on the number of toggled segments: if only a handful are toggled,
+   * the additional overhead of threads is not worth it.
    */
-  virtual void reduceRgb(int zoom);
+  virtual void reduceRgb(int zoom, bool multithreading);
+
+  /**
+   * Reduces all the segments set in @param toggledSegments for zoom level @param zoom.
+   * @param baseSegHeight is the height of a segment in the base surface (zoom level 0).
+   * @param targetSurface is the surface on top of which the reduced segments will be copied.
+   */
+  virtual void reduceSegments(SurfaceWrapper::Ptr targetSurface, boost::dynamic_bitset<> toggledSegments,
+                            int baseSegHeight, int zoom);
 
   /**
    * Checks if the bitmap required for displaying the zoom level is present. If
    * not, it is computed. Is potentially very computationally expensive, hence
    * run outside of the UI thread.
-   * @param zoom the zoom level for which to fill the cache
    */
-  virtual void fillCache(int zoom);
+  virtual void fillCache();
 
   /** Clear the last modified area of the bottom surface */
   virtual void clearBottomSurface();
