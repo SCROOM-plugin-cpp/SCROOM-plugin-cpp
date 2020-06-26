@@ -28,7 +28,8 @@ Scroom::Utils::Rectangle<int> SliLayer::toRectangle() {
   return rect;
 }
 
-bool SliLayer::fillMetaFromTiff(unsigned int allowedBps, unsigned int allowedSpp) {
+bool SliLayer::fillMetaFromTiff(unsigned int allowedBps,
+                                unsigned int allowedSpp) {
   try {
     TIFF *tif = TIFFOpen(filepath.c_str(), "r");
     if (!tif) {
@@ -126,6 +127,4 @@ void SliLayer::fillBitmapFromTiff() {
     printf("%s\n", errorFormat.str().c_str());
     Show(errorFormat.str(), GTK_MESSAGE_ERROR);
   }
-
 }
-

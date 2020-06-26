@@ -39,7 +39,7 @@ public:
   /** The memory chunk containing the bitmap */
   uint8_t *bitmap = nullptr;
 
-  void* sepFileStruct;
+  void *sepFileStruct;
 
 private:
   SliLayer();
@@ -55,14 +55,16 @@ public:
   /** Returns the Rectangle representation of the layer (in pixels) */
   virtual Scroom::Utils::Rectangle<int> toRectangle();
 
-  /** 
-   * Reads the layers tiff file and populates the layer with all contained 
-   * attributes except for the bitmap data 
+  /**
+   * Reads the layers tiff file and populates the layer with all contained
+   * attributes except for the bitmap data
    * @param allowedBps the bits per sample that the TIFF file is allowed to have
-   * @param allowedSpp the samples per pixel that the TIFF file is allowed to have
+   * @param allowedSpp the samples per pixel that the TIFF file is allowed to
+   * have
    * @return true if all attributes are OK, false if not
    * */
-  virtual bool fillMetaFromTiff(unsigned int allowedBps, unsigned int allowedSpp);
+  virtual bool fillMetaFromTiff(unsigned int allowedBps,
+                                unsigned int allowedSpp);
 
   /**
    * Copies the TIFF files' bitmap data into the layer
