@@ -129,13 +129,10 @@ spannedRectangle(boost::dynamic_bitset<> bitmap,
   return rect;
 }
 
-int findBestSegFit(unsigned int nSegments, unsigned int height)
-{
+int findBestSegFit(unsigned int nSegments, unsigned int height) {
   int i = 1;
-  while (i * nSegments <= height)
-  {
-    if (i * 2 * nSegments <= height)
-    {
+  while (i * nSegments <= height) {
+    if (i * 2 * nSegments <= height) {
       i *= 2;
       continue;
     }
@@ -146,21 +143,21 @@ int findBestSegFit(unsigned int nSegments, unsigned int height)
   return i;
 }
 
-boost::dynamic_bitset<> halfSegBitmask(boost::dynamic_bitset<> toggledSegments)
-{
+boost::dynamic_bitset<>
+halfSegBitmask(boost::dynamic_bitset<> toggledSegments) {
   auto nSegments = toggledSegments.size();
   int first = -1, last = -1;
-  boost::dynamic_bitset<> bitmask {nSegments};
-  for (unsigned int i = 0; i < nSegments; i++)
-  {
+  boost::dynamic_bitset<> bitmask{nSegments};
+  for (unsigned int i = 0; i < nSegments; i++) {
     if (toggledSegments[i] && first == -1)
       first = (int)i;
 
-    if(toggledSegments[i])
+    if (toggledSegments[i])
       last = (int)i;
   }
 
-  for (unsigned int i = first; i < first + (unsigned int)((last-first)/2); i++)
+  for (unsigned int i = first; i < first + (unsigned int)((last - first) / 2);
+       i++)
     bitmask.set(i);
 
   return bitmask;

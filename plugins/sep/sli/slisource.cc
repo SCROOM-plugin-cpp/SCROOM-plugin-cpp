@@ -80,9 +80,7 @@ void SliSource::queryImportBitmaps() {
       PRIO_HIGHER, threadQueue);
 }
 
-void SliSource::wipeCache() {
-  clearBottomSurface();
-}
+void SliSource::wipeCache() { clearBottomSurface(); }
 
 SurfaceWrapper::Ptr SliSource::getSurface(int zoom) {
   if (!bitmapsImported) {
@@ -104,17 +102,15 @@ void SliSource::fillCache() {
   disableInteractions();
   visible ^= toggled;
 
-  if (!rgbCache.count(0) || rgbCache[0]->clear)
-  {
+  if (!rgbCache.count(0) || rgbCache[0]->clear) {
     computeRgb();
 
-    for (int i = -1; i >= -30; i--)
-    {
+    for (int i = -1; i >= -30; i--) {
       // true -> uses multithreading
       reduceRgb(i, true);
     }
   }
-  
+
   rgbCache[0]->clear = false;
   toggled.reset();
   enableInteractions();
@@ -122,10 +118,10 @@ void SliSource::fillCache() {
   triggerRedraw();
 }
 
-void SliSource::reduceSegments(SurfaceWrapper::Ptr targetSurface, boost::dynamic_bitset<> toggledSegments,
-                              int baseSegHeight, int zoom) {
-  for (int i = 0; i < (int)toggledSegments.size(); i++)
-  {
+void SliSource::reduceSegments(SurfaceWrapper::Ptr targetSurface,
+                               boost::dynamic_bitset<> toggledSegments,
+                               int baseSegHeight, int zoom) {
+  for (int i = 0; i < (int)toggledSegments.size(); i++) {
     if (!toggledSegments[i])
       continue;
 
@@ -134,33 +130,38 @@ void SliSource::reduceSegments(SurfaceWrapper::Ptr targetSurface, boost::dynamic
     const int sourceStride = rgbCache[zoom + 1]->getStride();
 
     int targetSegHeight;
-    if (i == (int)toggledSegments.size() - 1)
-    {
+    if (i == (int)toggledSegments.size() - 1) {
       // the last segment will probably have leftover pixels
       int leftoverPixels = (total_height % baseSegHeight) / pow(2, -zoom);
       targetSegHeight = (baseSegHeight / pow(2, -zoom)) + leftoverPixels;
-    }
-    else
-    {
+    } else {
       targetSegHeight = baseSegHeight / pow(2, -zoom);
     }
 
     const int targetWidth = sourceWidth / 2;
     const int targetOffset = (baseSegHeight / pow(2, -zoom)) * i;
     auto targetStride = targetSurface->getStride();
-    auto targetBitmap = targetSurface->getBitmap() + targetOffset * targetStride;
+    auto targetBitmap =
+        targetSurface->getBitmap() + targetOffset * targetStride;
 
-    for (int y = 0; y < targetSegHeight; y++)
-    {
-      auto sourceBitmap1 = rgbCache[zoom + 1]->getBitmap() + 2*y*sourceStride + sourceOffset*sourceStride;
+    for (int y = 0; y < targetSegHeight; y++) {
+      auto sourceBitmap1 = rgbCache[zoom + 1]->getBitmap() +
+                           2 * y * sourceStride + sourceOffset * sourceStride;
       auto sourceBitmap2 = sourceBitmap1 + sourceStride;
 
-      for (int x = 0; x < targetWidth; x++)
-      {
-        targetBitmap[0] = (sourceBitmap1[0] + sourceBitmap1[4] + sourceBitmap2[0] + sourceBitmap2[4]) / 4;
-        targetBitmap[1] = (sourceBitmap1[1] + sourceBitmap1[5] + sourceBitmap2[1] + sourceBitmap2[5]) / 4;
-        targetBitmap[2] = (sourceBitmap1[2] + sourceBitmap1[6] + sourceBitmap2[2] + sourceBitmap2[6]) / 4;
-        targetBitmap[3] = (sourceBitmap1[3] + sourceBitmap1[7] + sourceBitmap2[3] + sourceBitmap2[7]) / 4;
+      for (int x = 0; x < targetWidth; x++) {
+        targetBitmap[0] = (sourceBitmap1[0] + sourceBitmap1[4] +
+                           sourceBitmap2[0] + sourceBitmap2[4]) /
+                          4;
+        targetBitmap[1] = (sourceBitmap1[1] + sourceBitmap1[5] +
+                           sourceBitmap2[1] + sourceBitmap2[5]) /
+                          4;
+        targetBitmap[2] = (sourceBitmap1[2] + sourceBitmap1[6] +
+                           sourceBitmap2[2] + sourceBitmap2[6]) /
+                          4;
+        targetBitmap[3] = (sourceBitmap1[3] + sourceBitmap1[7] +
+                           sourceBitmap2[3] + sourceBitmap2[7]) /
+                          4;
 
         targetBitmap += 4;
         sourceBitmap1 += 8;
@@ -178,52 +179,49 @@ void SliSource::reduceRgb(int zoom, bool multithreading) {
 
   // create a new surface for this zoom level, unless it already exists
   SurfaceWrapper::Ptr targetSurface = SurfaceWrapper::create();
-  if (rgbCache.count(zoom))
-  {
+  if (rgbCache.count(zoom)) {
     targetSurface = rgbCache[zoom];
-  }
-  else
-  {
-    targetSurface = SurfaceWrapper::create(totalTargetWidth, totalTargetHeight, CAIRO_FORMAT_ARGB32);
+  } else {
+    targetSurface = SurfaceWrapper::create(totalTargetWidth, totalTargetHeight,
+                                           CAIRO_FORMAT_ARGB32);
   }
 
   unsigned int nSegments = 24; // just an arbitrary choice
   int baseSegHeight = findBestSegFit(nSegments, total_height);
   nSegments = (unsigned int)(total_height / baseSegHeight);
-  boost::dynamic_bitset<> toggledSegments {nSegments};
+  boost::dynamic_bitset<> toggledSegments{nSegments};
   auto spanRect = spannedRectangle(toggled, layers);
 
-  // find which segments intersect with the rectangle spanned by the toggled layers
+  // find which segments intersect with the rectangle spanned by the toggled
+  // layers
   int n = 0;
-  for (int i = 0; i < (int)nSegments; i++)
-  {
-    Scroom::Utils::Rectangle<int> seg = {0, baseSegHeight * i, total_width, baseSegHeight};
-    if (seg.intersects(spanRect))
-    {
+  for (int i = 0; i < (int)nSegments; i++) {
+    Scroom::Utils::Rectangle<int> seg = {0, baseSegHeight * i, total_width,
+                                         baseSegHeight};
+    if (seg.intersects(spanRect)) {
       toggledSegments.set(i);
       n++;
     }
   }
 
-  // since all segments are disjoint, we can assign one thread to cover half of them
-  if (multithreading && (n/(double)nSegments) >= 0.25)
-  {
+  // since all segments are disjoint, we can assign one thread to cover half of
+  // them
+  if (multithreading && (n / (double)nSegments) >= 0.25) {
     auto bitmask = halfSegBitmask(toggledSegments);
     auto toggledSegments1 = toggledSegments & bitmask;
     auto toggledSegments2 = toggledSegments & ~bitmask;
-    boost::thread thread(boost::bind(&SliSource::reduceSegments, shared_from_this<SliSource>(),
-                        targetSurface, toggledSegments2, baseSegHeight, zoom));
+    boost::thread thread(
+        boost::bind(&SliSource::reduceSegments, shared_from_this<SliSource>(),
+                    targetSurface, toggledSegments2, baseSegHeight, zoom));
 
     // reduce the segments and copy them over to the targetSurface
     reduceSegments(targetSurface, toggledSegments1, baseSegHeight, zoom);
 
     thread.join();
+  } else {
+    reduceSegments(targetSurface, toggledSegments, baseSegHeight, zoom);
   }
-  else
-  {
-    reduceSegments(targetSurface, toggledSegments, baseSegHeight, zoom); 
-  }
-  
+
   if (!rgbCache.count(zoom))
     rgbCache[zoom] = targetSurface;
 }
