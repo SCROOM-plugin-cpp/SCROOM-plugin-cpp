@@ -37,6 +37,7 @@ bool SliPresentation::load(const std::string &fileName) {
   if (!parseSli(fileName)) {
     return false;
   }
+  properties[PIPETTE_PROPERTY_NAME] = "";
   source->visible.resize(source->layers.size(), false);
   source->toggled.resize(source->layers.size(), true);
   source->computeHeightWidth();
@@ -150,7 +151,7 @@ bool SliPresentation::parseSli(const std::string &sliFileName) {
 ////////////////////////////////////////////////////////////////////////
 // SliPresentationInterface
 
-void SliPresentation::wipeCache() { source->wipeCache(); }
+void SliPresentation::wipeCacheAndRedraw() { source->wipeCacheAndRedraw(); }
 
 void SliPresentation::triggerRedraw() {
   for (ViewInterface::WeakPtr view : views) {
