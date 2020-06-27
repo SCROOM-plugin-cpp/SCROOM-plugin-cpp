@@ -80,7 +80,10 @@ void SliSource::queryImportBitmaps() {
       PRIO_HIGHER, threadQueue);
 }
 
-void SliSource::wipeCache() { clearBottomSurface(); }
+void SliSource::wipeCacheAndRedraw() {
+  clearBottomSurface(); 
+  getSurface(0); // recompute bottom surface and trigger redraw when ready
+}
 
 SurfaceWrapper::Ptr SliSource::getSurface(int zoom) {
   if (!bitmapsImported) {
@@ -89,9 +92,6 @@ SurfaceWrapper::Ptr SliSource::getSurface(int zoom) {
     CpuBound()->schedule(
         boost::bind(&SliSource::fillCache, shared_from_this<SliSource>()),
         PRIO_HIGHER, threadQueue);
-    if (rgbCache.count(std::min(0, zoom))) {
-      return rgbCache[std::min(0, zoom)];
-    }
     return nullptr;
   } else {
     return rgbCache[std::min(0, zoom)];
@@ -281,6 +281,9 @@ void SliSource::drawCmyk(uint8_t *surfacePointer, uint8_t *bitmap,
                          int bitmapStart, int bitmapOffset) {
   for (int i = bitmapStart; i < bitmapStart + bitmapOffset; i++) {
     // increment the value of the current surface byte
+    // NOTE if it is known that the total value will not exceed 255,
+    // the min(...) can be simply replaced by "bitmap[i]"
+    // this will save a few thousand/million cpu cycles
     *surfacePointer +=
         std::min(bitmap[i], static_cast<uint8_t>(255 - *surfacePointer));
 
@@ -296,6 +299,9 @@ void SliSource::drawCmykXoffset(uint8_t *surfacePointer, uint8_t *bitmap,
                                 int layerBound, int stride) {
   for (int i = bitmapStart; i < bitmapStart + bitmapOffset;) {
     // increment the value of the current surface byte
+    // NOTE if it is known that the total value will not exceed 255,
+    // the min(...) can be simply replaced by "bitmap[i]"
+    // this will save a few thousand/million cpu cycles
     *surfacePointer +=
         std::min(bitmap[i], static_cast<uint8_t>(255 - *surfacePointer));
 

@@ -77,7 +77,7 @@ private:
   /**
    * Reduces the RGB bitmap and caches the result.
    * The bitmap is divided into roughly 24+ segments whose height is a multiple
-   * of 2. This creates a one-to-one mapping bewteen each pixel of zoom level
+   * of 2. This creates a one-to-one mapping between each pixel of zoom level
    * @param zoom and a 2x2 square of pixels of zoom level @param zoom+1.
    * @param multithreading indicates whether more than one thread will
    * "possibly" be used for the reduction. This choice also depends on the
@@ -226,8 +226,8 @@ public:
   virtual void queryImportBitmaps();
 
   /**
-   *  Erase the RGB cache of the SliSource except for the bottom layer
-   *  for which the relevant bytes are simply turned to 0s.
+   * Clear (ie write 0s) the area of the bottom surface intersecting with the
+   * toggled layers and trigger a redraw.
    */
-  virtual void wipeCache();
+  virtual void wipeCacheAndRedraw();
 };
