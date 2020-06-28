@@ -10,8 +10,6 @@
 
 #include "../sep.hh"
 
-const auto testFileDir =
-    boost::dll::program_location().parent_path().parent_path() / "testfiles";
 
 /** Test cases for sep.hh */
 

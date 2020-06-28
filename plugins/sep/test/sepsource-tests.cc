@@ -13,7 +13,7 @@ const auto testFileDir =
 
 /** Test cases for sepsource.hh */
 
-BOOST_AUTO_TEST_SUITE(Sep_Tests)
+BOOST_AUTO_TEST_SUITE(SepSource_Tests)
 
 BOOST_AUTO_TEST_CASE(create) {
   auto source = SepSource::create();
@@ -35,7 +35,6 @@ BOOST_AUTO_TEST_CASE(parse_sep) {
 
   BOOST_CHECK(file.width == 600);
   BOOST_CHECK(file.height == 400);
-  BOOST_CHECK(file.white_ink_choice == 0);
 }
 
 BOOST_AUTO_TEST_CASE(parse_sep_empty_line) {
@@ -49,7 +48,6 @@ BOOST_AUTO_TEST_CASE(parse_sep_empty_line) {
 
   BOOST_CHECK(file.width == 600);
   BOOST_CHECK(file.height == 400);
-  BOOST_CHECK(file.white_ink_choice == 0);
 }
 
 BOOST_AUTO_TEST_CASE(parse_sep_empty_line_2) {
@@ -63,7 +61,6 @@ BOOST_AUTO_TEST_CASE(parse_sep_empty_line_2) {
 
   BOOST_CHECK(file.width == 600);
   BOOST_CHECK(file.height == 400);
-  BOOST_CHECK(file.white_ink_choice == 0);
 }
 
 BOOST_AUTO_TEST_CASE(parse_sep_missing_channel) {
@@ -79,7 +76,6 @@ BOOST_AUTO_TEST_CASE(parse_sep_missing_channel) {
   BOOST_CHECK(file.files["Y"].empty());
   BOOST_CHECK(file.width == 600);
   BOOST_CHECK(file.height == 400);
-  BOOST_CHECK(file.white_ink_choice == 0);
 }
 
 BOOST_AUTO_TEST_CASE(parse_sep_missing_channel_2) {
@@ -95,7 +91,6 @@ BOOST_AUTO_TEST_CASE(parse_sep_missing_channel_2) {
   BOOST_CHECK(file.files["C"].empty());
   BOOST_CHECK(file.width == 600);
   BOOST_CHECK(file.height == 400);
-  BOOST_CHECK(file.white_ink_choice == 0);
 }
 
 BOOST_AUTO_TEST_CASE(get_for_none) {
@@ -156,7 +151,6 @@ BOOST_AUTO_TEST_CASE(set_data) {
 
   BOOST_CHECK(source->sep_file.width == 600);
   BOOST_CHECK(source->sep_file.height == 400);
-  BOOST_CHECK(source->sep_file.white_ink_choice == 0);
 }
 
 BOOST_AUTO_TEST_CASE(open_files) {
@@ -175,6 +169,7 @@ BOOST_AUTO_TEST_CASE(open_files) {
 
   // Check that white ink and varnish are not opened
   BOOST_CHECK(source->white_ink == nullptr);
+  BOOST_CHECK(source->sep_file.white_ink_choice == 0);
   BOOST_CHECK(source->varnish == nullptr);
 }
 
@@ -198,6 +193,7 @@ BOOST_AUTO_TEST_CASE(open_files_twice) {
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
     BOOST_CHECK(source->channel_files[colour] == files[colour]);
   }
+  BOOST_CHECK(source->sep_file.white_ink_choice == 0);
 }
 
 BOOST_AUTO_TEST_CASE(open_files_extra) {
@@ -205,9 +201,6 @@ BOOST_AUTO_TEST_CASE(open_files_extra) {
   auto source = SepSource::create();
   SepFile file = SepSource::parseSep((testFileDir / "sep_cmykv.sep").string());
   source->setData(file);
-  // Set white manually to avoid white choice popup dialog which
-  // crashes when executed during tests.
-  source->sep_file.files["W"] = testFileDir / "C.tif";
 
   // Tested call
   source->openFiles();
@@ -217,8 +210,9 @@ BOOST_AUTO_TEST_CASE(open_files_extra) {
     BOOST_CHECK(source->channel_files[colour] != nullptr);
   }
 
-  // Check that white ink and varnish have also been opened
-  BOOST_CHECK(source->white_ink != nullptr);
+  BOOST_CHECK(source->white_ink == nullptr);
+  BOOST_CHECK(source->sep_file.white_ink_choice == 0);
+  //check that varnish has been opened
   BOOST_CHECK(source->varnish != nullptr);
 }
 
@@ -227,11 +221,10 @@ BOOST_AUTO_TEST_CASE(check_files) {
   auto source = SepSource::create();
   SepFile file = SepSource::parseSep((testFileDir / "sep_cmykv.sep").string());
   source->setData(file);
-  // Set white manually to avoid white choice popup dialog which
-  // crashes when executed during tests.
-  source->sep_file.files["W"] = testFileDir / "C.tif";
-  source->openFiles();
 
+  source->openFiles();
+  BOOST_CHECK(source->sep_file.white_ink_choice == 0);
+  
   // Tested call
   source->checkFiles();
 
@@ -275,11 +268,6 @@ BOOST_AUTO_TEST_CASE(tiff_wrapper_nullptr) {
 }
 
 BOOST_AUTO_TEST_CASE(tiff_wrapper_2) {
-  auto res = SepSource::TIFFReadScanline_(nullptr, nullptr, 1);
-  BOOST_CHECK(res == -1);
-}
-
-BOOST_AUTO_TEST_CASE(tiff_wrapper_3) {
   auto file = TIFFOpen((testFileDir / "M_9.tif").string().c_str(), "r");
   auto lines = std::vector<uint8_t>(TIFFScanlineSize(file));
   int res = SepSource::TIFFReadScanline_(file, lines.data(), 1);
