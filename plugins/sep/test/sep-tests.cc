@@ -10,7 +10,6 @@
 
 #include "../sep.hh"
 
-
 /** Test cases for sep.hh */
 
 BOOST_AUTO_TEST_SUITE(SepPlugin_Tests)

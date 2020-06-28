@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(open_files_extra) {
 
   BOOST_CHECK(source->white_ink == nullptr);
   BOOST_CHECK(source->sep_file.white_ink_choice == 0);
-  //check that varnish has been opened
+  // check that varnish has been opened
   BOOST_CHECK(source->varnish != nullptr);
 }
 
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(check_files) {
 
   source->openFiles();
   BOOST_CHECK(source->sep_file.white_ink_choice == 0);
-  
+
   // Tested call
   source->checkFiles();
 
