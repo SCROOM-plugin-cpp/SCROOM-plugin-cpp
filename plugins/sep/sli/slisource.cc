@@ -70,7 +70,6 @@ void SliSource::importBitmaps() {
     }
   }
   bitmapsImported = true;
-  enableInteractions();
   triggerRedraw();
 }
 
