@@ -83,6 +83,21 @@ SepFile SepSource::parseSep(const std::string &file_name) {
   // can safely close it.
   file.close();
 
+  // Ask the user how to interpret the white ink values
+  // if a white ink channel is given.
+  sep_file.white_ink_choice = 0;
+  if (sep_file.files.count("W") == 1) {
+    auto choice_dialog = gtk_dialog_new_with_buttons(
+        "White Ink Effect", nullptr, GTK_DIALOG_DESTROY_WITH_PARENT,
+        "Subtractive", GTK_RESPONSE_ACCEPT, "Multiplicative",
+        GTK_RESPONSE_REJECT, nullptr);
+
+    auto choice = gtk_dialog_run(GTK_DIALOG(choice_dialog));
+    sep_file.white_ink_choice = choice == GTK_RESPONSE_ACCEPT ? 1 : 2;
+
+    gtk_widget_destroy(choice_dialog);
+  }
+
   // show errors if there are any
   if (!warnings.empty()) {
     std::cerr << warnings;
@@ -209,25 +224,10 @@ void SepSource::openFiles() {
     show_warning |= !sep_file.files[c].empty() && channel_files[c] == nullptr;
   }
 
-  sep_file.white_ink_choice = 0;
-
   // open white ink channel
   if (sep_file.files.count("W") == 1) {
     white_ink = TIFFOpen(sep_file.files["W"].string().c_str(), "r");
     show_warning |= white_ink == nullptr;
-
-    // Ask the user how to interpret the white ink values
-    if (white_ink != nullptr) {
-      auto choice_dialog = gtk_dialog_new_with_buttons(
-          "White Ink Effect", nullptr, GTK_DIALOG_DESTROY_WITH_PARENT,
-          "Subtractive", GTK_RESPONSE_ACCEPT, "Multiplicative",
-          GTK_RESPONSE_REJECT, nullptr);
-
-      auto choice = gtk_dialog_run(GTK_DIALOG(choice_dialog));
-      sep_file.white_ink_choice = choice == GTK_RESPONSE_ACCEPT ? 1 : 2;
-
-      gtk_widget_destroy(choice_dialog);
-    }
   }
 
   // open varnish channel

@@ -10,7 +10,9 @@
 /////////////////////////////////////////////////////////
 ///// SepPresentation ///////////////////////////////////
 
-SepPresentation::SepPresentation() : sep_source(SepSource::create()) {}
+SepPresentation::SepPresentation() : sep_source(SepSource::create()) {
+  properties[PIPETTE_PROPERTY_NAME] = ""; // add support for pipette
+}
 
 SepPresentation::~SepPresentation() {}
 
@@ -19,7 +21,6 @@ SepPresentation::Ptr SepPresentation::create() {
 }
 
 bool SepPresentation::load(const std::string &file_name) {
-  properties[PIPETTE_PROPERTY_NAME] = ""; // add support for pipette
   const SepFile file_content = SepSource::parseSep(file_name);
   this->file_name = file_name;
 
