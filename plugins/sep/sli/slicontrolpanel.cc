@@ -308,8 +308,9 @@ SliControlPanel::SliControlPanel(
   gtk_container_add(GTK_CONTAINER(scrollwin), treeview);
   gtk_box_pack_start(GTK_BOX(hbox), scrollwin, true, true, 0);
 
-  // Set the height of the hbox to 330 if there are more than 12 layers
-  gtk_widget_set_size_request(hbox, -1, 24 + 24*MIN(layers.size(), 12));
+  // Set the height of the hbox to contain at most 14 layers.
+  // More than that will cause scroll bars to appear.
+  gtk_widget_set_size_request(hbox, -1, 24 + 24*MIN(layers.size(), 14));
 
   gtk_widget_show_all(hbox);
 
