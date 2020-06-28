@@ -241,11 +241,13 @@ SliControlPanel::SliControlPanel(
   ViewInterface::Ptr view(viewWeak);
 
   hbox = gtk_hbox_new(false, 10);
+  // to better control the sliders' spacing
+  GtkWidget *hbox2 = gtk_hbox_new(false, 0);
   GtkWidget *treeview = gtk_tree_view_new();
+  GtkWidget *scrollwin = gtk_scrolled_window_new(NULL, NULL);
   widgets[TREEVIEW] = treeview;
 
   create_view_and_model();
-  gtk_box_pack_start(GTK_BOX(hbox), treeview, false, false, 0);
 
   if (n_layers > 1) {
     GtkWidget *slider_low = gtk_vscale_new_with_range(0, n_layers - 1, 1);
@@ -295,9 +297,19 @@ SliControlPanel::SliControlPanel(
     gtk_scale_set_value_pos(GTK_SCALE(slider_high), GTK_POS_TOP);
 
     // Pack the sliders into the hbox
-    gtk_box_pack_start(GTK_BOX(hbox), slider_low, false, false, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), slider_high, false, false, 0);
+    gtk_box_pack_start(GTK_BOX(hbox2), slider_low, false, false, 0);
+    gtk_box_pack_start(GTK_BOX(hbox2), slider_high, false, false, 0);
+    gtk_box_pack_end(GTK_BOX(hbox), hbox2, false, false, 12);
   }
+
+  // Add the Treeview to a scrolled window
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollwin),
+                                GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_container_add(GTK_CONTAINER(scrollwin), treeview);
+  gtk_box_pack_start(GTK_BOX(hbox), scrollwin, true, true, 0);
+
+  // Set the height of the hbox to 330 if there are more than 12 layers
+  gtk_widget_set_size_request(hbox, -1, 24 + 24*MIN(layers.size(), 12));
 
   gtk_widget_show_all(hbox);
 
