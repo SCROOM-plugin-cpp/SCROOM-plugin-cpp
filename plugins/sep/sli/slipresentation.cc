@@ -249,15 +249,19 @@ std::string SliPresentation::getTitle() { return filepath; }
 // PresentationBase
 
 void SliPresentation::viewAdded(ViewInterface::WeakPtr vi) {
-  controlPanel = SliControlPanel::create(vi, weakPtrToThis);
-  controlPanel->disableInteractions();
 
-  // Provide the source with the means to enable and disable the widgets in the
-  // sidebar
-  source->enableInteractions =
-      boost::bind(&SliControlPanel::enableInteractions, controlPanel);
-  source->disableInteractions =
-      boost::bind(&SliControlPanel::disableInteractions, controlPanel);
+  // We want to have only one control panel in total
+  if (views.empty()) {
+    controlPanel = SliControlPanel::create(vi, weakPtrToThis);
+    controlPanel->disableInteractions();
+
+    // Provide the source with the means to enable and disable the widgets in the
+    // sidebar
+    source->enableInteractions =
+        boost::bind(&SliControlPanel::enableInteractions, controlPanel);
+    source->disableInteractions =
+        boost::bind(&SliControlPanel::disableInteractions, controlPanel);
+  }
 
   views.insert(vi);
 
@@ -268,6 +272,10 @@ void SliPresentation::viewAdded(ViewInterface::WeakPtr vi) {
 
 void SliPresentation::viewRemoved(ViewInterface::WeakPtr vi) {
   views.erase(vi);
+  // If the view contains the control panel, attach the control panel to another view
+  if (!views.empty() && vi.lock() == controlPanel->viewWeak.lock()) {
+    controlPanel->reAttach(*views.begin());
+  }
 }
 
 std::set<ViewInterface::WeakPtr> SliPresentation::getViews() { return views; }
