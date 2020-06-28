@@ -92,6 +92,9 @@ SurfaceWrapper::Ptr SliSource::getSurface(int zoom) {
     CpuBound()->schedule(
         boost::bind(&SliSource::fillCache, shared_from_this<SliSource>()),
         PRIO_HIGHER, threadQueue);
+    if (rgbCache.count(std::min(0, zoom))) {
+      return rgbCache[std::min(0, zoom)];
+    }
     return nullptr;
   } else {
     return rgbCache[std::min(0, zoom)];
