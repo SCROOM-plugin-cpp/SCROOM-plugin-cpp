@@ -311,7 +311,7 @@ BOOST_AUTO_TEST_CASE(closeIfNeeded_1) {
 }
 
 BOOST_AUTO_TEST_CASE(closeIfNeeded_2) {
-  auto file = TIFFOpen(NULL, "r");
+  auto file = TIFFOpen(nullptr, "r");
   BOOST_CHECK(file == nullptr);
   SepSource::closeIfNeeded(file);
   BOOST_CHECK_EQUAL(file, nullptr);
