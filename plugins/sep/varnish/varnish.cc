@@ -1,76 +1,62 @@
 #include "varnish.hh"
-#include <scroom/viewinterface.hh>
-#include <scroom/cairo-helpers.hh>
 #include <gdk/gdk.h>
+#include <scroom/cairo-helpers.hh>
+#include <scroom/viewinterface.hh>
 
-Varnish::Varnish(SliLayer::Ptr layer)
-{
+Varnish::Varnish(SliLayer::Ptr layer) {
   this->layer = layer;
   inverted = false;
   // Precalculate the surface and save it.
   int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, layer->width);
-  surface = cairo_image_surface_create_for_data(layer->bitmap, CAIRO_FORMAT_A8, 
-                                                                    layer->width, layer->height, stride);
-  // Map is read inverted by cairo, so we invert it here once                                                                  
+  surface = cairo_image_surface_create_for_data(
+      layer->bitmap, CAIRO_FORMAT_A8, layer->width, layer->height, stride);
+  // Map is read inverted by cairo, so we invert it here once
   invertSurface();
 }
 
-Varnish::Ptr Varnish::create(SliLayer::Ptr layer)
-{
+Varnish::Ptr Varnish::create(SliLayer::Ptr layer) {
   Varnish::Ptr result = Ptr(new Varnish(layer));
   return result;
 }
 
-Varnish::~Varnish()
-{
-  cairo_surface_destroy(surface);
-}
+Varnish::~Varnish() { cairo_surface_destroy(surface); }
 
-void Varnish::setView(ViewInterface::WeakPtr viewWeak)
-{
+void Varnish::setView(ViewInterface::WeakPtr viewWeak) {
   registerUI(viewWeak);
   this->viewWeak = viewWeak;
 }
 
-static void varnish_toggled(GtkToggleButton* button, gpointer varnishP)
-{
+static void varnish_toggled(GtkToggleButton *button, gpointer varnishP) {
   // Have a member function sort out the varnishState
-  static_cast<Varnish*>(varnishP)->fixVarnishState();
+  static_cast<Varnish *>(varnishP)->fixVarnishState();
   // Force a redraw when varnish is toggled.
-  static_cast<Varnish*>(varnishP)->forceRedraw();
+  static_cast<Varnish *>(varnishP)->forceRedraw();
 }
 
-void Varnish::forceRedraw()
-{
+void Varnish::forceRedraw() {
   ViewInterface::Ptr view(viewWeak);
   view->invalidate();
 }
 
-void Varnish::fixVarnishState()
-{
-  if (inverted)
-  {
+void Varnish::fixVarnishState() {
+  if (inverted) {
     // If we're currently inverted and moving to normal,
     // We need to invert back
-    if (GTK_TOGGLE_BUTTON(radio_enabled)->active)
-    {
+    if (GTK_TOGGLE_BUTTON(radio_enabled)->active) {
       invertSurface();
       inverted = false;
     }
-  } else
-  {
+  } else {
     // If we're currently normal and moving to normal,
     // We need to invert back
-    if (GTK_TOGGLE_BUTTON(radio_inverted)->active)
-    {
+    if (GTK_TOGGLE_BUTTON(radio_inverted)->active) {
       invertSurface();
       inverted = true;
     }
   }
 }
 
-void Varnish::registerUI(ViewInterface::WeakPtr viewWeak)
-{
+void Varnish::registerUI(ViewInterface::WeakPtr viewWeak) {
   GtkWidget *box = gtk_vbox_new(false, 0);
   GtkWidget *expander = gtk_expander_new("Overlay properties");
   GtkWidget *expander_box = gtk_vbox_new(false, 0);
@@ -81,18 +67,26 @@ void Varnish::registerUI(ViewInterface::WeakPtr viewWeak)
   // Set a default color for the overlay
   GdkColor color;
   gdk_color_parse("#000000", &color);
-  gtk_color_selection_set_current_color(GTK_COLOR_SELECTION(colorpicker), &color);
+  gtk_color_selection_set_current_color(GTK_COLOR_SELECTION(colorpicker),
+                                        &color);
   // Add radio buttons for each display mode
   radio_disabled = gtk_radio_button_new_with_label(NULL, "Disabled");
-  radio_enabled = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radio_disabled), "Normal");
-  radio_inverted = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(radio_disabled), "Inverted");
+  radio_enabled = gtk_radio_button_new_with_label_from_widget(
+      GTK_RADIO_BUTTON(radio_disabled), "Normal");
+  radio_inverted = gtk_radio_button_new_with_label_from_widget(
+      GTK_RADIO_BUTTON(radio_disabled), "Inverted");
   // trigger a redraw when disabled is checked/unchecked
-  g_signal_connect(static_cast<gpointer>(radio_disabled), "toggled", G_CALLBACK(varnish_toggled), this);
-  g_signal_connect(static_cast<gpointer>(radio_enabled), "toggled", G_CALLBACK(varnish_toggled), this);
-  g_signal_connect(static_cast<gpointer>(radio_disabled), "toggled", G_CALLBACK(varnish_toggled), this);
+  g_signal_connect(static_cast<gpointer>(radio_disabled), "toggled",
+                   G_CALLBACK(varnish_toggled), this);
+  g_signal_connect(static_cast<gpointer>(radio_enabled), "toggled",
+                   G_CALLBACK(varnish_toggled), this);
+  g_signal_connect(static_cast<gpointer>(radio_disabled), "toggled",
+                   G_CALLBACK(varnish_toggled), this);
   // We can use the same callback to force a redraw when the color is changed
-  g_signal_connect(static_cast<gpointer>(colorpicker), "color-changed", G_CALLBACK(varnish_toggled), this);
-  g_signal_connect(static_cast<gpointer>(check_show_background), "toggled", G_CALLBACK(varnish_toggled), this);
+  g_signal_connect(static_cast<gpointer>(colorpicker), "color-changed",
+                   G_CALLBACK(varnish_toggled), this);
+  g_signal_connect(static_cast<gpointer>(check_show_background), "toggled",
+                   G_CALLBACK(varnish_toggled), this);
 
   // Add all elements into 1 box
   gtk_box_pack_start_defaults(GTK_BOX(box), radio_disabled);
@@ -112,14 +106,12 @@ void Varnish::registerUI(ViewInterface::WeakPtr viewWeak)
   gdk_threads_leave();
 }
 
-void Varnish::invertSurface()
-{
+void Varnish::invertSurface() {
   cairo_surface_flush(surface);
   int width = cairo_image_surface_get_width(surface);
   int height = cairo_image_surface_get_height(surface);
   unsigned char *data = cairo_image_surface_get_data(surface);
-  for (int i = 0; i < width * height; i++)
-  {
+  for (int i = 0; i < width * height; i++) {
     // Invert each suface pixel.
     data[i] ^= 255;
   }
@@ -127,10 +119,9 @@ void Varnish::invertSurface()
 }
 
 void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
-              Scroom::Utils::Rectangle<double> presentationArea, int zoom)
-{
-  if (GTK_TOGGLE_BUTTON(radio_disabled)->active)
-  {
+                          Scroom::Utils::Rectangle<double> presentationArea,
+                          int zoom) {
+  if (GTK_TOGGLE_BUTTON(radio_disabled)->active) {
     // if the varnish overlay is disabled, return without drawing anything.
     return;
   }
@@ -140,10 +131,9 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
   // Disable blurring/anti-ailiasing
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
   cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
-  cairo_translate(cr, -GTKPresArea.x*pixelSize,-GTKPresArea.y*pixelSize);
-  if(zoom >= 0)
-  {
-    cairo_scale(cr, 1<<zoom, 1<<zoom);
+  cairo_translate(cr, -GTKPresArea.x * pixelSize, -GTKPresArea.y * pixelSize);
+  if (zoom >= 0) {
+    cairo_scale(cr, 1 << zoom, 1 << zoom);
   } else {
     cairo_scale(cr, pow(2.0, zoom), pow(2.0, zoom));
   }
@@ -152,8 +142,10 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
   GdkColor color;
   gint alpha;
   // This method is deprecated, but the alternative doesn't work
-  gtk_color_selection_get_current_color(GTK_COLOR_SELECTION(colorpicker), &color);
-  alpha = gtk_color_selection_get_current_alpha(GTK_COLOR_SELECTION(colorpicker));
+  gtk_color_selection_get_current_color(GTK_COLOR_SELECTION(colorpicker),
+                                        &color);
+  alpha =
+      gtk_color_selection_get_current_alpha(GTK_COLOR_SELECTION(colorpicker));
   // Cairo is expecting doubles as color values, so we have to convert them.
   double r, g, b, a;
   r = color.red / 65535.0;
@@ -161,8 +153,7 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
   b = color.blue / 65535.0;
   a = alpha / 65535.0;
 
-  if (!GTK_TOGGLE_BUTTON(check_show_background)->active)
-  {
+  if (!GTK_TOGGLE_BUTTON(check_show_background)->active) {
     // Clear the background
     cairo_rectangle(cr, 0, 0, layer->width, layer->height);
     cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);

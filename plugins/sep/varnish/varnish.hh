@@ -1,10 +1,9 @@
 #pragma once
 
-#include <gtk/gtk.h>
 #include "../sli/slilayer.hh"
+#include <gtk/gtk.h>
 
-class Varnish
-{
+class Varnish {
 public:
   typedef boost::shared_ptr<Varnish> Ptr;
 
@@ -19,16 +18,16 @@ private:
   void invertSurface();
   void registerUI(ViewInterface::WeakPtr view);
   SliLayer::Ptr layer;
-  cairo_surface_t* surface;
+  cairo_surface_t *surface;
   bool inverted;
 
 public:
   static Ptr create(SliLayer::Ptr layer);
   void setView(ViewInterface::WeakPtr view);
-  void fixVarnishState(); //TODO; This probably shouldn't be public?
+  void fixVarnishState();
   void forceRedraw();
 
   ~Varnish();
   void drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
-              Scroom::Utils::Rectangle<double> presentationArea, int zoom);
+                   Scroom::Utils::Rectangle<double> presentationArea, int zoom);
 };

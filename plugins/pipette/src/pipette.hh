@@ -1,19 +1,22 @@
 #pragma once
 
+#include <atomic>
+#include <mutex>
+#include <scroom/pipetteviewinterface.hh>
 #include <scroom/plugininformationinterface.hh>
+#include <scroom/threadpool.hh>
 #include <scroom/utilities.hh>
 #include <scroom/viewinterface.hh>
-#include <scroom/threadpool.hh>
-#include <scroom/pipetteviewinterface.hh>
-#include <mutex>
-#include <atomic>
 
 /**
  * Main handler for all pipette related events in a view. Manages
  * selections, the state of the plugin for a view and rendering
  * the current selection on top of a presentation.
  */
-class PipetteHandler : public ToolStateListener, public PostRenderer, public SelectionListener, virtual public Scroom::Utils::Base {
+class PipetteHandler : public ToolStateListener,
+                       public PostRenderer,
+                       public SelectionListener,
+                       virtual public Scroom::Utils::Base {
 public:
   PipetteHandler();
 
@@ -57,7 +60,9 @@ public:
   ////////////////////////////////////////////////////////////////////////
   // PostRenderer
 
-  void render(ViewInterface::Ptr const& vi, cairo_t* cr, Scroom::Utils::Rectangle<double> presentationArea, int zoom) override;
+  void render(ViewInterface::Ptr const &vi, cairo_t *cr,
+              Scroom::Utils::Rectangle<double> presentationArea,
+              int zoom) override;
 
   ////////////////////////////////////////////////////////////////////////
   // SelectionListener
@@ -81,7 +86,8 @@ public:
    * @param view The view to compute the average values for.
    * @param sel_rect The user selected presentation area.
    */
-  void computeValues(ViewInterface::Ptr view, Scroom::Utils::Rectangle<int> sel_rect);
+  void computeValues(ViewInterface::Ptr view,
+                     Scroom::Utils::Rectangle<int> sel_rect);
   /**
    * Formats and sets the final status message with the pipette results.
    *
@@ -89,24 +95,28 @@ public:
    * @param rect The selected part of the presentation.
    * @param colors The average color values for the selected area.
    */
-  void displayValues(ViewInterface::Ptr view, Scroom::Utils::Rectangle<int> rect, PipetteLayerOperations::PipetteColor colors);
+  void displayValues(ViewInterface::Ptr view,
+                     Scroom::Utils::Rectangle<int> rect,
+                     PipetteLayerOperations::PipetteColor colors);
 };
 
 /**
  * Main pipette plugin class. Manages all
  * registrations to the views that are opened.
  */
-class Pipette : public PluginInformationInterface, public ViewObserver, virtual public  Scroom::Utils::Base {
+class Pipette : public PluginInformationInterface,
+                public ViewObserver,
+                virtual public Scroom::Utils::Base {
 public:
   typedef boost::shared_ptr<Pipette> Ptr;
 
 private:
-  Pipette() {};
+  Pipette(){};
 
 public:
   /**
-    * Creates a new Pipette shared pointer and handler instance.
-    */
+   * Creates a new Pipette shared pointer and handler instance.
+   */
   static Ptr create();
 
 public:

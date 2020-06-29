@@ -11,10 +11,10 @@
 #include "varnish/varnish.hh"
 
 struct SepFile {
-    size_t width;
-    size_t height;
-    int white_ink_choice;
-    std::map<std::string, boost::filesystem::path> files;
+  size_t width;
+  size_t height;
+  int white_ink_choice;
+  std::map<std::string, boost::filesystem::path> files;
 };
 
 /**
@@ -23,150 +23,160 @@ struct SepFile {
  * dependencies.
  */
 class SepSource : public SourcePresentation {
-   public:
-    typedef boost::shared_ptr<SepSource> Ptr;
+public:
+  typedef boost::shared_ptr<SepSource> Ptr;
 
-   private:
-    /** Data structure to represent the opened SEP file in memory. */
-    SepFile sep_file;
+private:
+  /** Data structure to represent the opened SEP file in memory. */
+  SepFile sep_file;
 
-    const std::vector<std::string> channels = {"C", "M", "Y", "K"};
+  const std::vector<std::string> channels = {"C", "M", "Y", "K"};
 
-    /** Stores pointers to CMYK files. */
-    std::map<std::string, tiff *> channel_files = {
-        {channels[0], nullptr},
-        {channels[1], nullptr},
-        {channels[2], nullptr},
-        {channels[3], nullptr}};
+  /** Stores pointers to CMYK files. */
+  std::map<std::string, tiff *> channel_files = {{channels[0], nullptr},
+                                                 {channels[1], nullptr},
+                                                 {channels[2], nullptr},
+                                                 {channels[3], nullptr}};
 
-    const size_t nr_channels = channel_files.size();
+  const size_t nr_channels = channel_files.size();
 
-    /** Pointer to white ink file. */
-    tiff *white_ink = nullptr;
+  /** Pointer to white ink file. */
+  tiff *white_ink = nullptr;
 
-    /** Constructor */
-    SepSource();
+  /** Constructor */
+  SepSource();
 
-   public:
-    /** Destructor */
-    ~SepSource();
+public:
+  /** Destructor */
+  ~SepSource();
 
-    /** Pointer to varnish layer. */
-    Varnish::Ptr varnish;
+  /** Pointer to varnish layer. */
+  Varnish::Ptr varnish;
 
-    /**
-     * Create a pointer to SepSource using constructor and return it.
-     */
-    static Ptr create();
+  /**
+   * Create a pointer to SepSource using constructor and return it.
+   */
+  static Ptr create();
 
-    /**
-     * This function is only needed when the SepPresentation is used by
-     * the SliPresentation to parse and retrieve a layer of an SLI file.
-     * Upon being called, it fills the bitmap and all other relevant
-     * attributes of the SliLayer.
-     * @param sli - pointer to SliLayer
-     */
-    static void fillSliLayer(SliLayer::Ptr sli);
+  /**
+   * This function is only needed when the SepPresentation is used by
+   * the SliPresentation to parse a layer of an SLI file.
+   * Upon being called, it fills all relevant
+   * attributes of the SliLayer, except for the bitmap.
+   * @param sli - pointer to SliLayer
+   */
+  void fillSliLayerMeta(SliLayer::Ptr sli);
 
-    /**
-     * Helper function to parseSep().
-     * Given a file path, returns the parent directory.
-     * @param file_path - path to file.
-     */
-    static boost::filesystem::path findParentDir(const std::string &file_path);
+  /**
+   * This function is only needed when the SepPresentation is used by
+   * the SliPresentation to retrieve the bitmap of a layer of an SLI file.
+   * Upon being called, it fills the bitmap of the SliLayer.
+   * @param sli - pointer to SliLayer
+   */
+  void fillSliLayerBitmap(SliLayer::Ptr sli);
 
-    /**
-     * Parse the file into a struct.
-     * @param file_name - path to file.
-     */
-    static SepFile parseSep(const std::string &file_name);
+  /**
+   * Helper function to parseSep().
+   * Given a file path, returns the parent directory.
+   * @param file_path - path to file.
+   */
+  static boost::filesystem::path findParentDir(const std::string &file_path);
 
-    /**
-     * Setter for SepSource::sep_file.
-     *
-     * @param file - value to set.
-     */
-    void setData(SepFile file);
+  /**
+   * Parse the file into a struct.
+   * @param file_name - path to file.
+   */
+  static SepFile parseSep(const std::string &file_name);
 
-    /**
-     * Opens the required TIFF files for the individual channels.
-     * Sets value of channel_files, white_ink and varnish.
-     */
-    void openFiles();
+  /**
+   * Setter for SepSource::sep_file.
+   *
+   * @param file - value to set.
+   */
+  void setData(SepFile file);
 
-    /**
-     * Checks the opened files and shows a warning popup if there
-     * are any problems.
-     *
-     * @pre `openFiles` has been called.
-     */
-    void checkFiles();
+  /**
+   * Opens the required TIFF files for the individual channels.
+   * Sets value of channel_files, white_ink and varnish.
+   */
+  void openFiles();
 
-    /**
-     * Applies the effect of white ink.
-     * @param white - value of white pixel
-     * @param color - value of colored pixel
-     * @param type - desired effect of white ink
-     */
-    static uint8_t applyWhiteInk(uint8_t white, uint8_t color, int type);
+  /**
+   * Checks the opened files and shows a warning popup if there
+   * are any problems.
+   *
+   * @pre `openFiles` has been called.
+   */
+  void checkFiles();
 
-    /**
-     * Wrapper around the TIFFReadScanLine() function from LibTiff.
-     * Motivation for having this wrapper is because TIFFReadScanLine
-     * acts expectedly/throws errors when supplied with a NULL. So,
-     * this function adds a brief error handling case around it.
-     */
-    static int TIFFReadScanline_(tiff *file, void *buf, uint32 row, uint16 sample = 0);
+  /**
+   * Applies the effect of white ink.
+   * @param white - value of white pixel
+   * @param color - value of colored pixel
+   * @param type - desired effect of white ink
+   */
+  static uint8_t applyWhiteInk(uint8_t white, uint8_t color, int type);
 
-    /**
-     * Retrieves a scanline from all components combined.
-     *
-     * @pre `openFiles()` has been called.
-     */
-    void readCombinedScanline(std::vector<byte> &out, size_t line_nr);
+  /**
+   * Wrapper around the TIFFReadScanLine() function from LibTiff.
+   * Motivation for having this wrapper is because TIFFReadScanLine
+   * acts expectedly/throws errors when supplied with a NULL. So,
+   * this function adds a brief error handling case around it.
+   */
+  static int TIFFReadScanline_(tiff *file, void *buf, uint32 row,
+                               uint16 sample = 0);
 
-    /**
-     * Retrieves the transformation data for the loaded sep file, with
-     * the correct aspect ratio set.
-     *
-     * @see TransformationData
-     */
-    TransformationData::Ptr getTransform();
+  /**
+   * Retrieves a scanline from all components combined.
+   *
+   * @pre `openFiles()` has been called.
+   */
+  void readCombinedScanline(std::vector<byte> &out, size_t line_nr);
 
-    /**
-     * Closes a tiff file and resets its pointer if the argument is not
-     * a nullptr.
-     * @param file - the file that is to be closed.
-     */
-    static void closeIfNeeded(struct tiff *&file);
+  /**
+   * Retrieves the transformation data for the loaded sep file, with
+   * the correct aspect ratio set.
+   *
+   * @see TransformationData
+   */
+  TransformationData::Ptr getTransform();
 
-    ////////////////////////////////////////////////////////////////////////
-    // SourcePresentation
-    ////////////////////////////////////////////////////////////////////////
-    void fillTiles(int startLine, int lineCount, int tileWidth, int firstTile, std::vector<Tile::Ptr> &tiles) override;
+  /**
+   * Closes a tiff file and resets its pointer if the argument is not
+   * a nullptr.
+   * @param file - the file that is to be closed.
+   */
+  static void closeIfNeeded(struct tiff *&file);
 
-    /**
-     * Closes the TIFF files opened by `openFiles()`.
-     */
-    void done() override;
+  ////////////////////////////////////////////////////////////////////////
+  // SourcePresentation
+  ////////////////////////////////////////////////////////////////////////
+  void fillTiles(int startLine, int lineCount, int tileWidth, int firstTile,
+                 std::vector<Tile::Ptr> &tiles) override;
 
-   private:
-    /**
-     * Fills the passed parameters with the correct resolution for this sep
-     * file.
-     *
-     * Returns whether all channels have the same resolution and unit.
-     */
-    bool getResolution(uint16_t &unit, float &x_resolution, float &y_resolution);
+  /**
+   * Closes the TIFF files opened by `openFiles()`.
+   */
+  void done() override;
 
-    /**
-     * Fills the `unit`, `x_resolution` and `y_resolution` with values from
-     * the specified `channel`.
-     *
-     * If a resolution unit is specified in `channel`, the x and y resolution
-     * are scaled so both values are between 0 and 1. If one of the values is
-     * not specified in `channel`, the values are set to their defaults according
-     * to the TIFF file format specification.
-     */
-    void getForOneChannel(struct tiff *channel, uint16_t &unit, float &x_resolution, float &y_resolution);
+private:
+  /**
+   * Fills the passed parameters with the correct resolution for this sep
+   * file.
+   *
+   * Returns whether all channels have the same resolution and unit.
+   */
+  bool getResolution(uint16_t &unit, float &x_resolution, float &y_resolution);
+
+  /**
+   * Fills the `unit`, `x_resolution` and `y_resolution` with values from
+   * the specified `channel`.
+   *
+   * If a resolution unit is specified in `channel`, the x and y resolution
+   * are scaled so both values are between 0 and 1. If one of the values is
+   * not specified in `channel`, the values are set to their defaults according
+   * to the TIFF file format specification.
+   */
+  void getForOneChannel(struct tiff *channel, uint16_t &unit,
+                        float &x_resolution, float &y_resolution);
 };
