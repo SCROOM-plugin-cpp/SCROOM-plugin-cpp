@@ -1,7 +1,6 @@
 #include <boost/dll.hpp>
 #include <boost/test/unit_test.hpp>
 #include <cmath>
-#include <iostream>
 
 // Make all private members accessible for testing
 #define private public

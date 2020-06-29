@@ -2,7 +2,6 @@
 
 #include <boost/dll.hpp>
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 #include <list>
 
 // Make all private members accessible for testing
@@ -12,7 +11,7 @@
 
 /** Test cases for sep.hh */
 
-BOOST_AUTO_TEST_SUITE(SepPlugin_Tests)
+BOOST_AUTO_TEST_SUITE(Sep_Tests)
 
 BOOST_AUTO_TEST_CASE(create) {
   Sep::Ptr sep = Sep::create();
