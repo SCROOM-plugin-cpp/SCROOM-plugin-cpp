@@ -26,8 +26,6 @@ private:
   cairo_surface_t *surface;
   bool inverted;
 
-  
-
 public:
   static Ptr create(SliLayer::Ptr layer);
   void setView(ViewInterface::WeakPtr view);

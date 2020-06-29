@@ -233,7 +233,7 @@ void SliControlPanel::create_view_and_model() {
 SliControlPanel::SliControlPanel(
     ViewInterface::WeakPtr viewWeak_,
     SliPresentationInterface::WeakPtr presentation_)
-    : presentation(presentation_), viewWeak(viewWeak_){
+    : presentation(presentation_), viewWeak(viewWeak_) {
   printf("Multilayer control panel has been created\n");
   SliPresentationInterface::Ptr presPtr = presentation.lock();
   std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
@@ -329,8 +329,9 @@ void SliControlPanel::reAttach(ViewInterface::WeakPtr viewWeak_) {
 
   // Re-assign all widgets to a new hbox and attach it to the sidebar
   gdk_threads_enter();
-  GtkWidget* newHbox = gtk_hbox_new(false, 0);
-  for (GList* iter = gtk_container_get_children(GTK_CONTAINER(hbox)); iter != nullptr; iter = iter->next) {
+  GtkWidget *newHbox = gtk_hbox_new(false, 0);
+  for (GList *iter = gtk_container_get_children(GTK_CONTAINER(hbox));
+       iter != nullptr; iter = iter->next) {
     gtk_widget_reparent(GTK_WIDGET(iter->data), newHbox);
   }
   hbox = newHbox;

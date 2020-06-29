@@ -30,8 +30,9 @@ void Varnish::resetView(ViewInterface::WeakPtr viewWeak) {
   this->viewWeak = viewWeak;
 
   gdk_threads_enter();
-  GtkWidget* newBox = gtk_vbox_new(false, 0);
-  for (GList* iter = gtk_container_get_children(GTK_CONTAINER(box)); iter != nullptr; iter = iter->next) {
+  GtkWidget *newBox = gtk_vbox_new(false, 0);
+  for (GList *iter = gtk_container_get_children(GTK_CONTAINER(box));
+       iter != nullptr; iter = iter->next) {
     gtk_widget_reparent(GTK_WIDGET(iter->data), newBox);
   }
   box = newBox;

@@ -18,7 +18,7 @@ private:
   /** The number of layers that the SliPresentation consists of*/
   unsigned int n_layers;
 
-  GtkWidget* hbox;
+  GtkWidget *hbox;
 
 public:
   /** Contains the pointers to the widgets of the control panel*/
@@ -60,13 +60,12 @@ public:
   /** Re-enable all widgets */
   virtual void enableInteractions();
 
-  /** 
+  /**
    * Remove the control panel from the current view and attach it to a new view
    * @param viewWeak_ the new view to attach the sidebar to
-  */
+   */
   virtual void reAttach(ViewInterface::WeakPtr viewWeak_);
 
   /** Destructor */
   virtual ~SliControlPanel();
-
 };

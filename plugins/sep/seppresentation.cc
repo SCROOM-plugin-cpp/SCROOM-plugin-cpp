@@ -108,9 +108,8 @@ void SepPresentation::viewAdded(ViewInterface::WeakPtr interface) {
 
   if (views.empty() && sep_source->varnish != nullptr) {
     sep_source->varnish->setView(interface);
-    sep_source->varnish->triggerRedraw =
-      boost::bind(&SepPresentation::triggerRedraw,
-                  shared_from_this<SepPresentation>());
+    sep_source->varnish->triggerRedraw = boost::bind(
+        &SepPresentation::triggerRedraw, shared_from_this<SepPresentation>());
   }
 
   views.insert(interface);
@@ -127,7 +126,8 @@ void SepPresentation::viewRemoved(ViewInterface::WeakPtr interface) {
     return;
   }
 
-  if (!views.empty() && sep_source->varnish && interface.lock() == sep_source->varnish->viewWeak.lock()) {
+  if (!views.empty() && sep_source->varnish &&
+      interface.lock() == sep_source->varnish->viewWeak.lock()) {
     sep_source->varnish->resetView(*views.begin());
   }
 
