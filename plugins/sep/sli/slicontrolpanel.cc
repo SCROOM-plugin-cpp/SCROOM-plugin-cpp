@@ -75,8 +75,7 @@ void toggle_and_redraw(double old_value, double new_value, double other_value,
   }
 
   presPtr->setToggled(toggled);
-  presPtr->wipeCache();
-  presPtr->triggerRedraw();
+  presPtr->wipeCacheAndRedraw();
 }
 
 /* Update the Tree Model according to the new sliders' bounds */
@@ -185,8 +184,7 @@ void on_toggle(GtkCellRendererToggle *renderer, gchar *path,
     cPanel->lastFocused = TREEVIEW;
     toggled.set(atoi(path));
     presPtr->setToggled(toggled);
-    presPtr->wipeCache();
-    presPtr->triggerRedraw();
+    presPtr->wipeCacheAndRedraw();
   }
 }
 

@@ -33,14 +33,17 @@ void SliSource::checkXoffsets() {
 
 bool SliSource::addLayer(std::string imagePath, std::string filename,
                          int xOffset, int yOffset) {
-  SliLayer::Ptr layer = SliLayer::create(imagePath, filename, xOffset, yOffset);
+
   auto extension = filename.substr(filename.find_last_of("."));
   boost::to_lower(extension);
 
+  SliLayer::Ptr layer = SliLayer::create(imagePath, filename, xOffset, yOffset);
+
   if (extension == ".sep") {
-    SepSource::fillSliLayer(layer);
+    sepSources[layer] = SepSource::create();
+    sepSources[layer]->fillSliLayerMeta(layer);
   } else if (extension == ".tif" || extension == ".tiff") {
-    if (!layer->fillFromTiff(8, 4)) {
+    if (!layer->fillMetaFromTiff(8, 4)) {
       return false;
     }
   } else {
@@ -55,100 +58,172 @@ bool SliSource::addLayer(std::string imagePath, std::string filename,
   return true;
 }
 
-void SliSource::wipeCache() {
-  // Erase all cache levels except for the bottom layer
-  auto it = rgbCache.begin();
-  while (it != rgbCache.end()) {
-    if (it->first != 0) {
-      it = rgbCache.erase(it);
+void SliSource::importBitmaps() {
+  for (SliLayer::Ptr layer : layers) {
+    auto extension = layer->name.substr(layer->name.find_last_of("."));
+    boost::to_lower(extension);
+
+    if (extension == ".sep") {
+      sepSources[layer]->fillSliLayerBitmap(layer);
     } else {
-      it++;
+      layer->fillBitmapFromTiff();
     }
   }
-  // Clear the area of the last toggled layer from the bottom surface
-  clearBottomSurface();
+  bitmapsImported = true;
+  enableInteractions();
+  triggerRedraw();
+}
+
+void SliSource::queryImportBitmaps() {
+  CpuBound()->schedule(
+      boost::bind(&SliSource::importBitmaps, shared_from_this<SliSource>()),
+      PRIO_HIGHER, threadQueue);
+}
+
+void SliSource::wipeCacheAndRedraw() {
+  clearBottomSurface(); 
+  getSurface(0); // recompute bottom surface and trigger redraw when ready
 }
 
 SurfaceWrapper::Ptr SliSource::getSurface(int zoom) {
-  if (!rgbCache.count(std::min(0, zoom)) || rgbCache[0]->clear) {
+  if (!bitmapsImported) {
+    return nullptr;
+  } else if (!rgbCache.count(std::min(0, zoom)) || rgbCache[0]->clear) {
     CpuBound()->schedule(
-        boost::bind(&SliSource::fillCache, shared_from_this<SliSource>(), zoom),
+        boost::bind(&SliSource::fillCache, shared_from_this<SliSource>()),
         PRIO_HIGHER, threadQueue);
     return nullptr;
   } else {
     return rgbCache[std::min(0, zoom)];
   }
 }
-void SliSource::fillCache(int zoom) {
+void SliSource::fillCache() {
   mtx.lock();
   disableInteractions();
+  visible ^= toggled;
 
   if (!rgbCache.count(0) || rgbCache[0]->clear) {
     computeRgb();
-  }
-  if (zoom < 0) {
-    for (int i = -1; i >= zoom; i--) {
-      if (!rgbCache.count(i)) {
-        reduceRgb(i);
-      }
+
+    for (int i = -1; i >= -30; i--) {
+      // true -> uses multithreading
+      reduceRgb(i, true);
     }
   }
+
+  rgbCache[0]->clear = false;
+  toggled.reset();
   enableInteractions();
   mtx.unlock();
   triggerRedraw();
 }
 
-void SliSource::reduceRgb(int zoom) {
-  // printf("Computing for zoom %d\n", zoom);
+void SliSource::reduceSegments(SurfaceWrapper::Ptr targetSurface,
+                               boost::dynamic_bitset<> toggledSegments,
+                               int baseSegHeight, int zoom) {
+  for (int i = 0; i < (int)toggledSegments.size(); i++) {
+    if (!toggledSegments[i])
+      continue;
 
-  const int sourceWidth = total_width / pow(2, -zoom - 1);
-  const int sourceHeight = total_height / pow(2, -zoom - 1);
-  const int sourceStride = rgbCache[zoom + 1]->getStride();
-  Scroom::Bitmap::SampleIterator<const uint8_t> sourceBase(
-      rgbCache[zoom + 1]->getBitmap(), 0, 8);
+    const int sourceWidth = total_width / pow(2, -zoom - 1);
+    const int sourceOffset = (baseSegHeight / pow(2, -zoom - 1)) * i;
+    const int sourceStride = rgbCache[zoom + 1]->getStride();
 
-  const int targetWidth = sourceWidth / 2;
-  const int targetHeight = sourceHeight / 2;
-  SurfaceWrapper::Ptr targetSurface =
-      SurfaceWrapper::create(targetWidth, targetHeight, CAIRO_FORMAT_ARGB32);
-  const int targetStride = targetSurface->getStride();
-  Scroom::Bitmap::SampleIterator<uint8_t> targetBase(targetSurface->getBitmap(),
-                                                     0, 8);
-
-  for (int y = 0; y < targetHeight; y++) {
-    auto targetSample = targetBase;
-
-    for (int x = 0; x < targetWidth; x++) {
-      // We want to store the average colour of the 2*2 pixel image
-      // with (x, y) as its top-left corner into targetSample.
-      auto sourceRow = sourceBase + 2 * 4 * x; // 2 pixels of 4 samples times x
-
-      int sum_a = 0;
-      int sum_r = 0;
-      int sum_g = 0;
-      int sum_b = 0;
-      for (size_t row = 0; row < 2; row++, sourceRow += sourceStride) {
-        auto sourceSample = sourceRow;
-        for (size_t current = 0; current < 2; current++) {
-          sum_a += *sourceSample++;
-          sum_r += *sourceSample++;
-          sum_g += *sourceSample++;
-          sum_b += *sourceSample++;
-        }
-      }
-
-      (targetSample++).set(sum_a / 4);
-      (targetSample++).set(sum_r / 4);
-      (targetSample++).set(sum_g / 4);
-      (targetSample++).set(sum_b / 4);
+    int targetSegHeight;
+    if (i == (int)toggledSegments.size() - 1) {
+      // the last segment will probably have leftover pixels
+      int leftoverPixels = (total_height % baseSegHeight) / pow(2, -zoom);
+      targetSegHeight = (baseSegHeight / pow(2, -zoom)) + leftoverPixels;
+    } else {
+      targetSegHeight = baseSegHeight / pow(2, -zoom);
     }
 
-    targetBase += targetStride;     // Advance 1 row
-    sourceBase += sourceStride * 2; // Advance 2 rows
+    const int targetWidth = sourceWidth / 2;
+    const int targetOffset = (baseSegHeight / pow(2, -zoom)) * i;
+    auto targetStride = targetSurface->getStride();
+    auto targetBitmap =
+        targetSurface->getBitmap() + targetOffset * targetStride;
+
+    for (int y = 0; y < targetSegHeight; y++) {
+      auto sourceBitmap1 = rgbCache[zoom + 1]->getBitmap() +
+                           2 * y * sourceStride + sourceOffset * sourceStride;
+      auto sourceBitmap2 = sourceBitmap1 + sourceStride;
+
+      for (int x = 0; x < targetWidth; x++) {
+        targetBitmap[0] = (sourceBitmap1[0] + sourceBitmap1[4] +
+                           sourceBitmap2[0] + sourceBitmap2[4]) /
+                          4;
+        targetBitmap[1] = (sourceBitmap1[1] + sourceBitmap1[5] +
+                           sourceBitmap2[1] + sourceBitmap2[5]) /
+                          4;
+        targetBitmap[2] = (sourceBitmap1[2] + sourceBitmap1[6] +
+                           sourceBitmap2[2] + sourceBitmap2[6]) /
+                          4;
+        targetBitmap[3] = (sourceBitmap1[3] + sourceBitmap1[7] +
+                           sourceBitmap2[3] + sourceBitmap2[7]) /
+                          4;
+
+        targetBitmap += 4;
+        sourceBitmap1 += 8;
+        sourceBitmap2 += 8;
+      }
+    }
+  }
+}
+
+void SliSource::reduceRgb(int zoom, bool multithreading) {
+  // the total width of the reduced image
+  const int totalTargetWidth = total_width / pow(2, -zoom);
+  // the total height of the reduced image
+  const int totalTargetHeight = total_height / pow(2, -zoom);
+
+  // create a new surface for this zoom level, unless it already exists
+  SurfaceWrapper::Ptr targetSurface = SurfaceWrapper::create();
+  if (rgbCache.count(zoom)) {
+    targetSurface = rgbCache[zoom];
+  } else {
+    targetSurface = SurfaceWrapper::create(totalTargetWidth, totalTargetHeight,
+                                           CAIRO_FORMAT_ARGB32);
   }
 
-  // Make the cached bitmap available to the main thread
-  rgbCache[zoom] = targetSurface;
+  unsigned int nSegments = 24; // just an arbitrary choice
+  int baseSegHeight = findBestSegFit(nSegments, total_height);
+  nSegments = (unsigned int)(total_height / baseSegHeight);
+  boost::dynamic_bitset<> toggledSegments{nSegments};
+  auto spanRect = spannedRectangle(toggled, layers);
+
+  // find which segments intersect with the rectangle spanned by the toggled
+  // layers
+  int n = 0;
+  for (int i = 0; i < (int)nSegments; i++) {
+    Scroom::Utils::Rectangle<int> seg = {0, baseSegHeight * i, total_width,
+                                         baseSegHeight};
+    if (seg.intersects(spanRect)) {
+      toggledSegments.set(i);
+      n++;
+    }
+  }
+
+  // since all segments are disjoint, we can assign one thread to cover half of
+  // them
+  if (multithreading && (n / (double)nSegments) >= 0.25) {
+    auto bitmask = halfSegBitmask(toggledSegments);
+    auto toggledSegments1 = toggledSegments & bitmask;
+    auto toggledSegments2 = toggledSegments & ~bitmask;
+    boost::thread thread(
+        boost::bind(&SliSource::reduceSegments, shared_from_this<SliSource>(),
+                    targetSurface, toggledSegments2, baseSegHeight, zoom));
+
+    // reduce the segments and copy them over to the targetSurface
+    reduceSegments(targetSurface, toggledSegments1, baseSegHeight, zoom);
+
+    thread.join();
+  } else {
+    reduceSegments(targetSurface, toggledSegments, baseSegHeight, zoom);
+  }
+
+  if (!rgbCache.count(zoom))
+    rgbCache[zoom] = targetSurface;
 }
 
 void SliSource::convertCmykXoffset(uint8_t *surfacePointer,
@@ -206,6 +281,9 @@ void SliSource::drawCmyk(uint8_t *surfacePointer, uint8_t *bitmap,
                          int bitmapStart, int bitmapOffset) {
   for (int i = bitmapStart; i < bitmapStart + bitmapOffset; i++) {
     // increment the value of the current surface byte
+    // NOTE if it is known that the total value will not exceed 255,
+    // the min(...) can be simply replaced by "bitmap[i]"
+    // this will save a few thousand/million cpu cycles
     *surfacePointer +=
         std::min(bitmap[i], static_cast<uint8_t>(255 - *surfacePointer));
 
@@ -221,6 +299,9 @@ void SliSource::drawCmykXoffset(uint8_t *surfacePointer, uint8_t *bitmap,
                                 int layerBound, int stride) {
   for (int i = bitmapStart; i < bitmapStart + bitmapOffset;) {
     // increment the value of the current surface byte
+    // NOTE if it is known that the total value will not exceed 255,
+    // the min(...) can be simply replaced by "bitmap[i]"
+    // this will save a few thousand/million cpu cycles
     *surfacePointer +=
         std::min(bitmap[i], static_cast<uint8_t>(255 - *surfacePointer));
 
@@ -237,9 +318,6 @@ void SliSource::drawCmykXoffset(uint8_t *surfacePointer, uint8_t *bitmap,
 }
 
 void SliSource::computeRgb() {
-  // Update the visibility of all layers according to the toggled ones
-  visible ^= toggled;
-
   SurfaceWrapper::Ptr surface = SurfaceWrapper::create();
 
   // Check if cache surface exists first
@@ -308,10 +386,9 @@ void SliSource::computeRgb() {
   }
 
   cairo_surface_mark_dirty(surface->surface);
-  toggled.reset();
+
   if (!rgbCache.count(0))
     rgbCache[0] = surface;
-  rgbCache[0]->clear = false;
 }
 
 void SliSource::clearBottomSurface() {

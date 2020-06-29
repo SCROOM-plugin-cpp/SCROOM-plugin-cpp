@@ -28,7 +28,8 @@ Scroom::Utils::Rectangle<int> SliLayer::toRectangle() {
   return rect;
 }
 
-bool SliLayer::fillFromTiff(unsigned int allowedBps, unsigned int allowedSpp) {
+bool SliLayer::fillMetaFromTiff(unsigned int allowedBps,
+                                unsigned int allowedSpp) {
   try {
     TIFF *tif = TIFFOpen(filepath.c_str(), "r");
     if (!tif) {
@@ -84,6 +85,28 @@ bool SliLayer::fillFromTiff(unsigned int allowedBps, unsigned int allowedSpp) {
     printf("This bitmap has size %d*%d, aspect ratio %.1f*%.1f\n", width,
            height, xAspect, yAspect);
 
+    TIFFClose(tif);
+    return true;
+
+  } catch (const std::exception &ex) {
+    boost::format errorFormat = boost::format("Error: %s") % ex.what();
+    printf("%s\n", errorFormat.str().c_str());
+    Show(errorFormat.str(), GTK_MESSAGE_ERROR);
+    return false;
+  }
+}
+
+void SliLayer::fillBitmapFromTiff() {
+  try {
+    TIFF *tif = TIFFOpen(filepath.c_str(), "r");
+    if (!tif) {
+      boost::format errorFormat =
+          boost::format("Error: Failed to open file %s") % filepath.c_str();
+      printf("%s\n", errorFormat.str().c_str());
+      Show(errorFormat.str(), GTK_MESSAGE_ERROR);
+      return;
+    }
+
     // create sli bitmap ------------------------------------
     // Could just use the width here but we don't want to make overflows too
     // easy, right ;)
@@ -98,11 +121,10 @@ bool SliLayer::fillFromTiff(unsigned int allowedBps, unsigned int allowedSpp) {
     }
 
     TIFFClose(tif);
-    return true;
+
   } catch (const std::exception &ex) {
     boost::format errorFormat = boost::format("Error: %s") % ex.what();
     printf("%s\n", errorFormat.str().c_str());
     Show(errorFormat.str(), GTK_MESSAGE_ERROR);
-    return false;
   }
 }

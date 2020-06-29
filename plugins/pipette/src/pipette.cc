@@ -61,7 +61,8 @@ void PipetteHandler::computeValues(ViewInterface::Ptr view,
   PresentationInterface::Ptr presentation = view->getCurrentPresentation();
   auto pipette =
       boost::dynamic_pointer_cast<PipetteViewInterface>(presentation);
-  if (pipette == nullptr || !presentation->isPropertyDefined(PIPETTE_PROPERTY_NAME)) {
+  if (pipette == nullptr ||
+      !presentation->isPropertyDefined(PIPETTE_PROPERTY_NAME)) {
     printf("PANIC: Presentation does not implement PipetteViewInterface!\n");
     gdk_threads_enter();
     view->setStatusMessage("Pipette is not supported for this presentation.");
