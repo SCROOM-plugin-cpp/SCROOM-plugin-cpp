@@ -31,7 +31,6 @@ public:
   void setView(ViewInterface::WeakPtr view);
   void resetView(ViewInterface::WeakPtr view);
   void fixVarnishState();
-  void forceRedraw();
 
   ~Varnish();
   void drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,

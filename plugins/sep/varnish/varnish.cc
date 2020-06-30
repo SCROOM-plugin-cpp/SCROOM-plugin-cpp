@@ -40,19 +40,13 @@ void Varnish::resetView(ViewInterface::WeakPtr viewWeak) {
   gdk_threads_leave();
 }
 
-static void varnish_toggled(GtkToggleButton *button, gpointer varnishP) {
-  (void)button;
+static void varnish_toggled(GtkToggleButton *, gpointer varnishP) {
   // Have a member function sort out the varnishState
   static_cast<Varnish *>(varnishP)->fixVarnishState();
   // Force a redraw when varnish is toggled.
   static_cast<Varnish *>(varnishP)->triggerRedraw();
 }
-/*
-void Varnish::forceRedraw() {
-  ViewInterface::Ptr view(viewWeak);
-  view->invalidate();
-}
-*/
+
 void Varnish::fixVarnishState() {
   if (inverted) {
     // If we're currently inverted and moving to normal,
@@ -133,10 +127,9 @@ void Varnish::invertSurface() {
   cairo_surface_mark_dirty(surface);
 }
 
-void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
+void Varnish::drawOverlay(ViewInterface::Ptr const &, cairo_t *cr,
                           Scroom::Utils::Rectangle<double> presentationArea,
                           int zoom) {
-  (void)vi;
   if (GTK_TOGGLE_BUTTON(radio_disabled)->active) {
     // if the varnish overlay is disabled, return without drawing anything.
     return;
