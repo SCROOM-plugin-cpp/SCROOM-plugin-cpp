@@ -9,6 +9,9 @@ script:
 os:
 - linux
 - windows
+env:
+- NEXT=false
+- NEXT=true
 dist: bionic
 compiler:
 - gcc
