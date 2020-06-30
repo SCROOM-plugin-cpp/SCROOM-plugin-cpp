@@ -36,13 +36,13 @@ void dummyRedraw(SliPresentation::Ptr presentation) {
   cairo_t *cr = cairo_create(surface);
   Scroom::Utils::Rectangle<double> rect(0.0, 0.0, 100.0, 100.0);
 
-  boost::this_thread::sleep(boost::posix_time::millisec(1000));
+  boost::this_thread::sleep(boost::posix_time::millisec(500));
   // redraw() for all zoom levels from 5 to -2 and check whether cache has been
   // computed
   for (int zoom = 5; zoom > -3; zoom--) {
     presentation->redraw(nullptr, cr, rect, zoom);
     boost::this_thread::sleep(boost::posix_time::millisec(
-        1000)); // Very liberal, shouldn't fail beause of time
+        500)); // Very liberal, shouldn't fail beause of time
     BOOST_REQUIRE(presentation->source->rgbCache[std::min(0, zoom)]);
   }
   BOOST_REQUIRE(presentation);
