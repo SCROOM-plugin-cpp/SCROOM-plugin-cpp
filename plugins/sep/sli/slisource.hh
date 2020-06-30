@@ -5,6 +5,7 @@
 
 #include <boost/dynamic_bitset.hpp>
 
+#include "../sepsource.hh"
 #include "sli-helpers.hh"
 
 class SliSource : public virtual Scroom::Utils::Base {
@@ -23,6 +24,9 @@ public:
 
   /** Whether any of the layers has an xoffset */
   bool hasXoffsets;
+
+  /** Whether the bitmaps of all layers have been imported from the files yet */
+  bool bitmapsImported = false;
 
   /** Bitmask representing the indexes of the currently visible layers
    * (little-endian) */
@@ -54,6 +58,13 @@ private:
   /** Callback to trigger a redraw of the presentation */
   boost::function<void()> triggerRedraw;
 
+  /**
+   * For each layer that represens a SEP file, this map contains the
+   * corresponding SepSource between reading the metadata of the layer and
+   * reading the bitmap. Afterwards, it's cleared out to save memory.
+   */
+  std::map<SliLayer::Ptr, SepSource::Ptr> sepSources;
+
 private:
   /** Constructor */
   SliSource(boost::function<void()> &triggerRedrawFunc);
@@ -65,18 +76,34 @@ private:
 
   /**
    * Reduces the RGB bitmap and caches the result.
-   * 2x2 pixels of the @param zoom+1 bitmap are combined into one pixel of the
-   * zoom bitmap
+   * The bitmap is divided into roughly 24+ segments whose height is a multiple
+   * of 2. This creates a one-to-one mapping between each pixel of zoom level
+   * @param zoom and a 2x2 square of pixels of zoom level @param zoom+1.
+   * @param multithreading indicates whether more than one thread will
+   * "possibly" be used for the reduction. This choice also depends on the
+   * number of toggled segments: if only a handful are toggled, the additional
+   * overhead of threads is not worth it.
    */
-  virtual void reduceRgb(int zoom);
+  virtual void reduceRgb(int zoom, bool multithreading);
+
+  /**
+   * Reduces all the segments set in @param toggledSegments for zoom level
+   * @param zoom.
+   * @param baseSegHeight is the height of a segment in the base surface (zoom
+   * level 0).
+   * @param targetSurface is the surface on top of which the reduced segments
+   * will be copied.
+   */
+  virtual void reduceSegments(SurfaceWrapper::Ptr targetSurface,
+                              boost::dynamic_bitset<> toggledSegments,
+                              int baseSegHeight, int zoom);
 
   /**
    * Checks if the bitmap required for displaying the zoom level is present. If
    * not, it is computed. Is potentially very computationally expensive, hence
    * run outside of the UI thread.
-   * @param zoom the zoom level for which to fill the cache
    */
-  virtual void fillCache(int zoom);
+  virtual void fillCache();
 
   /** Clear the last modified area of the bottom surface */
   virtual void clearBottomSurface();
@@ -146,6 +173,12 @@ private:
                                   int bottomRightOffset, int toggledWidth,
                                   int toggledBound, int stride);
 
+  /**
+   * For each SliLayer in layers, import the bitmap data from the file into the
+   * SliLayer. Computationally intensive, therefore done outside of UI thread.
+   */
+  virtual void importBitmaps();
+
 public:
   /** Destructor */
   virtual ~SliSource();
@@ -188,8 +221,13 @@ public:
                         int xOffset, int yOffset);
 
   /**
-   *  Erase the RGB cache of the SliSource except for the bottom layer
-   *  for which the relevant bytes are simply turned to 0s.
+   * Query the execution of importBitmaps() in a separate thread.
    */
-  virtual void wipeCache();
+  virtual void queryImportBitmaps();
+
+  /**
+   * Clear (ie write 0s) the area of the bottom surface intersecting with the
+   * toggled layers and trigger a redraw.
+   */
+  virtual void wipeCacheAndRedraw();
 };

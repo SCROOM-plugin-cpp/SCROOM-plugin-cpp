@@ -289,7 +289,8 @@ BOOST_AUTO_TEST_CASE(tiff_wrapper_3) {
 BOOST_AUTO_TEST_CASE(fill_sli_empty) {
   SliLayer::Ptr sli = SliLayer::create("", "name", 0, 0);
   sli->height = 42;
-  SepSource::fillSliLayer(sli);
+  SepSource::Ptr sepSource = SepSource::create();
+  sepSource->fillSliLayerMeta(sli);
   BOOST_CHECK(sli->height == 42);
 }
 
@@ -310,7 +311,9 @@ BOOST_AUTO_TEST_CASE(closeIfNeeded_2) {
 BOOST_AUTO_TEST_CASE(fill_sli_1) {
   SliLayer::Ptr sli =
       SliLayer::create((testFileDir / "sep_cmyk.sep").string(), "name", 0, 0);
-  SepSource::fillSliLayer(sli);
+  SepSource::Ptr sepSource = SepSource::create();
+  sepSource->fillSliLayerMeta(sli);
+  sepSource->fillSliLayerBitmap(sli);
   BOOST_CHECK(sli->width == 600);
   BOOST_CHECK(sli->height == 400);
   BOOST_CHECK(sli->spp == 4);

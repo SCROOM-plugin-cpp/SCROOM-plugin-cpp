@@ -34,9 +34,9 @@ plugins_sep_src_libspsep_la_SOURCES = \
 	plugins/sep/varnish/varnish.cc \
 	plugins/sep/varnish/varnish.hh
 
-plugins_sep_src_libspsep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ @THREADPOOLLIB@ -ltiff
+plugins_sep_src_libspsep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ @THREADPOOLLIB@ -ltiff -ldl -lpthread
 
-plugins_sep_src_libspsep_la_LDFLAGS = $(loadflag) -I../scroom/gui/src/
+plugins_sep_src_libspsep_la_LDFLAGS = $(loadflag) -I../scroom/gui/src/ -pthread
 
 if BOOST_UNITTESTS
 
@@ -61,7 +61,7 @@ plugins_sep_test_sep_tests_SOURCES = \
 	plugins/sep/test/sep-tests.cc
 
 plugins_sep_test_sep_tests_LDADD = \
-	@BOOSTTESTLIB@ @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ @THREADPOOLLIB@ -ltiff -ldl \
+	@BOOSTTESTLIB@ @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ @THREADPOOLLIB@ -ltiff -ldl -lpthread \
 	plugins/sep/src/libspsep.la \
 	plugins/sep/*.lo \
 	plugins/sep/sli/*.lo \

@@ -84,3 +84,14 @@ int pointToOffset(Scroom::Utils::Rectangle<int> rect,
 Scroom::Utils::Rectangle<int>
 spannedRectangle(boost::dynamic_bitset<> bitmap,
                  std::vector<SliLayer::Ptr> layers, bool fromOrigin = false);
+
+/**
+ * Finds the multiple of 2 whose size best approximates splitting @param height
+ * into @param nSegments segments.
+ */
+int findBestSegFit(unsigned int nSegments, unsigned int height);
+
+/**
+ * Returns a bitmask that divides the @param toggledSegments bitamp in half.
+ */
+boost::dynamic_bitset<> halfSegBitmask(boost::dynamic_bitset<> toggledSegments);

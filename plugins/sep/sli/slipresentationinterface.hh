@@ -12,10 +12,10 @@ public:
   virtual ~SliPresentationInterface() {}
 
   /**
-   *  Erase the RGB cache of the SliSource except for the bottom layer
-   *  for which the relevant bytes are simply turned to 0s.
+   * Clear (ie write 0s) the area of the bottom surface intersecting with the
+   * toggled layers and trigger a redraw.
    */
-  virtual void wipeCache() = 0;
+  virtual void wipeCacheAndRedraw() = 0;
 
   /** Causes the SliPresentation to redraw the current presentation */
   virtual void triggerRedraw() = 0;

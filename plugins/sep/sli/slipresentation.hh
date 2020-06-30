@@ -57,6 +57,9 @@ private:
   /** (Optional) the object used to draw the varnish overlay */
   Varnish::Ptr varnish;
 
+  /** The absolute path to the SLI file */
+  std::string filepath;
+
 private:
   /** Constructor */
   SliPresentation(ScroomInterface::Ptr scroomInterface);
@@ -88,10 +91,10 @@ public:
   ////////////////////////////////////////////////////////////////////////
 
   /**
-   *  Erase (delete reference) the RGB cache of the SliSource except for the
-   * bottom layer for which the relevant bytes are simply turned to 0s.
+   * Clear (ie write 0s) the area of the bottom surface intersecting with the
+   * toggled layers and trigger a redraw.
    */
-  void wipeCache() override;
+  void wipeCacheAndRedraw() override;
 
   /** Causes the SliPresentation to redraw the current presentation */
   void triggerRedraw() override;

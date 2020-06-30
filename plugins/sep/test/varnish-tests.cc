@@ -55,7 +55,8 @@ BOOST_AUTO_TEST_CASE(varnish_load_ui) {
   ViewInterface::Ptr dvi = DummyViewInterface::create();
   SliLayer::Ptr test_varnishLayer =
       SliLayer::create(testFileDir + "v_valid.tif", "SomeCoolTitle", 0, 0);
-  test_varnishLayer->fillFromTiff(8, 1);
+  test_varnishLayer->fillMetaFromTiff(8, 1);
+  test_varnishLayer->fillBitmapFromTiff();
   Varnish::Ptr test_varnish = Varnish::create(test_varnishLayer);
   test_varnish->setView(dvi);
   test_varnish->forceRedraw();
@@ -147,7 +148,8 @@ BOOST_AUTO_TEST_SUITE(varnish_tests)
 BOOST_AUTO_TEST_CASE(varnish_load_valid_tiff) {
   SliLayer::Ptr test_varnishLayer =
       SliLayer::create(testFileDir + "v_valid.tif", "SomeCoolTitle", 0, 0);
-  test_varnishLayer->fillFromTiff(8, 1);
+  test_varnishLayer->fillMetaFromTiff(8, 1);
+  test_varnishLayer->fillBitmapFromTiff();
   Varnish::Ptr test_varnish = Varnish::create(test_varnishLayer);
   // Properties set correctly?
   BOOST_REQUIRE(test_varnish->layer->name == "SomeCoolTitle");
@@ -166,7 +168,8 @@ BOOST_AUTO_TEST_CASE(varnish_load_valid_tiff) {
 BOOST_AUTO_TEST_CASE(varnish_load_valid_tiff_centimeter) {
   SliLayer::Ptr test_varnishLayer = SliLayer::create(
       testFileDir + "v_valid_centimeter.tif", "SomeCoolTitle", 0, 0);
-  test_varnishLayer->fillFromTiff(8, 1);
+  test_varnishLayer->fillMetaFromTiff(8, 1);
+  test_varnishLayer->fillBitmapFromTiff();
   Varnish::Ptr test_varnish = Varnish::create(test_varnishLayer);
   // Properties set correctly?
   BOOST_REQUIRE(test_varnish->layer->name == "SomeCoolTitle");
@@ -188,7 +191,8 @@ BOOST_AUTO_TEST_CASE(varnish_load_valid_tiff_no_spp_tag) {
   // to 1 spp
   SliLayer::Ptr test_varnishLayer = SliLayer::create(
       testFileDir + "v_valid_no_spp_tag.tif", "SomeCoolTitle", 0, 0);
-  test_varnishLayer->fillFromTiff(8, 1);
+  test_varnishLayer->fillMetaFromTiff(8, 1);
+  test_varnishLayer->fillBitmapFromTiff();
   Varnish::Ptr test_varnish = Varnish::create(test_varnishLayer);
   // Properties set correctly?
   BOOST_REQUIRE(test_varnish->layer->name == "SomeCoolTitle");
@@ -209,7 +213,7 @@ BOOST_AUTO_TEST_CASE(varnish_load_invalid_tiff) {
   SliLayer::Ptr test_varnishLayer =
       SliLayer::create(testFileDir + "v_invalidrgb.tif", "Another Title", 0, 0);
   // Tif handling should fail here
-  BOOST_REQUIRE(!test_varnishLayer->fillFromTiff(8, 1));
+  BOOST_REQUIRE(!test_varnishLayer->fillMetaFromTiff(8, 1));
   // Properties set correctly?
   BOOST_REQUIRE(test_varnishLayer->name == "Another Title");
   BOOST_REQUIRE(test_varnishLayer->filepath ==
@@ -228,7 +232,7 @@ BOOST_AUTO_TEST_CASE(varnish_load_zero_res_tiff) {
   SliLayer::Ptr test_varnishLayer = SliLayer::create(
       testFileDir + "v_invalid_no_width.tif", "Another Title", 0, 0);
   // Tif handling should fail here
-  BOOST_REQUIRE(!test_varnishLayer->fillFromTiff(8, 1));
+  BOOST_REQUIRE(!test_varnishLayer->fillMetaFromTiff(8, 1));
   // Properties set correctly?
   BOOST_REQUIRE(test_varnishLayer->name == "Another Title");
   BOOST_REQUIRE(test_varnishLayer->filepath ==
@@ -247,7 +251,7 @@ BOOST_AUTO_TEST_CASE(varnish_load_corrupted_tiff) {
   SliLayer::Ptr test_varnishLayer =
       SliLayer::create(testFileDir + "v_corrupted.tif", "Another Title", 0, 0);
   // Tif handling should fail here
-  BOOST_REQUIRE(!test_varnishLayer->fillFromTiff(8, 1));
+  BOOST_REQUIRE(!test_varnishLayer->fillMetaFromTiff(8, 1));
   // Properties set correctly?
   BOOST_REQUIRE(test_varnishLayer->name == "Another Title");
   BOOST_REQUIRE(test_varnishLayer->filepath == testFileDir + "v_corrupted.tif");
@@ -264,7 +268,7 @@ BOOST_AUTO_TEST_CASE(varnish_load_nonexistent_tiff) {
   SliLayer::Ptr test_varnishLayer = SliLayer::create(
       testFileDir + "v_nonexistent.tif", "This file doesn't exist", 0, 0);
   // Tif handling should fail here
-  BOOST_REQUIRE(!test_varnishLayer->fillFromTiff(8, 1));
+  BOOST_REQUIRE(!test_varnishLayer->fillMetaFromTiff(8, 1));
   // Properties set correctly?
   BOOST_REQUIRE(test_varnishLayer->name == "This file doesn't exist");
   BOOST_REQUIRE(test_varnishLayer->filepath ==
@@ -283,7 +287,7 @@ BOOST_AUTO_TEST_CASE(varnish_load_1bps_tiff) {
   SliLayer::Ptr test_varnishLayer = SliLayer::create(
       testFileDir + "v_invalid1bps.tif", "TitleGoesHere", 0, 0);
   // Tif handling should fail here
-  BOOST_REQUIRE(!test_varnishLayer->fillFromTiff(8, 1));
+  BOOST_REQUIRE(!test_varnishLayer->fillMetaFromTiff(8, 1));
   // Properties set correctly?
   BOOST_REQUIRE(test_varnishLayer->name == "TitleGoesHere");
   BOOST_REQUIRE(test_varnishLayer->filepath ==
@@ -302,7 +306,7 @@ BOOST_AUTO_TEST_CASE(varnish_load_invalid_no_bps_tiff) {
   SliLayer::Ptr test_varnishLayer = SliLayer::create(
       testFileDir + "v_invalid_no_bps_tag.tif", "TitleGoesHere", 0, 0);
   // Tif handling should fail here
-  BOOST_REQUIRE(!test_varnishLayer->fillFromTiff(8, 1));
+  BOOST_REQUIRE(!test_varnishLayer->fillMetaFromTiff(8, 1));
   // Properties set correctly?
   BOOST_REQUIRE(test_varnishLayer->name == "TitleGoesHere");
   BOOST_REQUIRE(test_varnishLayer->filepath ==
