@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#useful for debugging but will leak secret variables on Travis for Windows
+# set -x
+set -e
+set -u
+
+prefix="$1"
+cd "${prefix}/.."
+zip -r /tmp/scroom.zip scroom
+
+artifact=/tmp/scroom.zip
+name=scroom.zip
+
+if [ "${TRAVIS_PULL_REQUEST}" = "false" ] &&
+ [ "${TRAVIS_REPO_SLUG}" = "SCROOM-plugin-cpp/SCROOM-plugin-cpp" ] &&
+ [ "${TRAVIS_TAG}" != "" ]
+then
+  tag_id=$(curl -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/releases/tags/$TRAVIS_TAG" | jq '.id')
+  curl --data-binary @"$artifact" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/$TRAVIS_REPO_SLUG/releases/$tag_id/assets?name=$name"
+fi

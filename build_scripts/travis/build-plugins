@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -x
+set -e
+set -u
+
+#first build the Scroom repository
+( cd scroom && autoreconf -i )
+
+prefix=$(mktemp -d)/scroom
+scroom_build=$(mktemp -d)
+plugins_build=$(mktemp -d)
+
+build_scripts/build-scroom "${TRAVIS_BUILD_DIR}/scroom" "${scroom_build}" "${prefix}"
+
+#build the plugins
+autoreconf -i
+
+build_scripts/build-plugins "${TRAVIS_BUILD_DIR}" "${plugins_build}" "${prefix}"
+
+if [ "${TRAVIS_OS_NAME}" = "windows" ]
+then
+  scroom/build_scripts/windows/post-install-hook.sh "${prefix}"  
+
+  build_scripts/travis/upload-windows-artifacts "${prefix}"
+fi
