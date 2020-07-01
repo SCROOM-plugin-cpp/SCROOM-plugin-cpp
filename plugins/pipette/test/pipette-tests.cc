@@ -1,5 +1,6 @@
 #include <boost/dll.hpp>
 #include <boost/test/unit_test.hpp>
+#include <stack>
 
 // Make all private members accessible for testing
 #define private public
@@ -11,12 +12,14 @@ BOOST_AUTO_TEST_SUITE(Pipette_Tests)
 class DummyPresentation : public PresentationInterface,
                           public PipetteViewInterface {
   Scroom::Utils::Rectangle<double> getRect() {
-    return Scroom::Utils::Rectangle<int>(0, 0, 0, 0);
+    return Scroom::Utils::Rectangle<int>(0, 0, 100, 100);
   }
   void redraw(ViewInterface::Ptr const &, cairo_t *,
               Scroom::Utils::Rectangle<double>, int) {}
   bool getProperty(const std::string &, std::string &) { return false; }
-  bool isPropertyDefined(const std::string &) { return false; }
+  bool isPropertyDefined(const std::string &name) {
+    return PIPETTE_PROPERTY_NAME == name;
+  }
   std::string getTitle() { return nullptr; }
   void open(ViewInterface::WeakPtr){};
   void close(ViewInterface::WeakPtr){};
@@ -31,6 +34,7 @@ static int reg_post = 0;
 static int tool_btn = 0;
 static PresentationInterface::Ptr presentation;
 static int msg_set = 0;
+static std::stack<std::string> msgs;
 
 class DummyView : public ViewInterface {
   void invalidate() {}
@@ -43,20 +47,8 @@ class DummyView : public ViewInterface {
   void registerPostRenderer(PostRenderer::Ptr) { reg_post++; }
   void setStatusMessage(const std::string &msg) {
     msg_set++;
+    msgs.push(msg);
     printf("%s\n", msg.c_str());
-    // known text
-    if (msg.compare("Computing color values...") ||
-        msg.compare("Pipette is not supported for this presentation.")) {
-      return;
-    }
-
-    // actually part of the value_display test case
-    if (msg.compare("Top-left: 10, Bottom-right: 11, Height: 12, Width: 13, "
-                    "Colors: C: 1.00")) {
-      return;
-    }
-
-    BOOST_CHECK(false);
   }
   PresentationInterface::Ptr getCurrentPresentation() { return presentation; }
   void addToolButton(GtkToggleButton *, ToolStateListener::Ptr) { tool_btn++; }
@@ -158,17 +150,38 @@ BOOST_AUTO_TEST_CASE(value_display) {
 
   handler->onEnable();
 
-  // test will fail via event handlers
   handler->computeValues(ViewInterface::Ptr(new DummyView),
                          Scroom::Utils::Rectangle<int>(10, 11, 12, 13));
+  BOOST_CHECK(
+      msgs.top() ==
+      "Top-left: (10,11), Bottom-right: (22,24), Height: 13, Width: 12, "
+      "Colors: C: 1.00");
+  msgs.pop();
+  BOOST_CHECK(msgs.top() == "Computing color values...");
+  msgs.pop();
 
   BOOST_CHECK(pre_msg_set + 2 == msg_set);
+
+  handler->computeValues(ViewInterface::Ptr(new DummyView),
+                         Scroom::Utils::Rectangle<int>(-10, -11, 20, 22));
+  BOOST_CHECK(msgs.top() ==
+              "Top-left: (0,0), Bottom-right: (10,11), Height: 11, Width: 10, "
+              "Colors: C: 1.00");
+  msgs.pop();
+  BOOST_CHECK(msgs.top() == "Computing color values...");
+  msgs.pop();
+
+  BOOST_CHECK(pre_msg_set + 4 == msg_set);
 
   presentation = nullptr;
   handler->computeValues(ViewInterface::Ptr(new DummyView),
                          Scroom::Utils::Rectangle<int>(10, 11, 12, 13));
+  BOOST_CHECK(msgs.top() == "Pipette is not supported for this presentation.");
+  msgs.pop();
+  BOOST_CHECK(msgs.top() == "Computing color values...");
+  msgs.pop();
 
-  BOOST_CHECK(pre_msg_set + 4 == msg_set);
+  BOOST_CHECK(pre_msg_set + 6 == msg_set);
 }
 
 BOOST_AUTO_TEST_CASE(view_add) {
