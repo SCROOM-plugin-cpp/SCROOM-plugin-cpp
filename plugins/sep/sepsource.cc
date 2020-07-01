@@ -217,12 +217,17 @@ void SepSource::openFiles() {
   // open CMYK channels
   for (auto c : channels) {
     channel_files[c] = TIFFOpen(sep_file.files[c].string().c_str(), "r");
+	
+    // Don't show a warning when the file path is empty. This means
+    // that the file was not specified, and the customer requested
+    // there not to be a warning in that case.
+    show_warning |= ! sep_file.files[c].empty() && channel_files[c] == nullptr;
   }
 
   // open white ink channel
   if (sep_file.files.count("W") == 1) {
     white_ink = TIFFOpen(sep_file.files["W"].string().c_str(), "r");
-    show_warning |= (white_ink == nullptr);
+    show_warning |= white_ink == nullptr;
   }
 
   // open varnish channel

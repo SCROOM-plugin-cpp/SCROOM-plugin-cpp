@@ -2,7 +2,6 @@
 
 #include <boost/dll.hpp>
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 #include <list>
 
 // Make all private members accessible for testing
@@ -10,12 +9,9 @@
 
 #include "../sep.hh"
 
-const auto testFileDir =
-    boost::dll::program_location().parent_path().parent_path() / "testfiles";
-
 /** Test cases for sep.hh */
 
-BOOST_AUTO_TEST_SUITE(SepPlugin_Tests)
+BOOST_AUTO_TEST_SUITE(Sep_Tests)
 
 BOOST_AUTO_TEST_CASE(create) {
   Sep::Ptr sep = Sep::create();

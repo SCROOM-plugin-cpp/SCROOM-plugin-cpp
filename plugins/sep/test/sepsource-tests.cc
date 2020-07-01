@@ -1,6 +1,5 @@
 #include <boost/dll.hpp>
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 
 // Make all private members accessible for testing
 #define private public
@@ -13,7 +12,7 @@ const auto testFileDir =
 
 /** Test cases for sepsource.hh */
 
-BOOST_AUTO_TEST_SUITE(Sep_Tests)
+BOOST_AUTO_TEST_SUITE(SepSource_Tests)
 
 BOOST_AUTO_TEST_CASE(create) {
   auto source = SepSource::create();
@@ -38,9 +37,9 @@ BOOST_AUTO_TEST_CASE(parse_sep) {
   BOOST_CHECK(file.white_ink_choice == 0);
 }
 
-BOOST_AUTO_TEST_CASE(parse_sep_empty_line) {
+BOOST_AUTO_TEST_CASE(parse_sep_extra_lines) {
   SepFile file =
-      SepSource::parseSep((testFileDir / "sep_empty_line.sep").string());
+      SepSource::parseSep((testFileDir / "sep_extra_lines.sep").string());
   BOOST_CHECK(file.files.size() == 4);
 
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
@@ -52,7 +51,7 @@ BOOST_AUTO_TEST_CASE(parse_sep_empty_line) {
   BOOST_CHECK(file.white_ink_choice == 0);
 }
 
-BOOST_AUTO_TEST_CASE(parse_sep_empty_line_2) {
+BOOST_AUTO_TEST_CASE(parse_sep_empty_line) {
   SepFile file =
       SepSource::parseSep((testFileDir / "sep_empty_line_2.sep").string());
   BOOST_CHECK(file.files.size() == 4);
@@ -239,9 +238,14 @@ BOOST_AUTO_TEST_CASE(check_files) {
   BOOST_CHECK(true);
 }
 
-BOOST_AUTO_TEST_CASE(apply_white_nowhite) {
-  auto res = SepSource::applyWhiteInk(100, 100, 0);
+BOOST_AUTO_TEST_CASE(apply_white_no_effect_1) {
+  auto res = SepSource::applyWhiteInk(0, 100, 0);
   BOOST_CHECK(res == 100);
+}
+
+BOOST_AUTO_TEST_CASE(apply_white_no_effect_2) {
+  auto res = SepSource::applyWhiteInk(100, 50, 0);
+  BOOST_CHECK(res == 50);
 }
 
 BOOST_AUTO_TEST_CASE(apply_white_subtract_1) {
@@ -264,22 +268,12 @@ BOOST_AUTO_TEST_CASE(apply_white_multiply_2) {
   BOOST_CHECK(res == 100);
 }
 
-BOOST_AUTO_TEST_CASE(apply_white_no_effect_1) {
-  auto res = SepSource::applyWhiteInk(0, 100, 0);
-  BOOST_CHECK(res == 100);
-}
-
 BOOST_AUTO_TEST_CASE(tiff_wrapper_nullptr) {
   auto res = SepSource::TIFFReadScanline_(nullptr, nullptr, 1);
   BOOST_CHECK(res == -1);
 }
 
 BOOST_AUTO_TEST_CASE(tiff_wrapper_2) {
-  auto res = SepSource::TIFFReadScanline_(nullptr, nullptr, 1);
-  BOOST_CHECK(res == -1);
-}
-
-BOOST_AUTO_TEST_CASE(tiff_wrapper_3) {
   auto file = TIFFOpen((testFileDir / "M_9.tif").string().c_str(), "r");
   auto lines = std::vector<uint8_t>(TIFFScanlineSize(file));
   int res = SepSource::TIFFReadScanline_(file, lines.data(), 1);
@@ -292,20 +286,6 @@ BOOST_AUTO_TEST_CASE(fill_sli_empty) {
   SepSource::Ptr sepSource = SepSource::create();
   sepSource->fillSliLayerMeta(sli);
   BOOST_CHECK(sli->height == 42);
-}
-
-BOOST_AUTO_TEST_CASE(closeIfNeeded_1) {
-  auto file = TIFFOpen((testFileDir / "M_9.tif").string().c_str(), "r");
-  BOOST_CHECK(file != nullptr);
-  SepSource::closeIfNeeded(file);
-  BOOST_CHECK_EQUAL(file, nullptr);
-}
-
-BOOST_AUTO_TEST_CASE(closeIfNeeded_2) {
-  auto file = TIFFOpen(NULL, "r");
-  BOOST_CHECK(file == nullptr);
-  SepSource::closeIfNeeded(file);
-  BOOST_CHECK_EQUAL(file, nullptr);
 }
 
 BOOST_AUTO_TEST_CASE(fill_sli_1) {
@@ -321,6 +301,20 @@ BOOST_AUTO_TEST_CASE(fill_sli_1) {
   BOOST_CHECK(sli->bitmap != nullptr);
   BOOST_CHECK(std::abs(sli->xAspect - 1.0) < 1e-4);
   BOOST_CHECK(std::abs(sli->yAspect - 1.0) < 1e-4);
+}
+
+BOOST_AUTO_TEST_CASE(closeIfNeeded_1) {
+  auto file = TIFFOpen((testFileDir / "M_9.tif").string().c_str(), "r");
+  BOOST_CHECK(file != nullptr);
+  SepSource::closeIfNeeded(file);
+  BOOST_CHECK_EQUAL(file, nullptr);
+}
+
+BOOST_AUTO_TEST_CASE(closeIfNeeded_2) {
+  auto file = TIFFOpen(nullptr, "r");
+  BOOST_CHECK(file == nullptr);
+  SepSource::closeIfNeeded(file);
+  BOOST_CHECK_EQUAL(file, nullptr);
 }
 
 BOOST_AUTO_TEST_CASE(fill_no_tiles) {

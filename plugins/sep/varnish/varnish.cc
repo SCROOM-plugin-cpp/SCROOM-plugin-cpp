@@ -26,16 +26,25 @@ void Varnish::setView(ViewInterface::WeakPtr viewWeak) {
   this->viewWeak = viewWeak;
 }
 
-static void varnish_toggled(GtkToggleButton *button, gpointer varnishP) {
+void Varnish::resetView(ViewInterface::WeakPtr viewWeak) {
+  this->viewWeak = viewWeak;
+
+  gdk_threads_enter();
+  GtkWidget *newBox = gtk_vbox_new(false, 0);
+  for (GList *iter = gtk_container_get_children(GTK_CONTAINER(box));
+       iter != nullptr; iter = iter->next) {
+    gtk_widget_reparent(GTK_WIDGET(iter->data), newBox);
+  }
+  box = newBox;
+  viewWeak.lock()->addSideWidget("Varnish", box);
+  gdk_threads_leave();
+}
+
+static void varnish_toggled(GtkToggleButton *, gpointer varnishP) {
   // Have a member function sort out the varnishState
   static_cast<Varnish *>(varnishP)->fixVarnishState();
   // Force a redraw when varnish is toggled.
-  static_cast<Varnish *>(varnishP)->forceRedraw();
-}
-
-void Varnish::forceRedraw() {
-  ViewInterface::Ptr view(viewWeak);
-  view->invalidate();
+  static_cast<Varnish *>(varnishP)->triggerRedraw();
 }
 
 void Varnish::fixVarnishState() {
@@ -57,7 +66,7 @@ void Varnish::fixVarnishState() {
 }
 
 void Varnish::registerUI(ViewInterface::WeakPtr viewWeak) {
-  GtkWidget *box = gtk_vbox_new(false, 0);
+  box = gtk_vbox_new(false, 0);
   GtkWidget *expander = gtk_expander_new("Overlay properties");
   GtkWidget *expander_box = gtk_vbox_new(false, 0);
   colorpicker = gtk_color_selection_new();
@@ -118,7 +127,7 @@ void Varnish::invertSurface() {
   cairo_surface_mark_dirty(surface);
 }
 
-void Varnish::drawOverlay(ViewInterface::Ptr const &vi, cairo_t *cr,
+void Varnish::drawOverlay(ViewInterface::Ptr const &, cairo_t *cr,
                           Scroom::Utils::Rectangle<double> presentationArea,
                           int zoom) {
   if (GTK_TOGGLE_BUTTON(radio_disabled)->active) {
