@@ -10,7 +10,9 @@
 /////////////////////////////////////////////////////////
 ///// SepPresentation ///////////////////////////////////
 
-SepPresentation::SepPresentation() : sep_source(SepSource::create()) {}
+SepPresentation::SepPresentation() : sep_source(SepSource::create()) {
+  properties[PIPETTE_PROPERTY_NAME] = ""; // add support for pipette
+}
 
 SepPresentation::~SepPresentation() {}
 
