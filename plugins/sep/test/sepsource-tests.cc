@@ -14,17 +14,17 @@ const auto testFileDir =
 
 BOOST_AUTO_TEST_SUITE(SepSource_Tests)
 
-BOOST_AUTO_TEST_CASE(create) {
+BOOST_AUTO_TEST_CASE(sepsource_create) {
   auto source = SepSource::create();
   BOOST_CHECK(source != nullptr);
 }
 
-BOOST_AUTO_TEST_CASE(parent_dir) {
+BOOST_AUTO_TEST_CASE(sepsource_parent_dir) {
   auto abctest = SepSource::findParentDir("abc/test/removed");
   BOOST_CHECK(abctest == "abc/test");
 }
 
-BOOST_AUTO_TEST_CASE(parse_sep) {
+BOOST_AUTO_TEST_CASE(sepsource_parse_sep) {
   SepFile file = SepSource::parseSep((testFileDir / "sep_cmyk.sep").string());
   BOOST_CHECK(file.files.size() == 4);
 
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(parse_sep) {
   BOOST_CHECK(file.white_ink_choice == 0);
 }
 
-BOOST_AUTO_TEST_CASE(parse_sep_extra_lines) {
+BOOST_AUTO_TEST_CASE(sepsource_parse_sep_extra_lines) {
   SepFile file =
       SepSource::parseSep((testFileDir / "sep_extra_lines.sep").string());
   BOOST_CHECK(file.files.size() == 4);
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(parse_sep_extra_lines) {
   BOOST_CHECK(file.white_ink_choice == 0);
 }
 
-BOOST_AUTO_TEST_CASE(parse_sep_empty_line) {
+BOOST_AUTO_TEST_CASE(sepsource_parse_sep_empty_line) {
   SepFile file =
       SepSource::parseSep((testFileDir / "sep_empty_line_2.sep").string());
   BOOST_CHECK(file.files.size() == 4);
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(parse_sep_empty_line) {
   BOOST_CHECK(file.white_ink_choice == 0);
 }
 
-BOOST_AUTO_TEST_CASE(parse_sep_missing_channel) {
+BOOST_AUTO_TEST_CASE(sepsource_parse_sep_missing_channel) {
   // Y channel is not defined in this file
   SepFile file =
       SepSource::parseSep((testFileDir / "sep_missing_channel.sep").string());
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(parse_sep_missing_channel) {
   BOOST_CHECK(file.white_ink_choice == 0);
 }
 
-BOOST_AUTO_TEST_CASE(parse_sep_missing_channel_2) {
+BOOST_AUTO_TEST_CASE(sepsource_parse_sep_missing_channel_2) {
   // C channel is not defined in this file + empty line
   SepFile file =
       SepSource::parseSep((testFileDir / "sep_empty_line_3.sep").string());
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(parse_sep_missing_channel_2) {
   BOOST_CHECK(file.white_ink_choice == 0);
 }
 
-BOOST_AUTO_TEST_CASE(get_for_none) {
+BOOST_AUTO_TEST_CASE(sepsource_get_for_none) {
   uint16_t unit;
   float x_res, y_res;
   auto source = SepSource::create();
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(get_for_none) {
   BOOST_CHECK(std::abs(y_res - 1.0) < 1e-4);
 }
 
-BOOST_AUTO_TEST_CASE(get_resolution_null) {
+BOOST_AUTO_TEST_CASE(sepsource_get_resolution_null) {
   uint16_t unit;
   float x_res, y_res;
   auto source = SepSource::create();
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(get_resolution_null) {
   BOOST_CHECK(res == true);
 }
 
-BOOST_AUTO_TEST_CASE(get_transformation) {
+BOOST_AUTO_TEST_CASE(sepsource_get_transformation) {
   auto source = SepSource::create();
 
   source->channel_files["C"] = nullptr;
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(get_transformation) {
   BOOST_CHECK(std::abs(res.y - 1.0) < 1e4);
 }
 
-BOOST_AUTO_TEST_CASE(set_data) {
+BOOST_AUTO_TEST_CASE(sepsource_set_data) {
   // Preparation
   auto source = SepSource::create();
   SepFile file = SepSource::parseSep((testFileDir / "sep_cmyk.sep").string());
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(set_data) {
   BOOST_CHECK(source->sep_file.white_ink_choice == 0);
 }
 
-BOOST_AUTO_TEST_CASE(open_files) {
+BOOST_AUTO_TEST_CASE(sepsource_open_files) {
   // Preparation
   auto source = SepSource::create();
   SepFile file = SepSource::parseSep((testFileDir / "sep_cmyk.sep").string());
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(open_files) {
   BOOST_CHECK(source->varnish == nullptr);
 }
 
-BOOST_AUTO_TEST_CASE(open_files_twice) {
+BOOST_AUTO_TEST_CASE(sepsource_open_files_twice) {
   // Preparation
   auto source = SepSource::create();
   SepFile file = SepSource::parseSep((testFileDir / "sep_cmyk.sep").string());
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(open_files_twice) {
   }
 }
 
-BOOST_AUTO_TEST_CASE(open_files_extra) {
+BOOST_AUTO_TEST_CASE(sepsource_open_files_extra) {
   // Preparation
   auto source = SepSource::create();
   SepFile file = SepSource::parseSep((testFileDir / "sep_cmykv.sep").string());
@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_CASE(open_files_extra) {
   BOOST_CHECK(source->varnish != nullptr);
 }
 
-BOOST_AUTO_TEST_CASE(check_files) {
+BOOST_AUTO_TEST_CASE(sepsource_check_files) {
   // Preparation
   auto source = SepSource::create();
   SepFile file = SepSource::parseSep((testFileDir / "sep_cmykv.sep").string());
@@ -238,49 +238,49 @@ BOOST_AUTO_TEST_CASE(check_files) {
   BOOST_CHECK(true);
 }
 
-BOOST_AUTO_TEST_CASE(apply_white_no_effect_1) {
+BOOST_AUTO_TEST_CASE(sepsource_apply_white_no_effect_1) {
   auto res = SepSource::applyWhiteInk(0, 100, 0);
   BOOST_CHECK(res == 100);
 }
 
-BOOST_AUTO_TEST_CASE(apply_white_no_effect_2) {
+BOOST_AUTO_TEST_CASE(sepsource_apply_white_no_effect_2) {
   auto res = SepSource::applyWhiteInk(100, 50, 0);
   BOOST_CHECK(res == 50);
 }
 
-BOOST_AUTO_TEST_CASE(apply_white_subtract_1) {
+BOOST_AUTO_TEST_CASE(sepsource_apply_white_subtract_1) {
   auto res = SepSource::applyWhiteInk(100, 100, 1);
   BOOST_CHECK(res == 0);
 }
 
-BOOST_AUTO_TEST_CASE(apply_white_subtract_2) {
+BOOST_AUTO_TEST_CASE(sepsource_apply_white_subtract_2) {
   auto res = SepSource::applyWhiteInk(100, 101, 1);
   BOOST_CHECK(res == 1);
 }
 
-BOOST_AUTO_TEST_CASE(apply_white_multiply_1) {
+BOOST_AUTO_TEST_CASE(sepsource_apply_white_multiply_1) {
   auto res = SepSource::applyWhiteInk(100, 100, 2);
   BOOST_CHECK(res == 61);
 }
 
-BOOST_AUTO_TEST_CASE(apply_white_multiply_2) {
+BOOST_AUTO_TEST_CASE(sepsource_apply_white_multiply_2) {
   auto res = SepSource::applyWhiteInk(0, 100, 2);
   BOOST_CHECK(res == 100);
 }
 
-BOOST_AUTO_TEST_CASE(tiff_wrapper_nullptr) {
+BOOST_AUTO_TEST_CASE(sepsource_tiff_wrapper_nullptr) {
   auto res = SepSource::TIFFReadScanline_(nullptr, nullptr, 1);
   BOOST_CHECK(res == -1);
 }
 
-BOOST_AUTO_TEST_CASE(tiff_wrapper_2) {
+BOOST_AUTO_TEST_CASE(sepsource_tiff_wrapper_2) {
   auto file = TIFFOpen((testFileDir / "M_9.tif").string().c_str(), "r");
   auto lines = std::vector<uint8_t>(TIFFScanlineSize(file));
   int res = SepSource::TIFFReadScanline_(file, lines.data(), 1);
   BOOST_CHECK(res != -1);
 }
 
-BOOST_AUTO_TEST_CASE(fill_sli_empty) {
+BOOST_AUTO_TEST_CASE(sepsource_fill_sli_empty) {
   SliLayer::Ptr sli = SliLayer::create("", "name", 0, 0);
   sli->height = 42;
   SepSource::Ptr sepSource = SepSource::create();
@@ -288,7 +288,7 @@ BOOST_AUTO_TEST_CASE(fill_sli_empty) {
   BOOST_CHECK(sli->height == 42);
 }
 
-BOOST_AUTO_TEST_CASE(fill_sli_1) {
+BOOST_AUTO_TEST_CASE(sepsource_fill_sli_1) {
   SliLayer::Ptr sli =
       SliLayer::create((testFileDir / "sep_cmyk.sep").string(), "name", 0, 0);
   SepSource::Ptr sepSource = SepSource::create();
@@ -303,21 +303,21 @@ BOOST_AUTO_TEST_CASE(fill_sli_1) {
   BOOST_CHECK(std::abs(sli->yAspect - 1.0) < 1e-4);
 }
 
-BOOST_AUTO_TEST_CASE(closeIfNeeded_1) {
+BOOST_AUTO_TEST_CASE(sepsource_closeIfNeeded_1) {
   auto file = TIFFOpen((testFileDir / "M_9.tif").string().c_str(), "r");
   BOOST_CHECK(file != nullptr);
   SepSource::closeIfNeeded(file);
   BOOST_CHECK_EQUAL(file, nullptr);
 }
 
-BOOST_AUTO_TEST_CASE(closeIfNeeded_2) {
+BOOST_AUTO_TEST_CASE(sepsource_closeIfNeeded_2) {
   auto file = TIFFOpen(nullptr, "r");
   BOOST_CHECK(file == nullptr);
   SepSource::closeIfNeeded(file);
   BOOST_CHECK_EQUAL(file, nullptr);
 }
 
-BOOST_AUTO_TEST_CASE(fill_no_tiles) {
+BOOST_AUTO_TEST_CASE(sepsource_fill_no_tiles) {
   // Preparation
   std::vector<Tile::Ptr> tiles;
   auto source = SepSource::create();
