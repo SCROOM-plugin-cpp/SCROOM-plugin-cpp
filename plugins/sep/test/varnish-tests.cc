@@ -47,6 +47,8 @@ public:
   void addToolButton(GtkToggleButton *, ToolStateListener::Ptr){};
 };
 
+void dummyFunction() {};
+
 ///////////////////////////////////////////////////////////////////////////////
 // Tests for varnish ui construction
 
@@ -58,6 +60,7 @@ BOOST_AUTO_TEST_CASE(varnish_load_ui) {
   test_varnishLayer->fillMetaFromTiff(8, 1);
   test_varnishLayer->fillBitmapFromTiff();
   Varnish::Ptr test_varnish = Varnish::create(test_varnishLayer);
+  test_varnish->triggerRedraw = boost::bind(dummyFunction);
   test_varnish->setView(dvi);
   test_varnish->invertSurface();
 
