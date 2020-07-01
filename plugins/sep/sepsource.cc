@@ -235,6 +235,7 @@ void SepSource::openFiles() {
     SliLayer::Ptr varnishLayer =
         SliLayer::create(sep_file.files["V"].string(), "Varnish", 0, 0);
     if (varnishLayer->fillMetaFromTiff(8, 1)) {
+      varnishLayer->fillBitmapFromTiff();
       varnish = Varnish::create(varnishLayer);
     } else {
       show_warning = true;
