@@ -96,6 +96,7 @@ bool SliPresentation::parseSli(const std::string &sliFileName) {
         if (varnishLayer->fillMetaFromTiff(8, 1)) {
           varnishLayer->fillBitmapFromTiff();
           varnish = Varnish::create(varnishLayer);
+          varnish->triggerRedraw = triggerRedrawFunc;
         } else {
           std::string error =
               "Error: Varnish file could not be loaded successfully";
@@ -249,25 +250,37 @@ std::string SliPresentation::getTitle() { return filepath; }
 // PresentationBase
 
 void SliPresentation::viewAdded(ViewInterface::WeakPtr vi) {
-  controlPanel = SliControlPanel::create(vi, weakPtrToThis);
-  controlPanel->disableInteractions();
 
-  // Provide the source with the means to enable and disable the widgets in the
-  // sidebar
-  source->enableInteractions =
-      boost::bind(&SliControlPanel::enableInteractions, controlPanel);
-  source->disableInteractions =
-      boost::bind(&SliControlPanel::disableInteractions, controlPanel);
+  // We want to have only one control panel in total
+  if (views.empty()) {
+    controlPanel = SliControlPanel::create(vi, weakPtrToThis);
+    controlPanel->disableInteractions();
+
+    // Provide the source with the means to enable and disable the widgets in
+    // the sidebar
+    source->enableInteractions =
+        boost::bind(&SliControlPanel::enableInteractions, controlPanel);
+    source->disableInteractions =
+        boost::bind(&SliControlPanel::disableInteractions, controlPanel);
+
+    if (varnish) {
+      varnish->setView(vi);
+    }
+  }
 
   views.insert(vi);
-
-  if (varnish) {
-    varnish->setView(vi);
-  }
 }
 
 void SliPresentation::viewRemoved(ViewInterface::WeakPtr vi) {
   views.erase(vi);
+  // If the view contains the control panel, attach the control panel to another
+  // view
+  if (!views.empty() && vi.lock() == controlPanel->viewWeak.lock()) {
+    controlPanel->reAttach(*views.begin());
+    if (varnish) {
+      varnish->resetView(*views.begin());
+    }
+  }
 }
 
 std::set<ViewInterface::WeakPtr> SliPresentation::getViews() { return views; }
