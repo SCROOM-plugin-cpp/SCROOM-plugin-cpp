@@ -81,7 +81,7 @@ void SliSource::queryImportBitmaps() {
 }
 
 void SliSource::wipeCacheAndRedraw() {
-  clearBottomSurface(); 
+  clearBottomSurface();
   getSurface(0); // recompute bottom surface and trigger redraw when ready
 }
 
