@@ -313,12 +313,7 @@ SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area) {
     k = std::min({c, m, y});
 
     // transparent -> only the white background of Scroom remains visible
-    if (A == 0) {
-      C += 0.0;
-      M += 0.0;
-      Y += 0.0;
-      K += 0.0;
-    } else {
+    if (A != 0) {
       C += c - k;
       M += m - k;
       Y += y - k;
