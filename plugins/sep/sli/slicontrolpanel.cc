@@ -231,16 +231,16 @@ void SliControlPanel::create_view_and_model() {
 }
 
 SliControlPanel::SliControlPanel(
-    ViewInterface::WeakPtr viewWeak,
+    ViewInterface::WeakPtr viewWeak_,
     SliPresentationInterface::WeakPtr presentation_)
-    : presentation(presentation_) {
+    : presentation(presentation_), viewWeak(viewWeak_) {
   printf("Multilayer control panel has been created\n");
   SliPresentationInterface::Ptr presPtr = presentation.lock();
   std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
   n_layers = layers.size();
   ViewInterface::Ptr view(viewWeak);
 
-  GtkWidget *hbox = gtk_hbox_new(false, 10);
+  hbox = gtk_hbox_new(false, 10);
   GtkWidget *treeview = gtk_tree_view_new();
   widgets[TREEVIEW] = treeview;
 
@@ -324,15 +324,30 @@ void SliControlPanel::enableInteractions() {
   gdk_threads_leave();
 }
 
+void SliControlPanel::reAttach(ViewInterface::WeakPtr viewWeak_) {
+  viewWeak = viewWeak_;
+
+  // Re-assign all widgets to a new hbox and attach it to the sidebar
+  gdk_threads_enter();
+  GtkWidget *newHbox = gtk_hbox_new(false, 0);
+  for (GList *iter = gtk_container_get_children(GTK_CONTAINER(hbox));
+       iter != nullptr; iter = iter->next) {
+    gtk_widget_reparent(GTK_WIDGET(iter->data), newHbox);
+  }
+  hbox = newHbox;
+  viewWeak.lock()->addSideWidget("Layers", hbox);
+  gdk_threads_leave();
+}
+
 SliControlPanel::~SliControlPanel() {
   printf("Multilayer control panel has been destroyed\n");
 }
 
 SliControlPanel::Ptr
-SliControlPanel::create(ViewInterface::WeakPtr viewWeak,
+SliControlPanel::create(ViewInterface::WeakPtr viewWeak_,
                         SliPresentationInterface::WeakPtr presentation_) {
   SliControlPanel::Ptr result =
-      SliControlPanel::Ptr(new SliControlPanel(viewWeak, presentation_));
+      SliControlPanel::Ptr(new SliControlPanel(viewWeak_, presentation_));
 
   return result;
 }
