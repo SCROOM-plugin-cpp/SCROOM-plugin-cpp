@@ -59,7 +59,6 @@ BOOST_AUTO_TEST_CASE(varnish_load_ui) {
   test_varnishLayer->fillBitmapFromTiff();
   Varnish::Ptr test_varnish = Varnish::create(test_varnishLayer);
   test_varnish->setView(dvi);
-  test_varnish->forceRedraw();
   test_varnish->invertSurface();
 
   // Inverting twice should return the same thing.
