@@ -305,6 +305,8 @@ SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area) {
   int offset = pointToOffset(intersectionBytes.getTopLeft(), stride);
   int offsetEnd =
       pointToOffset(intersectionBytes.getBottomRight(), stride) - stride;
+  
+  uint8_t A;
   double R, G, B, c, m, y, k;
   double C = 0, Y = 0, M = 0, K = 0;
 
@@ -316,17 +318,20 @@ SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area) {
     B = surfaceBegin[offset + 0];
     G = surfaceBegin[offset + 1];
     R = surfaceBegin[offset + 2];
-    // A = surfaceBegin[offset+3]; // don't need this
+    A = surfaceBegin[offset + 3];
 
     c = (255.0 - R);
     m = (255.0 - G);
     y = (255.0 - B);
     k = std::min({c, m, y});
 
-    C += c - k;
-    M += m - k;
-    Y += y - k;
-    K += k;
+    // transparent -> only the white background of Scroom remains visible
+    if (A != 0) {
+      C += c - k;
+      M += m - k;
+      Y += y - k;
+      K += k;
+    }
   }
 
   PipetteLayerOperations::PipetteColor result = {

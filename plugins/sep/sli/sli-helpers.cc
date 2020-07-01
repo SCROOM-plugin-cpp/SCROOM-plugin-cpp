@@ -131,7 +131,7 @@ spannedRectangle(boost::dynamic_bitset<> bitmap,
 
 int findBestSegFit(unsigned int nSegments, unsigned int height) {
   int k = std::log2(height / nSegments);
-  return static_cast<int>(std::pow(2, k));
+  return std::max(1, static_cast<int>(std::pow(2, k)));
 }
 
 boost::dynamic_bitset<>
