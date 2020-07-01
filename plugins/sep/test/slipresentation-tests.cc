@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE(slipresentation_pipette_tool_zero_area) {
   BOOST_REQUIRE(presentation->getLayers().size() == 1);
   dummyRedraw(presentation);
 
-  Scroom::Utils::Rectangle<int> rect1 {0, 0, 0, 0};
+  Scroom::Utils::Rectangle<int> rect1{0, 0, 0, 0};
   auto result = presentation->getPixelAverages(rect1);
   BOOST_REQUIRE(result.empty());
 }
