@@ -1,0 +1,7 @@
+Xresolution: 100
+Yresolution: 100
+varnish_file: C.tif
+sep_cmyk.sep : 0 0
+sep_cmyk.sep : 0 100
+sep_cmyk.sep : 0 300
+sep_cmyk.sep : 0 800

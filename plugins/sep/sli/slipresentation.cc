@@ -305,7 +305,7 @@ SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area) {
   int offset = pointToOffset(intersectionBytes.getTopLeft(), stride);
   int offsetEnd =
       pointToOffset(intersectionBytes.getBottomRight(), stride) - stride;
-  
+
   uint8_t A;
   double R, G, B, c, m, y, k;
   double C = 0, Y = 0, M = 0, K = 0;

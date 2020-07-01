@@ -47,7 +47,7 @@ public:
   void addToolButton(GtkToggleButton *, ToolStateListener::Ptr){};
 };
 
-void dummyFunction() {};
+void dummyFunction(){};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Tests for varnish ui construction
