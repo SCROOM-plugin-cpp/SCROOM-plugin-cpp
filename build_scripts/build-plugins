@@ -11,4 +11,5 @@ prefix=$3
 cd "${plugins_build}"
 "${plugins_source}"/configure --prefix "${prefix}" \
                    CPPFLAGS="-I${prefix}/include/" LDFLAGS="-L${prefix}/lib"
+make -k -j2 check
 make -k -j2 install

@@ -34,7 +34,7 @@ void dummyRedraw(SliPresentation::Ptr presentation) {
   cairo_surface_t *surface =
       cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 100, 100);
   cairo_t *cr = cairo_create(surface);
-  Scroom::Utils::Rectangle<double> rect(5.0, 5.0, 100.0, 100.0);
+  Scroom::Utils::Rectangle<double> rect(0.0, 0.0, 100.0, 100.0);
 
   boost::this_thread::sleep(boost::posix_time::millisec(500));
   // redraw() for all zoom levels from 5 to -2 and check whether cache has been
@@ -86,6 +86,19 @@ BOOST_AUTO_TEST_CASE(slipresentation_load_sli_xoffset) {
   presentation->load(testFileDir + "sli_xoffset.sli");
   BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
+}
+
+BOOST_AUTO_TEST_CASE(slipresentation_load_sli_varnish) {
+  SliPresentation::Ptr presentation = createPresentation();
+  presentation->load(testFileDir + "sli_varnish.sli");
+  std::cout << presentation->getLayers().size() << '\n';
+  BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
+}
+
+BOOST_AUTO_TEST_CASE(slipresentation_load_sli_varnish_wrongpath) {
+  SliPresentation::Ptr presentation = createPresentation();
+  presentation->load(testFileDir + "sli_varnish_wrongpath.sli");
+  BOOST_REQUIRE(presentation->getLayers().size() == 0);
 }
 
 BOOST_AUTO_TEST_CASE(slipresentation_presentationinterface_inherited) {
@@ -146,6 +159,17 @@ BOOST_AUTO_TEST_CASE(slipresentation_pipette_tool_one_color) {
   Scroom::Utils::Rectangle<int> rect4{1, 1, 1, 1};
   result = presentation->getPixelAverages(rect4);
   BOOST_REQUIRE(abs(result[3].second - 255) < 0.0001);
+}
+
+BOOST_AUTO_TEST_CASE(slipresentation_pipette_tool_zero_area) {
+  SliPresentation::Ptr presentation = createPresentation();
+  presentation->load(testFileDir + "sli_pipette.sli");
+  BOOST_REQUIRE(presentation->getLayers().size() == 1);
+  dummyRedraw(presentation);
+
+  Scroom::Utils::Rectangle<int> rect1{0, 0, 0, 0};
+  auto result = presentation->getPixelAverages(rect1);
+  BOOST_REQUIRE(result.empty());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

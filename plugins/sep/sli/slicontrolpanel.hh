@@ -18,6 +18,8 @@ private:
   /** The number of layers that the SliPresentation consists of*/
   unsigned int n_layers;
 
+  GtkWidget *hbox;
+
 public:
   /** Contains the pointers to the widgets of the control panel*/
   std::map<widget, GtkWidget *> widgets;
@@ -32,9 +34,12 @@ public:
   /** The SliPresentation that owns this SliControlPanel */
   SliPresentationInterface::WeakPtr presentation;
 
+  /** The view to which the control panel is attached*/
+  ViewInterface::WeakPtr viewWeak;
+
 private:
   /** Constructor */
-  SliControlPanel(ViewInterface::WeakPtr viewWeak,
+  SliControlPanel(ViewInterface::WeakPtr viewWeak_,
                   SliPresentationInterface::WeakPtr presentation_);
 
   /** Create a TreeView and link it to a ListStore model */
@@ -43,7 +48,7 @@ private:
 public:
   /** Constructor */
   static SliControlPanel::Ptr
-  create(ViewInterface::WeakPtr view,
+  create(ViewInterface::WeakPtr viewWeak_,
          SliPresentationInterface::WeakPtr presentation_);
 
   /** Get the number of layers in the model */
@@ -54,6 +59,12 @@ public:
 
   /** Re-enable all widgets */
   virtual void enableInteractions();
+
+  /**
+   * Remove the control panel from the current view and attach it to a new view
+   * @param viewWeak_ the new view to attach the sidebar to
+   */
+  virtual void reAttach(ViewInterface::WeakPtr viewWeak_);
 
   /** Destructor */
   virtual ~SliControlPanel();

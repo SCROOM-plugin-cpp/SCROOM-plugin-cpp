@@ -266,6 +266,12 @@ AC_CONFIG_FILES([Makefile
                  doxyfile
 ])
 
+if test "${srcdir}" != "."
+then
+  AC_CONFIG_COMMANDS([copy-testfiles], 
+    [mkdir -p plugins/sep/test/testfiles/ && cp $srcdir/plugins/sep/test/testfiles/* plugins/sep/test/testfiles/])
+fi
+
 # Misc defines
 AC_SUBST([plugindir], [$libdir/scroom])
 

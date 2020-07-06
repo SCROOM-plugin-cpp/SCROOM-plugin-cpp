@@ -18,8 +18,7 @@
 
 BOOST_AUTO_TEST_SUITE(Sli_Tests)
 
-// clearSurface(Scroom::Utils::Rectangle<int> rect);
-BOOST_AUTO_TEST_CASE(slihelpers_clear_surface) {
+BOOST_AUTO_TEST_CASE(slihelpers_clearsurface) {
   unsigned int width = 10;
   unsigned int height = 10;
   auto surfaceWrapper =
@@ -32,7 +31,6 @@ BOOST_AUTO_TEST_CASE(slihelpers_clear_surface) {
   Scroom::Utils::Rectangle<int> rect = {0, 0, 5, 10}; // in bytes
   bool allWhite = true;
   bool allClear = true;
-  bool rectClear = true;
 
   // Check all pixels are white
   for (unsigned int i = 0; i < height * stride; i += (stride / width)) {
@@ -53,11 +51,25 @@ BOOST_AUTO_TEST_CASE(slihelpers_clear_surface) {
     }
   }
   BOOST_CHECK(allClear == true);
+  cairo_destroy(cr);
+}
 
-  cairo_paint(cr); // paint everything white again
+BOOST_AUTO_TEST_CASE(slihelpers_clearsurface_rect) {
+  unsigned int width = 10;
+  unsigned int height = 10;
+  auto surfaceWrapper =
+      SurfaceWrapper::create(width, height, CAIRO_FORMAT_ARGB32); // 40x10
+  cairo_t *cr = cairo_create(surfaceWrapper->surface);
+  cairo_set_source_rgba(cr, 1, 1, 1, 1);
+  cairo_paint(cr); // paint everything whites
+  int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
+  uint8_t *data = cairo_image_surface_get_data(surfaceWrapper->surface);
+  Scroom::Utils::Rectangle<int> rect = {0, 0, 5, 10}; // in bytes
+  bool allWhite = true;
+  bool rectClear = true;
 
   // Check all pixels are white
-  for (unsigned int i = 0; i < height * stride; i++) {
+  for (unsigned int i = 0; i < height * stride; i += (stride / width)) {
     if (data[i] != 255) {
       allWhite = false;
       break;
