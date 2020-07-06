@@ -96,6 +96,7 @@ bool SliPresentation::parseSli(const std::string &sliFileName) {
         if (varnishLayer->fillMetaFromTiff(8, 1)) {
           varnishLayer->fillBitmapFromTiff();
           varnish = Varnish::create(varnishLayer);
+          varnish->triggerRedraw = triggerRedrawFunc;
         } else {
           std::string error =
               "Error: Varnish file could not be loaded successfully";
@@ -249,25 +250,37 @@ std::string SliPresentation::getTitle() { return filepath; }
 // PresentationBase
 
 void SliPresentation::viewAdded(ViewInterface::WeakPtr vi) {
-  controlPanel = SliControlPanel::create(vi, weakPtrToThis);
-  controlPanel->disableInteractions();
 
-  // Provide the source with the means to enable and disable the widgets in the
-  // sidebar
-  source->enableInteractions =
-      boost::bind(&SliControlPanel::enableInteractions, controlPanel);
-  source->disableInteractions =
-      boost::bind(&SliControlPanel::disableInteractions, controlPanel);
+  // We want to have only one control panel in total
+  if (views.empty()) {
+    controlPanel = SliControlPanel::create(vi, weakPtrToThis);
+    controlPanel->disableInteractions();
+
+    // Provide the source with the means to enable and disable the widgets in
+    // the sidebar
+    source->enableInteractions =
+        boost::bind(&SliControlPanel::enableInteractions, controlPanel);
+    source->disableInteractions =
+        boost::bind(&SliControlPanel::disableInteractions, controlPanel);
+
+    if (varnish) {
+      varnish->setView(vi);
+    }
+  }
 
   views.insert(vi);
-
-  if (varnish) {
-    varnish->setView(vi);
-  }
 }
 
 void SliPresentation::viewRemoved(ViewInterface::WeakPtr vi) {
   views.erase(vi);
+  // If the view contains the control panel, attach the control panel to another
+  // view
+  if (!views.empty() && vi.lock() == controlPanel->viewWeak.lock()) {
+    controlPanel->reAttach(*views.begin());
+    if (varnish) {
+      varnish->resetView(*views.begin());
+    }
+  }
 }
 
 std::set<ViewInterface::WeakPtr> SliPresentation::getViews() { return views; }
@@ -292,6 +305,8 @@ SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area) {
   int offset = pointToOffset(intersectionBytes.getTopLeft(), stride);
   int offsetEnd =
       pointToOffset(intersectionBytes.getBottomRight(), stride) - stride;
+
+  uint8_t A;
   double R, G, B, c, m, y, k;
   double C = 0, Y = 0, M = 0, K = 0;
 
@@ -303,17 +318,20 @@ SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area) {
     B = surfaceBegin[offset + 0];
     G = surfaceBegin[offset + 1];
     R = surfaceBegin[offset + 2];
-    // A = surfaceBegin[offset+3]; // don't need this
+    A = surfaceBegin[offset + 3];
 
     c = (255.0 - R);
     m = (255.0 - G);
     y = (255.0 - B);
     k = std::min({c, m, y});
 
-    C += c - k;
-    M += m - k;
-    Y += y - k;
-    K += k;
+    // transparent -> only the white background of Scroom remains visible
+    if (A != 0) {
+      C += c - k;
+      M += m - k;
+      Y += y - k;
+      K += k;
+    }
   }
 
   PipetteLayerOperations::PipetteColor result = {

@@ -10,7 +10,9 @@
 /////////////////////////////////////////////////////////
 ///// SepPresentation ///////////////////////////////////
 
-SepPresentation::SepPresentation() : sep_source(SepSource::create()) {}
+SepPresentation::SepPresentation() : sep_source(SepSource::create()) {
+  properties[PIPETTE_PROPERTY_NAME] = ""; // add support for pipette
+}
 
 SepPresentation::~SepPresentation() {}
 
@@ -45,6 +47,15 @@ bool SepPresentation::load(const std::string &file_name) {
 }
 
 TransformationData::Ptr SepPresentation::getTransform() { return transform; }
+
+void SepPresentation::triggerRedraw() {
+  for (ViewInterface::WeakPtr view : views) {
+    ViewInterface::Ptr viewPtr = view.lock();
+    gdk_threads_enter();
+    viewPtr->invalidate();
+    gdk_threads_leave();
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////
 // PresentationInterface
@@ -91,19 +102,21 @@ std::string SepPresentation::getTitle() { return file_name; }
 // PresentationBase
 
 void SepPresentation::viewAdded(ViewInterface::WeakPtr interface) {
-  views.insert(interface);
-
   if (tbi == nullptr) {
     printf(
         "ERROR: SepPresentation::open(): No TiledBitmapInterface available!\n");
     return;
   }
 
-  tbi->open(interface);
-
-  if (sep_source->varnish != nullptr) {
+  if (views.empty() && sep_source->varnish != nullptr) {
     sep_source->varnish->setView(interface);
+    sep_source->varnish->triggerRedraw = boost::bind(
+        &SepPresentation::triggerRedraw, shared_from_this<SepPresentation>());
   }
+
+  views.insert(interface);
+
+  tbi->open(interface);
 }
 
 void SepPresentation::viewRemoved(ViewInterface::WeakPtr interface) {
@@ -113,6 +126,11 @@ void SepPresentation::viewRemoved(ViewInterface::WeakPtr interface) {
     printf("ERROR: SepPresentation::close(): No TiledBitmapInterface "
            "available!\n");
     return;
+  }
+
+  if (!views.empty() && sep_source->varnish &&
+      interface.lock() == sep_source->varnish->viewWeak.lock()) {
+    sep_source->varnish->resetView(*views.begin());
   }
 
   tbi->close(interface);
