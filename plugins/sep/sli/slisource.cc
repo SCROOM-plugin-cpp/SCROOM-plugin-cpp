@@ -344,7 +344,7 @@ void SliSource::computeRgb() {
       continue;
 
     auto layer = layers[j];
-    auto bitmap = layer->bitmap;
+    auto bitmap = layer->bitmap.get();
     Scroom::Utils::Rectangle<int> layerRect =
         toBytesRectangle(layer->toRectangle());
 

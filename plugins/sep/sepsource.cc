@@ -191,12 +191,12 @@ void SepSource::fillSliLayerBitmap(SliLayer::Ptr sli) {
   getResolution(unit, sli->xAspect, sli->yAspect);
 
   const int row_width = sli->width * 4; // 4 bytes per pixel
-  sli->bitmap = new uint8_t[sli->height * row_width];
+  sli->bitmap.reset(new uint8_t[sli->height * row_width]);
 
   auto temp = std::vector<byte>(row_width);
   for (int y = 0; y < sli->height; y++) {
     readCombinedScanline(temp, y);
-    memcpy(sli->bitmap + y * row_width, temp.data(), row_width);
+    memcpy(&sli->bitmap[y * row_width], temp.data(), row_width);
   }
 }
 

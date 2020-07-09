@@ -20,8 +20,6 @@ SliLayer::Ptr SliLayer::create(const std::string &filepath,
 
 SliLayer::SliLayer() : height(0), width(0) {}
 
-SliLayer::~SliLayer() { free(bitmap); }
-
 Scroom::Utils::Rectangle<int> SliLayer::toRectangle() {
   Scroom::Utils::Rectangle<int> rect{xoffset, yoffset, width, height};
 
@@ -111,13 +109,13 @@ void SliLayer::fillBitmapFromTiff() {
     // Could just use the width here but we don't want to make overflows too
     // easy, right ;)
     int byteWidth = TIFFScanlineSize(tif);
-    bitmap = static_cast<uint8_t *>(malloc(byteWidth * height));
+    bitmap.reset(new uint8_t[byteWidth * height]);
     int stride = width * spp;
 
     // Iterate over the rows and copy the bitmap data to newly allocated memory
     // pointed to by currentBitmap
     for (int row = 0; row < height; row++) {
-      TIFFReadScanline(tif, bitmap + row * stride, row);
+      TIFFReadScanline(tif, &bitmap[row * stride], row);
     }
 
     TIFFClose(tif);

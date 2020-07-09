@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <scroom/scroominterface.hh>
 
 class SliLayer : public virtual Scroom::Utils::Base {
@@ -37,7 +39,7 @@ public:
   std::string filepath;
 
   /** The memory chunk containing the bitmap */
-  uint8_t *bitmap = nullptr;
+  std::unique_ptr<uint8_t[]> bitmap;
 
 private:
   SliLayer();
@@ -48,7 +50,7 @@ public:
                     int xoffset, int yoffset);
 
   /** Destructor */
-  virtual ~SliLayer();
+  ~SliLayer() override = default;
 
   /** Returns the Rectangle representation of the layer (in pixels) */
   virtual Scroom::Utils::Rectangle<int> toRectangle();

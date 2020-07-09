@@ -8,8 +8,9 @@ Varnish::Varnish(SliLayer::Ptr layer) {
   inverted = false;
   // Precalculate the surface and save it.
   int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, layer->width);
-  surface = cairo_image_surface_create_for_data(
-      layer->bitmap, CAIRO_FORMAT_A8, layer->width, layer->height, stride);
+  surface =
+      cairo_image_surface_create_for_data(layer->bitmap.get(), CAIRO_FORMAT_A8,
+                                          layer->width, layer->height, stride);
   // Map is read inverted by cairo, so we invert it here once
   invertSurface();
 }
