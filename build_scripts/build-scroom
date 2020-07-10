@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -x
+set -e
+set -u
+
+scroom_source=$1
+scroom_build=$2
+prefix=$3
+
+cd "${scroom_build}"
+"${scroom_source}"/configure --prefix "${prefix}"
+make -k -j2 install

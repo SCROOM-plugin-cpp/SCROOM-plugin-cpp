@@ -1,0 +1,32 @@
+#!/bin/bash
+
+set -x
+set -e
+set -u
+
+scroom_source="$1"
+# scroom_build="$2"
+# plugins_source="$3"
+# plugins_build="$4"
+prefix="$5"
+
+if [ "${TRAVIS_PULL_REQUEST}" = "false" ]
+then
+    "${scroom_source}/build_scripts/travis/setup-ssh-keys"
+fi
+
+scroom_version=$(cat "${scroom_source}/.scroom-version")
+plugins_version=$(cat ".project-version")
+zip_name="scroom_${scroom_version}_cpp-plugins_${plugins_version}.zip"
+
+if [ "${TRAVIS_OS_NAME}" = "windows" ] && [ "${TRAVIS_PULL_REQUEST}" = "false" ]
+then
+  ( cd "${prefix}/.." && zip -r "/tmp/${zip_name}" . )
+
+  DESTINATION="travis/scroom-cpp/builds/${TRAVIS_BRANCH}/${TRAVIS_BUILD_NUMBER}"
+    
+  # shellcheck disable=SC2029
+  ssh -T project@fuzzy.mandryn.eu mkdir -p "${DESTINATION}"
+  scp "/tmp/${zip_name}" project@fuzzy.mandryn.eu:"${DESTINATION}"
+
+fi

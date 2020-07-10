@@ -5,11 +5,13 @@ script:
   echo TRAVIS_BRANCH=${TRAVIS_BRANCH} &&
   echo TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST} &&
   echo SHELL=$SHELL
-- chmod 755 ./travis
-- $prefix ./travis
+- $prefix ./build_scripts/travis/build-plugins
 os:
 - linux
 - windows
+env:
+- NEXT=false
+- NEXT=true
 dist: bionic
 compiler:
 - gcc
@@ -34,7 +36,7 @@ addons:
     - graphviz
     - jq
 git:
-  depth: 200
+  depth: false
 before_install:
 - |-
     case $TRAVIS_OS_NAME in

@@ -1,0 +1,44 @@
+#!/bin/bash
+
+set -x
+set -e
+set -u
+
+scroom_source="${TRAVIS_BUILD_DIR}/scroom"
+
+if [ "$NEXT" = "true" ]
+then
+  scroom_source=$(mktemp -d)
+  
+  git clone --branch=next https://github.com/kees-jan/scroom.git "${scroom_source}"
+fi
+
+#first build the Scroom repository
+( cd "${scroom_source}" && autoreconf -i )
+
+prefix=$(mktemp -d)/scroom
+scroom_build=$(mktemp -d)
+plugins_build=$(mktemp -d)
+
+build_scripts/build-scroom "${scroom_source}" "${scroom_build}" "${prefix}"
+
+#build the plugins
+autoreconf -i
+
+build_scripts/build-plugins "${TRAVIS_BUILD_DIR}" "${plugins_build}" "${prefix}"
+
+if [ "${TRAVIS_OS_NAME}" = "windows" ]
+then
+  "${scroom_source}"/build_scripts/windows/post-install-hook.sh "${prefix}"  
+fi
+
+if [ "$NEXT" = "true" ] && [ "$TRAVIS_REPO_SLUG" = "kees-jan/SCROOM-plugin-cpp" ]
+then
+  # Upload doxygen, windows binaries
+  build_scripts/travis/kees-jan "${scroom_source}" "${scroom_build}" \
+                                "${TRAVIS_BUILD_DIR}" "${plugins_build}" \
+                                "${prefix}"
+elif [ "$NEXT" = "false" ] && [ "${TRAVIS_OS_NAME}" = "windows" ]
+then
+  build_scripts/travis/upload-windows-artifacts "${prefix}"
+fi
