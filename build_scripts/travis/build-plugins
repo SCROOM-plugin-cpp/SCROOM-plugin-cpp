@@ -40,5 +40,7 @@ then
                                 "${prefix}"
 elif [ "$NEXT" = "false" ] && [ "${TRAVIS_OS_NAME}" = "windows" ]
 then
-  build_scripts/travis/upload-windows-artifacts "${prefix}"
+  build_scripts/travis/upload-windows-artifacts "${scroom_source}" "${scroom_build}" \
+                                                "${TRAVIS_BUILD_DIR}" "${plugins_build}" \
+                                                "${prefix}"
 fi

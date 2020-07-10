@@ -5,17 +5,23 @@
 set -e
 set -u
 
-prefix="$1"
-cd "${prefix}/.."
-zip -r /tmp/scroom.zip scroom
+scroom_source="$1"
+# scroom_build="$2"
+# plugins_source="$3"
+# plugins_build="$4"
+prefix="$5"
 
-artifact=/tmp/scroom.zip
-name=scroom.zip
+scroom_version=$(cat "${scroom_source}/.scroom-version")
+plugins_version=$(cat ".project-version")
+zip_name="scroom_${scroom_version}_cpp-plugins_${plugins_version}.zip"
+artifact="/tmp/${zip_name}"
+
+( cd "${prefix}/.." && zip -r "/tmp/${zip_name}" . )
 
 if [ "${TRAVIS_PULL_REQUEST}" = "false" ] &&
  [ "${TRAVIS_REPO_SLUG}" = "SCROOM-plugin-cpp/SCROOM-plugin-cpp" ] &&
  [ "${TRAVIS_TAG}" != "" ]
 then
   tag_id=$(curl -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/releases/tags/$TRAVIS_TAG" | jq '.id')
-  curl --data-binary @"$artifact" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/$TRAVIS_REPO_SLUG/releases/$tag_id/assets?name=$name"
+  curl --data-binary @"$artifact" -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/octet-stream" "https://uploads.github.com/repos/$TRAVIS_REPO_SLUG/releases/$tag_id/assets?name=$zip_name"
 fi
