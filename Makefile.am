@@ -34,7 +34,7 @@ plugins_sep_src_libspsep_la_SOURCES = \
 	plugins/sep/varnish/varnish.cc \
 	plugins/sep/varnish/varnish.hh
 
-plugins_sep_src_libspsep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ @THREADPOOLLIB@ -ltiff -ldl -lpthread
+plugins_sep_src_libspsep_la_LIBADD = @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ @THREADPOOLLIB@ -ltiff -lpthread
 
 plugins_sep_src_libspsep_la_LDFLAGS = $(loadflag) -I../scroom/gui/src/ -pthread
 
