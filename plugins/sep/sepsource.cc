@@ -202,6 +202,10 @@ void SepSource::fillSliLayerBitmap(SliLayer::Ptr sli) {
 
 void SepSource::setData(SepFile file) { sep_file = file; }
 
+void SepSource::setName(const std::string &file_name_) {
+  file_name = file_name_;
+}
+
 void SepSource::openFiles() {
   for (auto c : channels) {
     if (channel_files[c] != nullptr) {
@@ -385,3 +389,5 @@ void SepSource::done() {
     SepSource::closeIfNeeded(x.second);
   }
 }
+
+std::string SepSource::getName() { return file_name; }

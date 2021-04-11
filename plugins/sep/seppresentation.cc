@@ -33,6 +33,7 @@ bool SepPresentation::load(const std::string &file_name) {
     return false;
 
   sep_source->setData(file_content);
+  sep_source->setName(file_name);
   sep_source->openFiles();
   sep_source->checkFiles();
 

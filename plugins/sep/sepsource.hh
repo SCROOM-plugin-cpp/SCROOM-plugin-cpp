@@ -43,6 +43,9 @@ private:
   /** Pointer to white ink file. */
   tiff *white_ink = nullptr;
 
+  /** Name of this sep */
+  std::string file_name;
+
   /** Constructor */
   SepSource();
 
@@ -94,6 +97,13 @@ public:
    * @param file - value to set.
    */
   void setData(SepFile file);
+
+  /**
+   * Setter for SepSource::file_name
+   *
+   * @param file_name - value to set.
+   */
+  void setName(const std::string &file_name);
 
   /**
    * Opens the required TIFF files for the individual channels.
@@ -158,6 +168,9 @@ public:
    * Closes the TIFF files opened by `openFiles()`.
    */
   void done() override;
+
+  /** Returns the name of this sep file */
+  std::string getName() override;
 
 private:
   /**
