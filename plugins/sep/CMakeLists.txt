@@ -50,7 +50,7 @@ if(ENABLE_BOOST_TEST)
           test/slipresentation-tests.cc
           test/slisource-tests.cc
           test/varnish-tests.cc)
-  target_include_directories(spsep_tests PRIVATE sli)
+  #target_include_directories(spsep_tests PRIVATE sli)
   target_link_libraries(
     spsep_tests
     PRIVATE boosttesthelper
