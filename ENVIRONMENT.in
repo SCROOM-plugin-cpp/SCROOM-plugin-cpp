@@ -1,3 +1,4 @@
 ATB=@abs_top_builddir@
 export SCROOM_DEV_MODE="yes"
-export SCROOM_PLUGIN_DIRS="${ATB}/scroom/lib:${ATB}/lib"
+export SCROOM_PLUGIN_DIRS="/some/bogus/value:${ATB}/lib:${ATB}/scroom/plugins/colormap/.libs:${ATB}/scroom/plugins/tiff/src/.libs:${ATB}/scroom/plugins/example/.libs:${ATB}/scroom/plugins/transparent-overlay/src/.libs:${ATB}/scroom/plugins/measure/src/.libs:${ATB}/scroom/plugins/pipette/src/.libs:${ATB}/scroom/lib"
+
