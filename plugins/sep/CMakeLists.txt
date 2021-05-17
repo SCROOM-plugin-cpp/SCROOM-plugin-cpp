@@ -49,7 +49,9 @@ if(ENABLE_BOOST_TEST)
           test/slihelpers-tests.cc
           test/slipresentation-tests.cc
           test/slisource-tests.cc
-          test/varnish-tests.cc)
+          test/varnish-tests.cc
+          test/constants.cc
+          test/constants.hh)
   #target_include_directories(spsep_tests PRIVATE sli)
   target_link_libraries(
     spsep_tests
