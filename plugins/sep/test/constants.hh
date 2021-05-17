@@ -7,6 +7,6 @@
 
 #include <boost/dll.hpp>
 
-extern const boost::filesystem::path testFileDir;
+extern boost::filesystem::path testFileDir;
 
 #endif //SCROOMCPPPLUGINS_TEST_CONSTANTS_HH
