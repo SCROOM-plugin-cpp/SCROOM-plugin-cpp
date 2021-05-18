@@ -25,14 +25,16 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Cache CMake
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-Cmake-build
-        with:
-
-          path: ${{github.workspace}}/build
-          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          
+      # Disabled cache for now, as it doenst speed up the build process
+      #- name: Cache CMake
+      #  uses: actions/cache@v2
+      #  env:
+      #    cache-name: cache-Cmake-build
+      #  with:
+      #
+      #    path: ${{github.workspace}}/build
+      #    key: ${{ runner.os }}-build-${{ env.cache-name }}
 
       - name: Install Ubuntu Dependencies
         run: sudo apt install git ccache python3-pip libboost-test-dev libboost-dev libboost-filesystem-dev libboost-program-options-dev libboost-system-dev libboost-thread-dev libgtest-dev google-mock libcairo2-dev libglade2-dev libglib2.0-dev libgtk2.0-dev libtiff5-dev pkg-config doxygen graphviz libc6-dev
