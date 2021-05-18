@@ -29,8 +29,8 @@ jobs:
         id: ccache_cache_timestamp
         shell: cmake -P {0}
         run: |
-        string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
-        message("::set-output name=timestamp::${current_date}")
+          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+          message("::set-output name=timestamp::${current_date}")
 
       - name: ccache cache files
         uses: actions/cache@v1.1.0
