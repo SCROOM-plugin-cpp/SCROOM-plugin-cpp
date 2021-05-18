@@ -52,7 +52,7 @@ if(ENABLE_BOOST_TEST)
           test/varnish-tests.cc
           test/constants.cc
           test/constants.hh)
-  #target_include_directories(spsep_tests PRIVATE sli)
+  target_include_directories(spsep_tests PRIVATE sli)
   target_link_libraries(
     spsep_tests
     PRIVATE boosttesthelper
@@ -62,8 +62,6 @@ if(ENABLE_BOOST_TEST)
             spsep
             tiledbitmap
             util)
-
-  file(COPY test/testfiles DESTINATION ${CMAKE_BINARY_DIR})
 
   add_test(NAME spsep_tests COMMAND spsep_tests)
 endif()
