@@ -14,7 +14,6 @@ env:
   CCACHE_COMPRESS: true
   CCACHE_COMPRESSLEVEL: 6
 
-
 jobs:
   build:
     # The CMake configure and build commands are platform agnostic and should work equally
