@@ -25,16 +25,20 @@ jobs:
         with:
           submodules: recursive
 
-          
-      # Disabled cache for now, as it doenst speed up the build process
-      #- name: Cache CMake
-      #  uses: actions/cache@v2
-      #  env:
-      #    cache-name: cache-Cmake-build
-      #  with:
-      #
-      #    path: ${{github.workspace}}/build
-      #    key: ${{ runner.os }}-build-${{ env.cache-name }}
+      - name: Prepare ccache timestamp
+        id: ccache_cache_timestamp
+        shell: cmake -P {0}
+        run: |
+        string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+        message("::set-output name=timestamp::${current_date}")
+
+      - name: ccache cache files
+        uses: actions/cache@v1.1.0
+        with:
+          path: .ccache
+          key: ${{ runner.os }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-
 
       - name: Install Ubuntu Dependencies
         run: sudo apt install git ccache python3-pip libboost-test-dev libboost-dev libboost-filesystem-dev libboost-program-options-dev libboost-system-dev libboost-thread-dev libgtest-dev google-mock libcairo2-dev libglade2-dev libglib2.0-dev libgtk2.0-dev libtiff5-dev pkg-config doxygen graphviz libc6-dev
