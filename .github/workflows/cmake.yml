@@ -8,7 +8,8 @@ on:
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
+  BUILD_TYPE: Debug
+
 
 jobs:
   build:
@@ -34,7 +35,8 @@ jobs:
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
-
+      - name: Load enviroment
+        run: source ${{github.workspace}}/build/ENVIRONMENT
 
       - name: Build
         # Build your program with the given configuration
