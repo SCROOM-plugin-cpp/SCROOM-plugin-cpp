@@ -10,9 +10,9 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 
 # Tests for SEP are broken at the moment
-#if(ENABLE_BOOST_TEST OR ENABLE_GOOGLE_TEST)
-#    enable_testing()
-#endif()
+if(ENABLE_BOOST_TEST OR ENABLE_GOOGLE_TEST)
+    enable_testing()
+endif()
 
 add_subdirectory(scroom)
 add_subdirectory(plugins)
