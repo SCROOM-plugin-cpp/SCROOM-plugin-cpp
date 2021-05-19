@@ -63,5 +63,5 @@ if(ENABLE_BOOST_TEST)
             tiledbitmap
             util)
 
-  add_test(NAME spsep_tests COMMAND spsep_tests)
+  add_test(NAME spsep_tests COMMAND spsep_tests -- ${CMAKE_CURRENT_SOURCE_DIR}/test/testfiles)
 endif()
