@@ -97,3 +97,8 @@ jobs:
           build_scripts\github\mingwdo
           pip install --user conan
 
+      - name: Build
+        run: >
+          build_scripts\github\mingwdo
+          build_scripts/github/build-cmake-mingw
+
