@@ -27,7 +27,8 @@ target_link_libraries(
   spsep
         PRIVATE project_options project_warnings
         PUBLIC PkgConfig::gtk threadpool PkgConfig::cairo
-        boost_filesystem
+        Boost::filesystem
+		tiledbitmap
         scroom_lib
         TIFF::TIFF
         m
@@ -60,7 +61,6 @@ if(ENABLE_BOOST_TEST)
             project_options
             project_warnings
             spsep
-            tiledbitmap
             util)
 
   add_test(NAME spsep_tests COMMAND spsep_tests -- ${CMAKE_CURRENT_SOURCE_DIR}/test/testfiles)
