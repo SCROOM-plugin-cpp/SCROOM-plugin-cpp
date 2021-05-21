@@ -53,7 +53,7 @@ if(ENABLE_BOOST_TEST)
           test/varnish-tests.cc
           test/constants.cc
           test/constants.hh)
-  target_include_directories(spsep_tests PRIVATE sli)
+  target_include_directories(spsep_tests PRIVATE . sli varnish)
   target_link_libraries(
     spsep_tests
     PRIVATE boosttesthelper
