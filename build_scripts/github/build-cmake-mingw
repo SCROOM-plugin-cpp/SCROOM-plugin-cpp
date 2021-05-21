@@ -6,23 +6,9 @@ set -u
 
 export PATH=${PATH}:~/.local/bin:/c/Users/$(whoami)/.local/bin
 
-ls
-
-echo "----------"
-
-ls SCROOM-plugin-cpp
-
-# workspace
-#   - SCROOM-plugin-cpp
-#   - build
-#   - scroom-installed
-#       - scroom
-
 mkdir -p ../build
 cd ../build
 cmake ../SCROOM-plugin-cpp -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX="../scroom-installed/scroom" -DENABLE_CACHE=OFF
-
-ls
 
 cmake --build . -j2
 ctest -j2
