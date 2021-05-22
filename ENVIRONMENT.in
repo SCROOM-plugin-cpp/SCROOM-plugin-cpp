@@ -1,3 +1,17 @@
-ATB=@abs_top_builddir@
+ATB="@abs_top_builddir@"
+
+if which cygpath > /dev/null 2>&1
+then
+  ATB=$(cygpath "${ATB}")
+fi
+
 export SCROOM_DEV_MODE="yes"
 export SCROOM_PLUGIN_DIRS="${ATB}/scroom/lib:${ATB}/lib"
+
+if [ "${WINDIR}x" != "x" ]
+then
+  # We're probably on windows
+
+  # On Windows, the path is searched for libraries
+  export PATH="${PATH}:${ATB}/scroom/bin:${ATB}/bin"
+fi
