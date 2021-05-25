@@ -5,10 +5,11 @@
 
 namespace utf = boost::unit_test;
 /**
- * This struct is used as a global struct for the SEP test module and exposes methods to get paths to test files.
+ * This struct is used as a global fixture for the SEP test module and exposes methods to get paths to test files.
  * It reads the first argument passed to the test module as the path to the test file directory.
- * If no arguments were passed it uses the default directory <binary_location>/../../testfiles.
- * See: https://www.boost.org/doc/libs/1_76_0/libs/test/doc/html/boost_test/runtime_config/custom_command_line_arguments.html
+ * If no arguments were passed it uses the default directory <code>&lt;binary_location&gt;/../../testfiles</code>.
+ * @see <a href="https://www.boost.org/doc/libs/1_76_0/libs/test/doc/html/boost_test/tests_organization/fixtures/global.html">Global fixture</a>
+ * @see <a href="https://www.boost.org/doc/libs/1_76_0/libs/test/doc/html/boost_test/runtime_config/custom_command_line_arguments.html">Custom command line arguments</a>
  */
 struct TestFiles {
 
@@ -36,7 +37,7 @@ public:
     }
 
     /**
-     * Returns the path to the file with the given filename.
+     * Appends the filename to the test file directory path and returns the result.
      * @param filename Name of the file in the test files directory.
      * @return The path to the file with the given filename.
      */
