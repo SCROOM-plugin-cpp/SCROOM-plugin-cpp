@@ -10,9 +10,7 @@
 
 #define SLI_NOF_LAYERS 4
 
-const std::string testFileDir =
-    boost::dll::program_location().parent_path().parent_path().string() +
-    "/testfiles/";
+#include "constants.hh"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Helper functions
@@ -56,7 +54,7 @@ BOOST_AUTO_TEST_SUITE(Sli_Tests)
 BOOST_AUTO_TEST_CASE(slisource_clearbottomsurface_all_toggled) {
   SliPresentation::Ptr presentation = createPresentation1();
 
-  presentation->load(testFileDir + "sli_tiffonly.sli");
+  presentation->load((testFileDir / "sli_tiffonly.sli").string());
   dummyRedraw1(presentation);
   presentation->source->toggled = boost::dynamic_bitset<>{SLI_NOF_LAYERS}.set();
   presentation->source->clearBottomSurface();
@@ -77,8 +75,8 @@ BOOST_AUTO_TEST_CASE(slisource_clearbottomsurface_none_toggled) {
   SliPresentation::Ptr presentation1 = createPresentation1();
   SliPresentation::Ptr presentation2 = createPresentation1();
 
-  presentation1->load(testFileDir + "sli_tiffonly.sli");
-  presentation2->load(testFileDir + "sli_tiffonly.sli");
+  presentation1->load((testFileDir / "sli_tiffonly.sli").string());
+  presentation2->load((testFileDir / "sli_tiffonly.sli").string());
   dummyRedraw1(presentation1);
   dummyRedraw1(presentation2);
   presentation1->source->toggled = boost::dynamic_bitset<>{SLI_NOF_LAYERS};
@@ -101,8 +99,8 @@ BOOST_AUTO_TEST_CASE(slisource_clearbottomsurface_some_toggled) {
   SliPresentation::Ptr presentation1 = createPresentation1();
   SliPresentation::Ptr presentation2 = createPresentation1();
 
-  presentation1->load(testFileDir + "sli_tiffonly.sli");
-  presentation2->load(testFileDir + "sli_tiffonly.sli");
+  presentation1->load((testFileDir / "sli_tiffonly.sli").string());
+  presentation2->load((testFileDir / "sli_tiffonly.sli").string());
   dummyRedraw1(presentation1);
   dummyRedraw1(presentation2);
   presentation1->source->toggled =
@@ -139,7 +137,7 @@ BOOST_AUTO_TEST_CASE(slisource_clearbottomsurface_some_toggled) {
 //              [(255,255,0,255),(255,0,255,255),(0,255,255,255),(0,0,0,255)]
 BOOST_AUTO_TEST_CASE(slisource_computergb_yoffset) {
   SliPresentation::Ptr presentation = createPresentation1();
-  presentation->load(testFileDir + "sli_tinycmyk.sli");
+  presentation->load((testFileDir / "sli_tinycmyk.sli").string());
   dummyRedraw1(presentation);
   auto surface = presentation->source->getSurface(0)->getBitmap();
   presentation->source->computeRgb();
@@ -154,7 +152,7 @@ BOOST_AUTO_TEST_CASE(slisource_computergb_yoffset) {
 
 BOOST_AUTO_TEST_CASE(slisource_computergb_xoffset) {
   SliPresentation::Ptr presentation = createPresentation1();
-  presentation->load(testFileDir + "sli_tinycmyk_xoffset.sli");
+  presentation->load((testFileDir / "sli_tinycmyk_xoffset.sli").string());
   dummyRedraw1(presentation);
   auto surface = presentation->source->rgbCache[0]->getBitmap();
   presentation->source->computeRgb();

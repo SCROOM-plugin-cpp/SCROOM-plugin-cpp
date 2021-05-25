@@ -1,0 +1,3 @@
+ATB=@abs_top_builddir@
+export SCROOM_DEV_MODE="yes"
+export SCROOM_PLUGIN_DIRS="${ATB}/scroom/lib:${ATB}/lib"

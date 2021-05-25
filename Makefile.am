@@ -59,7 +59,9 @@ plugins_sep_test_sep_tests_SOURCES = \
 	plugins/sep/test/sephelpers-tests.cc \
 	plugins/sep/test/varnish-tests.cc \
 	plugins/sep/test/seppresentation-tests.cc \
-	plugins/sep/test/sep-tests.cc
+	plugins/sep/test/sep-tests.cc \
+	plugins/sep/test/constants.cc \
+	plugins/sep/test/constants.hh
 
 plugins_sep_test_sep_tests_LDADD = \
 	@BOOSTTESTLIB@ @SEPPLUGIN_LIBS@ @BOOSTTHREADLIB@ @TILEDBITMAPLIB@ @SCROOMLIB@ @BOOSTFILESYSTEMLIB@ @THREADPOOLLIB@ -ltiff -ldl -lpthread \

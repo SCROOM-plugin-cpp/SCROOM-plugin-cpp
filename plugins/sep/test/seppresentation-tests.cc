@@ -7,8 +7,7 @@
 
 #include "../seppresentation.hh"
 
-const auto testFileDir =
-    boost::dll::program_location().parent_path().parent_path() / "testfiles";
+#include "constants.hh"
 
 /** Test cases for seppresentation.hh */
 

@@ -45,3 +45,4 @@ plugin-build/*
 plugins/sep/test/sep-tests
 gmon.out
 plugins/pipette/test/pipette-tests
+/cmake-build-*
