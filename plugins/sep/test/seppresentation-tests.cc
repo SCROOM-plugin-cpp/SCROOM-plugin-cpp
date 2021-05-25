@@ -6,8 +6,7 @@
 #define private public
 
 #include "../seppresentation.hh"
-
-#include "constants.hh"
+#include "testglobals.hh"
 
 /** Test cases for seppresentation.hh */
 
@@ -20,7 +19,7 @@ BOOST_AUTO_TEST_CASE(seppresentation_create) {
 
 BOOST_AUTO_TEST_CASE(seppresentation_load_false) {
   SepPresentation::Ptr presentation = SepPresentation::create();
-  BOOST_CHECK_EQUAL(presentation->load((testFileDir / "sep_test.sep").string()),
+  BOOST_CHECK_EQUAL(presentation->load(TestFiles::getPathToFile("sep_test.sep")),
                     false);
   BOOST_CHECK_EQUAL(presentation->width, 0);
   BOOST_CHECK_EQUAL(presentation->height, 0);
@@ -35,7 +34,7 @@ BOOST_AUTO_TEST_CASE(seppresentation_load_false_2) {
 
 BOOST_AUTO_TEST_CASE(seppresentation_load_true) {
   SepPresentation::Ptr presentation = SepPresentation::create();
-  BOOST_CHECK_EQUAL(presentation->load((testFileDir / "sep_cmyk.sep").string()),
+  BOOST_CHECK_EQUAL(presentation->load(TestFiles::getPathToFile("sep_cmyk.sep")),
                     true);
   BOOST_CHECK_EQUAL(presentation->width, 600);
   BOOST_CHECK_EQUAL(presentation->height, 400);
@@ -46,22 +45,22 @@ BOOST_AUTO_TEST_CASE(seppresentation_load_true) {
 
 BOOST_AUTO_TEST_CASE(seppresentation_getTitle) {
   SepPresentation::Ptr presentation = SepPresentation::create();
-  BOOST_CHECK_EQUAL(presentation->load((testFileDir / "sep_cmyk.sep").string()),
+  BOOST_CHECK_EQUAL(presentation->load(TestFiles::getPathToFile("sep_cmyk.sep")),
                     true);
   BOOST_CHECK_EQUAL(presentation->getTitle(),
-                    (testFileDir / "sep_cmyk.sep").string());
+                    TestFiles::getPathToFile("sep_cmyk.sep"));
 }
 
 BOOST_AUTO_TEST_CASE(seppresentation_getTransform) {
   SepPresentation::Ptr presentation = SepPresentation::create();
-  BOOST_CHECK_EQUAL(presentation->load((testFileDir / "sep_cmyk.sep").string()),
+  BOOST_CHECK_EQUAL(presentation->load(TestFiles::getPathToFile("sep_cmyk.sep")),
                     true);
   BOOST_CHECK(presentation->getTransform() != nullptr);
 }
 
 BOOST_AUTO_TEST_CASE(seppresentation_getRect) {
   SepPresentation::Ptr presentation = SepPresentation::create();
-  BOOST_CHECK_EQUAL(presentation->load((testFileDir / "sep_cmyk.sep").string()),
+  BOOST_CHECK_EQUAL(presentation->load(TestFiles::getPathToFile("sep_cmyk.sep")),
                     true);
   auto rect = presentation->getRect();
   BOOST_CHECK(rect.getTop() == 0);
@@ -78,7 +77,7 @@ BOOST_AUTO_TEST_CASE(seppresentation_getViews) {
 
 BOOST_AUTO_TEST_CASE(seppresentation_pipette) {
   SepPresentation::Ptr presentation = SepPresentation::create();
-  BOOST_CHECK_EQUAL(presentation->load((testFileDir / "sep_cmyk.sep").string()),
+  BOOST_CHECK_EQUAL(presentation->load(TestFiles::getPathToFile("sep_cmyk.sep")),
                     true);
   auto rect = presentation->getRect();
   BOOST_CHECK(rect.getTop() == 0);
