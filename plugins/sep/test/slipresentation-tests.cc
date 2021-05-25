@@ -100,7 +100,6 @@ BOOST_AUTO_TEST_CASE(slipresentation_load_sli_varnish_wrongpath) {
 }
 
 BOOST_AUTO_TEST_CASE(slipresentation_presentationinterface_inherited) {
-  std::string testFilePath = (testFileDir / "sli_xoffset.sli").string();
   SliPresentation::Ptr presentation = createPresentation();
   presentation->load(testFileDir.string());
 
