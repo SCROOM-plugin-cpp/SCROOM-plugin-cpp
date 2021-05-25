@@ -14,7 +14,7 @@ cmake --build . -j2
 ( . ENVIRONMENT && ctest -j2 )
 
 cmake --build . --target package_source -j2
-mv Scroom-*Source.tar.gz ../scroom
+mv ScroomCPPPlugins-*Source.tar.gz ../scroom
 
 cmake --install .
 ../scroom/build_scripts/windows/post-install-cmake-hook.sh ../scroom-installed/scroom
