@@ -1,4 +1,3 @@
 [submodule "scroom"]
 	path = scroom
 	url = https://github.com/Group8Sep/scroom.git
-	branch = GtkUpdate-Dylan
