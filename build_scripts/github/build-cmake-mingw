@@ -21,6 +21,6 @@ cmake --install .
 ../SCROOM-plugin-cpp/build_scripts/windows/post-install-cmake-hook.sh ../scroom-installed/scroom
 cd ../scroom-installed
 
-SCROOM_VERSION="$(cat ../scroom/.scroom-version)"
+SCROOM_VERSION="$(cat ../SCROOM-plugin-cpp/scroom/.scroom-version)"
 SCROOM_NAME="scroom-win-${SCROOM_VERSION}"
-zip -r "../scroom/${SCROOM_NAME}.zip" scroom
+zip -r "../SCROOM-plugin-cpp/scroom/${SCROOM_NAME}.zip" scroom
