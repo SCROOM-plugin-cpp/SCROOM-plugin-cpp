@@ -23,4 +23,4 @@ cd ../scroom-installed
 
 SCROOM_VERSION="$(cat ../SCROOM-plugin-cpp/scroom/.scroom-version)"
 SCROOM_NAME="scroom-win-${SCROOM_VERSION}"
-zip -r "../SCROOM-plugin-cpp/scroom/${SCROOM_NAME}.zip" scroom
+zip -r "../SCROOM-plugin-cpp/${SCROOM_NAME}.zip" scroom
