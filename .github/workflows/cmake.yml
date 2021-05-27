@@ -83,8 +83,7 @@ jobs:
           mingw-w64-x86_64-dlfcn
           mingw-w64-x86_64-gcc
           mingw-w64-x86_64-glade
-          mingw-w64-x86_64-gtk2
-          mingw-w64-x86_64-libglade
+          mingw-w64-x86_64-gtk3
           mingw-w64-x86_64-toolchain
           pkg-config
           zip
