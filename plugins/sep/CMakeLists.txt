@@ -52,7 +52,7 @@ if(ENABLE_BOOST_TEST)
           test/slisource-tests.cc
           test/varnish-tests.cc
           test/testglobals.hh)
-  target_include_directories(spsep_tests PRIVATE sli)
+  target_include_directories(spsep_tests PRIVATE . sli varnish)
   target_link_libraries(
     spsep_tests
     PRIVATE boosttesthelper
