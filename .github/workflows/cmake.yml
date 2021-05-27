@@ -45,7 +45,7 @@ jobs:
 
       - name: Install Ubuntu Dependencies
         run: >
-            sudo apt install 
+            sudo apt install --fix-missing
             git 
             ccache 
             python3-pip 
