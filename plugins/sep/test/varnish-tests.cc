@@ -29,7 +29,7 @@ public:
     // Add the widget to a fresh GTK box instead.
     // This won't verify UI integrity, but it should
     // at least allow the code to run once in headless CI
-    GtkWidget *box = gtk_vbox_new(false, 0);
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_box_pack_start(GTK_BOX(box), w, true, true, 0);
   }
   void removeSideWidget(GtkWidget *w){};

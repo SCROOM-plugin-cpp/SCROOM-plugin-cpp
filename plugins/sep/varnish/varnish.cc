@@ -31,7 +31,7 @@ void Varnish::resetView(ViewInterface::WeakPtr viewWeak) {
   this->viewWeak = viewWeak;
 
   gdk_threads_enter();
-  GtkWidget *newBox = gtk_vbox_new(false, 0);
+  GtkWidget *newBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   for (GList *iter = gtk_container_get_children(GTK_CONTAINER(box));
        iter != nullptr; iter = iter->next) {
     gtk_widget_reparent(GTK_WIDGET(iter->data), newBox);
@@ -67,9 +67,9 @@ void Varnish::fixVarnishState() {
 }
 
 void Varnish::registerUI(ViewInterface::WeakPtr viewWeak) {
-  box = gtk_vbox_new(false, 0);
+  box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *expander = gtk_expander_new("Overlay properties");
-  GtkWidget *expander_box = gtk_vbox_new(false, 0);
+  GtkWidget *expander_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   colorpicker = gtk_color_selection_new();
   check_show_background = gtk_check_button_new_with_label("Show background");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_show_background), true);
