@@ -4,7 +4,7 @@
 #include <iostream>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include "colorconfig.hh"
+#include "CustomColorConfig.hh"
 #include <scroom/scroominterface.hh>
 #include <list>
 
@@ -42,13 +42,13 @@ void ColorConfig::loadFile() {
         float m = v.second.get<float>("mValue");
         float y = v.second.get<float>("yValue");
         float k = v.second.get<float>("kValue");
-        Colour newColour = Colour(name, c, m, y, k);
+        CustomColor newColour = CustomColor(name, c, m, y, k);
 
-        colours.push_back(newColour);
+        colors.push_back(newColour);
     }
 
-    for(Colour colour : colours){
-        cout << colour.getName()<<"\n";
+    for(CustomColor color : colors){
+        std::cout << color.getName()<<"\n";
 
     }
 

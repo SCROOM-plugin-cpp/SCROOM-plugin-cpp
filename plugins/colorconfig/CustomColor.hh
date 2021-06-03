@@ -20,6 +20,16 @@ public:
         yMultiplier = y;
         kMultiplier = k;
     }
+
+    std::string getName(){
+        return name;
+    }
+
+    float * getColor(){
+        float color[4] = {cMultiplier, mMultiplier, yMultiplier, kMultiplier};
+
+        return color;
+    }
 };
 
 

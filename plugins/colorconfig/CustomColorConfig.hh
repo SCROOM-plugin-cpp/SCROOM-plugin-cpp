@@ -11,7 +11,7 @@
 
 #include <scroom/plugininformationinterface.hh>
 #include <scroom/utilities.hh>
-#include "custom-colors.hh"
+#include "CustomColor.hh"
 
 namespace pt = boost::property_tree;
 class ColorConfig
@@ -37,5 +37,5 @@ public:
   std::string getPluginVersion() override;
   void        registerCapabilities(ScroomPluginInterface::Ptr host) override;
   void loadFile();
-  std::vector<Colour> colours = {};
+  std::vector<CustomColor> colors = {};
 };

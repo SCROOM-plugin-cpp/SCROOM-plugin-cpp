@@ -1,10 +1,8 @@
-add_library(spconfig SHARED custom-colors.hh CustomColor.cc CustomColor.hh CustomColorOperations.cc CustomColorOperations.hh)
+add_library(spconfig SHARED CustomColor.hh CustomColorOperations.cc CustomColorOperations.hh)
 target_sources(spconfig PRIVATE
         main.cc
-        colorconfig.cc
-        colorconfig.hh
-        custom-colors.hh
-        CustomColor.cc
+        CustomColorConfig.cc
+        CustomColorConfig.hh
         CustomColor.hh
         CustomColorOperations.cc
         CustomColorOperations.hh)

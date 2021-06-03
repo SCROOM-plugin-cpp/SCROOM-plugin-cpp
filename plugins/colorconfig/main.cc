@@ -7,7 +7,7 @@
 #include <scroom/scroomplugin.hh>
 #include <scroom/unused.hh>
 
-#include "colorconfig.hh"
+#include "CustomColorConfig.hh"
 
 
 
