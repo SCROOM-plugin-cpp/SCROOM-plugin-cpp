@@ -53,7 +53,7 @@
     "colours": {
       "$id": "#/properties/colours",
       "type": "array",
-      "title": "The colours schema",
+      "title": "Colours schema",
       "description": "Container for user defined colours",
       "default": [],
       "examples": [
@@ -99,7 +99,7 @@
         "name": {
           "$id": "#/$defs/colour/properties/name",
           "type": "string",
-          "title": "The name schema",
+          "title": "name",
           "description": "Name of the user defined colour",
           "default": "",
           "examples": [
@@ -112,7 +112,7 @@
         "aliasses": {
             "$id": "#/$defs/colour/properties/aliasses",
             "type": "array",
-            "title": "Aliasses of the colour name",
+            "title": "Colour aliasses",
             "description": "The aliasses of this colour. Any of the items of this array can be used as if they are the name of the colour",
             "examples": [
                 ["white", "white2", "w"],
@@ -126,7 +126,7 @@
         "cMultiplier": {
           "$id": "#/$defs/colour/properties/cMultiplier",
           "type": "number",
-          "title": "The cMultiplier",
+          "title": "cMultiplier",
           "description": "The amount of cyan contributing to this colour",
           "default": 0,
           "examples": [
@@ -139,7 +139,7 @@
         "mMultiplier": {
           "$id": "#/$defs/colour/properties/mMultiplier",
           "type": "number",
-          "title": "The mMultiplier",
+          "title": "mMultiplier",
           "description": "The amount of magenta contributing to this colour",
           "default": 0,
           "examples": [
@@ -152,7 +152,7 @@
         "yMultiplier": {
           "$id": "#/$defs/colour/properties/yMultiplier",
           "type": "number",
-          "title": "The yMultiplier",
+          "title": "yMultiplier",
           "description": "The amount of yellow contributing to this colour",
           "default": 0,
           "examples": [
@@ -165,7 +165,7 @@
         "kMultiplier": {
           "$id": "#/$defs/colour/properties/kMultiplier",
           "type": "number",
-          "title": "The kMultiplier",
+          "title": "kMultiplier",
           "description": "The amount of key contributing to this colour",
           "default": 0,
           "examples": [
