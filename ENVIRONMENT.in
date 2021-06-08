@@ -6,7 +6,6 @@ then
 fi
 
 export SCROOM_DEV_MODE="yes"
-export SCROOMBINDIR=scroom/
 export SCROOM_PLUGIN_DIRS="${ATB}/scroom/lib:${ATB}/lib"
 
 if [ "${WINDIR}x" != "x" ]
