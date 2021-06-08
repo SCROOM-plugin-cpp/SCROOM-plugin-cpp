@@ -22,7 +22,12 @@ target_sources(spsep
         sli/slisource.cc
         sli/slisource.hh
         varnish/varnish.cc
-        varnish/varnish.hh)
+        varnish/varnish.hh
+        colorconfig/CustomColorConfig.cc
+        colorconfig/CustomColorConfig.hh
+        colorconfig/CustomColor.hh
+        colorconfig/CustomColorOperations.cc
+        colorconfig/CustomColorOperations.hh)
 target_link_libraries(
   spsep
         PRIVATE project_options project_warnings

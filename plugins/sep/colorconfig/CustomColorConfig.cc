@@ -5,36 +5,22 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include "CustomColorConfig.hh"
-#include <scroom/scroominterface.hh>
 #include <list>
+#include <boost/filesystem.hpp>
 
 namespace pt = boost::property_tree;
 ColorConfig::Ptr ColorConfig::create() { return Ptr(new ColorConfig()); }
-
-std::string ColorConfig::getPluginName() { return "ColorConfig"; }
-
-std::string ColorConfig::getPluginVersion() { return "0.0"; }
-
-void    ColorConfig::registerCapabilities(ScroomPluginInterface::Ptr host)
-{
-//  host->registerOpenInterface("Color configuration reader", shared_from_this<ColorConfig>());
-}
 
 ColorConfig::ColorConfig() {
     loadFile();
 }
 
-ColorConfig& ColorConfig::getInstance()
-{
-    static ColorConfig instance;
-    return instance;
-}
 void ColorConfig::loadFile() {
     pt::ptree root;
+    boost::filesystem::path full_path(boost::filesystem::current_path());
+    full_path.append("colours.json");
 
-    std::string filePath = "/home/developer/Desktop";
-    std::string name = "colours";
-    pt::read_json(filePath + "/" + name + ".json", root);
+    pt::read_json(full_path.c_str(), root);
     std::cout<<"It worked!";
     for(pt::ptree::value_type& v : root.get_child("colours")){
         std::string name = v.second.get<std::string>("colourName");

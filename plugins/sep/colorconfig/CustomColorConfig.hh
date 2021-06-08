@@ -14,28 +14,18 @@
 #include "CustomColor.hh"
 
 namespace pt = boost::property_tree;
-class ColorConfig
-  : public PluginInformationInterface,
-    virtual public Scroom::Utils::Base
-{
+class ColorConfig{
 public:
   using Ptr = boost::shared_ptr<ColorConfig>;
 
 private:
   ColorConfig();
+  std::vector<CustomColor> colors = {};
 
-public:
-    /** Get a reference to the instance */
-    static ColorConfig& getInstance();
 
 public:
   static Ptr create();
 
-
-public:
-  std::string getPluginName() override;
-  std::string getPluginVersion() override;
-  void        registerCapabilities(ScroomPluginInterface::Ptr host) override;
   void loadFile();
-  std::vector<CustomColor> colors = {};
+
 };
