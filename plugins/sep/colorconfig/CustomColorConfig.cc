@@ -16,6 +16,9 @@ ColorConfig::ColorConfig() {
     loadFile();
 }
 
+std::vector<CustomColor>* ColorConfig::colors = {};
+
+
 void ColorConfig::loadFile() {
     pt::ptree root;
     boost::filesystem::path full_path(boost::filesystem::current_path());
@@ -31,10 +34,10 @@ void ColorConfig::loadFile() {
         float k = v.second.get<float>("kValue");
         CustomColor newColour = CustomColor(name, c, m, y, k);
 
-        colors.push_back(newColour);
+        colors->push_back(newColour);
     }
 
-    for(CustomColor color : colors){
+    for(CustomColor color : *colors){
         std::cout << color.getName()<<"\n";
 
     }
@@ -58,3 +61,9 @@ CustomColor* ColorConfig::getColorByNameOrAlias(std::string name) {
     }
     return nullptr;
 }
+
+std::vector<CustomColor>* ColorConfig::getDefinedColors() {
+    return colors;
+}
+
+
