@@ -27,7 +27,9 @@ target_sources(spsep
         colorconfig/CustomColorConfig.hh
         colorconfig/CustomColor.hh
         colorconfig/CustomColorOperations.cc
-        colorconfig/CustomColorOperations.hh)
+        colorconfig/CustomColorOperations.hh
+        colorconfig/CustomColorHelpers.cc
+        colorconfig/CustomColorHelpers.hh)
 target_link_libraries(
   spsep
         PRIVATE project_options project_warnings

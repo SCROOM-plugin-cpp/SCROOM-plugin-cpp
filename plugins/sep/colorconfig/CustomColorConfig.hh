@@ -28,6 +28,7 @@ private:
 public:
   static Ptr create();
   static std::vector<CustomColor>* getDefinedColors();
+  static CustomColor* getColorByNameOrAlias(std::string name);
   void loadFile();
 
 };

@@ -6,6 +6,8 @@
 #include <string>
 
 #include "sep-helpers.hh"
+#include "colorconfig/CustomColorConfig.hh"
+#include "colorconfig/CustomColorOperations.hh"
 
 /////////////////////////////////////////////////////////
 ///// SepPresentation ///////////////////////////////////
@@ -39,8 +41,15 @@ bool SepPresentation::load(const std::string &file_name) {
 
   transform = sep_source->getTransform();
 
-  layer_operations = OperationsCMYK32::create();
+  layer_operations = OperationsCustomColors::create();
+  layer_operations->setSpp(sep_source->getSpp());
 
+  // Set the colors relevant to this tiledbitmap
+  std::vector<CustomColor*> bitmapColors = {};
+  for(auto color: sep_source->getChannels()){
+      bitmapColors.push_back(ColorConfig::getColorByNameOrAlias(color));
+  }
+  layer_operations->setColors(bitmapColors);
   tbi = createTiledBitmap(width, height, {layer_operations});
   tbi->setSource(sep_source);
 

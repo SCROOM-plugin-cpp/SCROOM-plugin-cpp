@@ -2,6 +2,10 @@
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/range/adaptor/map.hpp>
+#include <boost/range/algorithm/copy.hpp>
+#include "colorconfig/CustomColor.hh"
+#include "colorconfig/CustomColorConfig.hh"
 #include <fstream>
 #include <iostream>
 
@@ -45,9 +49,8 @@ SepFile SepSource::parseSep(const std::string &file_name) {
     warnings += "WARNING: Width or height have not been provided correctly!\n";
   }
 
-  // Make sure the required channels exist (albeit with empty paths).
-  // Channels with empty paths are ignored during loading.
-  sep_file.files = {{"C", ""}, {"M", ""}, {"Y", ""}, {"K", ""}};
+  // Initialize the files to an empty hashmap
+  sep_file.files = {};
 
   // Read lines of the file
   while (std::getline(file, line)) {
@@ -67,21 +70,23 @@ SepFile SepSource::parseSep(const std::string &file_name) {
       continue;
     }
 
-    if (result[0] != "C" && result[0] != "M" && result[0] != "Y" &&
-        result[0] != "K" && result[0] != "V" && result[0] != "W") {
+    // Load the color corresponding to this name
+    auto correctColor = ColorConfig::getColorByNameOrAlias(result[0]);
+
+    if (correctColor == nullptr) {
       // Unsupported channel
-      warnings += "WARNING: The .sep file defines an unknown channel (not C, "
-                  "M, Y, K, V or W)!\n";
+      warnings += "WARNING: The .sep file defines an unknown channel (" + result[0] + ")!\n";
       continue;
     }
 
     // store the full file path to each file
-    sep_file.files[result[0]] = parent_dir / result[1];
+    sep_file.files[correctColor->getName()] = parent_dir / result[1];
   }
 
   // We no longer need to read from the file, so we
   // can safely close it.
   file.close();
+
 
   // Ask the user how to interpret the white ink values
   // if a white ink channel is given.
@@ -95,7 +100,9 @@ SepFile SepSource::parseSep(const std::string &file_name) {
     auto choice = gtk_dialog_run(GTK_DIALOG(choice_dialog));
     sep_file.white_ink_choice = choice == GTK_RESPONSE_ACCEPT ? 1 : 2;
 
+
     gtk_widget_destroy(choice_dialog);
+
   }
 
   // show errors if there are any
@@ -200,14 +207,19 @@ void SepSource::fillSliLayerBitmap(SliLayer::Ptr sli) {
   }
 }
 
-void SepSource::setData(SepFile file) { sep_file = file; }
+void SepSource::setData(SepFile file) {
+    sep_file = file;
+
+    // Set the channels to the keys of the files map
+    boost::copy(sep_file.files | boost::adaptors::map_keys, std::back_inserter(channels));
+}
 
 void SepSource::setName(const std::string &file_name_) {
   file_name = file_name_;
 }
 
 void SepSource::openFiles() {
-  for (auto c : channels) {
+  for (const auto& c : channels) {
     if (channel_files[c] != nullptr) {
       printf("WARNING: %s file has already been initialized. Cannot open it "
              "again.\n",
@@ -218,20 +230,14 @@ void SepSource::openFiles() {
 
   bool show_warning = false;
 
-  // open CMYK channels
-  for (auto c : channels) {
+  // open color channels
+  for (const auto& c : channels) {
     channel_files[c] = TIFFOpen(sep_file.files[c].string().c_str(), "r");
 
     // Don't show a warning when the file path is empty. This means
     // that the file was not specified, and the customer requested
     // there not to be a warning in that case.
     show_warning |= !sep_file.files[c].empty() && channel_files[c] == nullptr;
-  }
-
-  // open white ink channel
-  if (sep_file.files.count("W") == 1) {
-    white_ink = TIFFOpen(sep_file.files["W"].string().c_str(), "r");
-    show_warning |= white_ink == nullptr;
   }
 
   // open varnish channel
@@ -259,7 +265,7 @@ void SepSource::checkFiles() {
   std::string warning = "";
 
   // check CMYK
-  for (auto c : channels) {
+  for (const auto& c : channels) {
     if (channel_files[c] != nullptr &&
         TIFFGetField(channel_files[c], TIFFTAG_SAMPLESPERPIXEL, &spp) == 1 &&
         spp != 1) {
@@ -269,17 +275,6 @@ void SepSource::checkFiles() {
         TIFFGetField(channel_files[c], TIFFTAG_BITSPERSAMPLE, &bps) == 1 &&
         bps != 8) {
       warning += "ERROR: Bits per sample is not 8!\n";
-    }
-  }
-
-  // check white ink
-  if (white_ink != nullptr) {
-    if (TIFFGetField(white_ink, TIFFTAG_SAMPLESPERPIXEL, &spp) == 1 &&
-        spp != 1) {
-      warning += "ERROR: White ink samples per pixel is not 1!\n";
-    }
-    if (TIFFGetField(white_ink, TIFFTAG_BITSPERSAMPLE, &bps) == 1 && bps != 8) {
-      warning += "ERROR: White ink bits per sample is not 8!\n";
     }
   }
 
@@ -327,7 +322,7 @@ uint8_t SepSource::applyWhiteInk(uint8_t white, uint8_t color, int type) {
 
 void SepSource::fillTiles(int startLine, int line_count, int tileWidth,
                           int firstTile, std::vector<Tile::Ptr> &tiles) {
-  const size_t bpp = 4; // number of bytes per pixel
+  const size_t bpp = channels.size(); // number of bytes per pixel
   const size_t start_line = static_cast<size_t>(startLine);
   const size_t first_tile = static_cast<size_t>(firstTile);
   const size_t tile_stride = static_cast<size_t>(tileWidth) * bpp;
@@ -391,3 +386,11 @@ void SepSource::done() {
 }
 
 std::string SepSource::getName() { return file_name; }
+
+size_t SepSource::getSpp() {
+    return nr_channels;
+}
+
+std::vector<std::string> SepSource::getChannels() {
+    return channels;
+}

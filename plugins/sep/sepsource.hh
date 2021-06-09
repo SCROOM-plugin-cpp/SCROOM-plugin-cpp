@@ -30,13 +30,10 @@ private:
   /** Data structure to represent the opened SEP file in memory. */
   SepFile sep_file;
 
-  const std::vector<std::string> channels = {"C", "M", "Y", "K"};
+  std::vector<std::string> channels = {};
 
-  /** Stores pointers to CMYK files. */
-  std::map<std::string, tiff *> channel_files = {{channels[0], nullptr},
-                                                 {channels[1], nullptr},
-                                                 {channels[2], nullptr},
-                                                 {channels[3], nullptr}};
+  /** Stores pointers to color files. */
+  std::map<std::string, tiff *> channel_files = {};
 
   const size_t nr_channels = channel_files.size();
 
@@ -60,6 +57,16 @@ public:
    * Create a pointer to SepSource using constructor and return it.
    */
   static Ptr create();
+
+  /**
+   * Get the number of samples per pixel in this sep source
+   */
+  size_t getSpp();
+
+  /**
+   * Get the channels that are used in this sep file
+   */
+  std::vector<std::string> getChannels();
 
   /**
    * This function is only needed when the SepPresentation is used by
