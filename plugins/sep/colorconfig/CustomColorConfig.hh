@@ -25,7 +25,7 @@ private:
 
 public:
   static Ptr create();
-
+  static std::vector<CustomColor>* getDefinedColors();
   void loadFile();
 
 };
