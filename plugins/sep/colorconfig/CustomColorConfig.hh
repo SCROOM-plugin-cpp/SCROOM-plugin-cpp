@@ -20,7 +20,9 @@ public:
 
 private:
   ColorConfig();
-  std::vector<CustomColor> colors = {};
+
+private:
+    static std::vector<CustomColor>* colors;
 
 
 public:
@@ -29,3 +31,4 @@ public:
   void loadFile();
 
 };
+
