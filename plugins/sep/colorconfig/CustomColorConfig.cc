@@ -7,6 +7,7 @@
 #include "CustomColorConfig.hh"
 #include <list>
 #include <boost/filesystem.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace pt = boost::property_tree;
 ColorConfig::Ptr ColorConfig::create() { return Ptr(new ColorConfig()); }
@@ -38,4 +39,22 @@ void ColorConfig::loadFile() {
 
     }
 
+}
+
+CustomColor* ColorConfig::getColorByNameOrAlias(std::string name) {
+    boost::algorithm::to_lower(name);
+    auto colors = getDefinedColors();
+    for (auto & color : *colors)
+    {
+        if (color.getName() == name){
+            return &color;
+        }
+        for (auto const alias : color.getAliasses()){
+            if (alias == name) {
+                return &color;
+            }
+        }
+
+    }
+    return nullptr;
 }

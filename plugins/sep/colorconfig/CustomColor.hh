@@ -9,6 +9,7 @@
 class CustomColor {
 public:
     std::string name;
+    std::vector<std::string> aliasses;
     float cMultiplier;
     float mMultiplier;
     float yMultiplier;
@@ -24,6 +25,11 @@ public:
     std::string getName(){
         return name;
     }
+
+    std::vector<std::string> getAliasses() {
+        return aliasses;
+    }
+
 
     float * getColor(){
         float color[4] = {cMultiplier, mMultiplier, yMultiplier, kMultiplier};

@@ -7,6 +7,7 @@
 #include <scroom/presentationinterface.hh>
 
 #include "sepsource.hh"
+#include "colorconfig/CustomColorOperations.hh"
 
 ////////////////////////////////////////////////////////////////
 ////////////// SepPresentation
@@ -32,7 +33,7 @@ private:
 
   std::map<std::string, std::string> properties;
 
-  PipetteCommonOperationsCMYK::Ptr layer_operations;
+  PipetteCommonOperationsCustomColor::Ptr layer_operations;
 
 private:
   /**
