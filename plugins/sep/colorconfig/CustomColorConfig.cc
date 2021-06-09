@@ -28,10 +28,10 @@ void ColorConfig::loadFile() {
     std::cout<<"It worked!";
     for(pt::ptree::value_type& v : root.get_child("colours")){
         std::string name = v.second.get<std::string>("colourName");
-        float c = v.second.get<float>("cValue");
-        float m = v.second.get<float>("mValue");
-        float y = v.second.get<float>("yValue");
-        float k = v.second.get<float>("kValue");
+        float c = v.second.get<float>("cMultiplier");
+        float m = v.second.get<float>("mMultiplier");
+        float y = v.second.get<float>("yMultiplier");
+        float k = v.second.get<float>("kMultiplier");
         CustomColor newColour = CustomColor(name, c, m, y, k);
 
         colors->push_back(newColour);
