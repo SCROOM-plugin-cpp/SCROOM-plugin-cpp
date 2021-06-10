@@ -48,7 +48,10 @@ void ColorConfig::loadFile() {
 
             //Store aliasses in vector
             for(; iterator != array.end(); iterator++){
-                std::string alias = iterator->second.get_value<std::string>();
+                //Load alias with uppercase included
+                std::string aliasCase = iterator->second.get_value<std::string>();
+                //Convert alias to all lowercase
+                std::string alias = boost::algorithm::to_lower_copy(aliasCase);
 
                 //Test if an alias already exists in a different colour
                 if(std::find(allAliasses.begin(), allAliasses.end(), alias) != allAliasses.end()){
@@ -89,7 +92,7 @@ CustomColor* ColorConfig::getColorByNameOrAlias(std::string name) {
             return &color;
         }
         for (auto const alias : color.getAliasses()){
-            if (alias == name) { //TODO Same for aliasses
+            if (alias == name) {
                 return &color;
             }
         }
