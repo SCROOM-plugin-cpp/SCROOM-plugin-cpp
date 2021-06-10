@@ -25,6 +25,9 @@ void ColorConfig::loadFile() {
     std::cout << full_path.c_str();
     pt::read_json(full_path.c_str(), root);
     std::cout<<"It worked!";
+
+    std::vector<std::string> allAliasses = {};
+
     for(pt::ptree::value_type& v : root.get_child("colours")){
         std::string name = v.second.get<std::string>("name");
         float c = v.second.get<float>("cMultiplier");
@@ -32,8 +35,6 @@ void ColorConfig::loadFile() {
         float y = v.second.get<float>("yMultiplier");
         float k = v.second.get<float>("kMultiplier");
         CustomColor newColour = CustomColor(name, c, m, y, k);
-        //TODO Add alias loading. ALSO check that there are not duplicates of aliasses between colors
-        // Maybe use a hashset?
 
         //Try to load aliasses, if the field exists
         try{
@@ -48,7 +49,16 @@ void ColorConfig::loadFile() {
             //Store aliasses in vector
             for(; iterator != array.end(); iterator++){
                 std::string alias = iterator->second.get_value<std::string>();
-                std::cout << "Alias: " << alias << "\n";
+
+                //Test if an alias already exists in a different colour
+                if(std::find(allAliasses.begin(), allAliasses.end(), alias) != allAliasses.end()){
+                    //It exists
+                    std::cout << "ERROR: Duplicate alias: " << alias << "!\n";
+                } else {
+                    //It is a new alias
+                    std::cout << "New alias: " << alias << "\n";
+                    allAliasses.push_back(alias);
+                }
 
                 aliasses.push_back(alias);
             }
