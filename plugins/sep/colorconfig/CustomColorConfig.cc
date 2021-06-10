@@ -88,7 +88,8 @@ CustomColor* ColorConfig::getColorByNameOrAlias(std::string name) {
     auto colors = getDefinedColors();
     for (auto & color : *colors)
     {
-        if (color.getName() == name){ //TODO Use found algorithm above to change color.getName() to lowercase
+        std::string lowerName = boost::algorithm::to_lower_copy(color.getName());
+        if (lowerName == name){ //TODO Use found algorithm above to change color.getName() to lowercase
             return &color;
         }
         for (auto const alias : color.getAliasses()){
