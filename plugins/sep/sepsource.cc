@@ -150,7 +150,7 @@ bool SepSource::getResolution(uint16_t &unit, float &x_resolution,
                    y_resolution);
 
   for (auto channel : {channel_files[channels[1]], channel_files[channels[2]],
-                       channel_files[channels[3]]}) {
+                       channel_files[channels[3]]}) {//TODO Fix this for the custom amount of colors
     if (channel == nullptr) {
       continue;
     }
