@@ -71,7 +71,7 @@ SepFile SepSource::parseSep(const std::string &file_name) {
     }
 
     // Load the color corresponding to this name
-    auto correctColor = ColorConfig::getColorByNameOrAlias(result[0]);
+    auto correctColor = ColorConfig::getInstance().getColorByNameOrAlias(result[0]);
 
     if (correctColor == nullptr) {
       // Unsupported channel
@@ -212,6 +212,7 @@ void SepSource::setData(SepFile file) {
 
     // Set the channels to the keys of the files map
     boost::copy(sep_file.files | boost::adaptors::map_keys, std::back_inserter(channels));
+    nr_channels = channels.size();
 }
 
 void SepSource::setName(const std::string &file_name_) {
@@ -289,9 +290,9 @@ int SepSource::TIFFReadScanline_(tiff *file, void *buf, uint32 row,
 }
 
 void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr) {
-  // There are 4 channels in out, so the number of bytes an individual
-  // channel has is one fourth of the output vector's size.
-  size_t size = out.size() / 4;
+  // There are n (=spp) channels in out, so the number of bytes an individual
+  // channel has is one nth of the output vector's size.
+  size_t size = out.size() / nr_channels;
 
   // Create buffers for the scanlines of the individual channels.
   std::vector<uint8_t> lines[nr_channels];

@@ -90,6 +90,7 @@ Scroom::Utils::Stuff OperationsCustomColors::cache(const ConstTile::Ptr tile) {
         row[i / 4] = 255u << 24 | R << 16 | G << 8 | B;
     }
 
+    return Scroom::Bitmap::BitmapSurface::create(tile->width, tile->height, CAIRO_FORMAT_ARGB32, stride, data);
 
 }
 

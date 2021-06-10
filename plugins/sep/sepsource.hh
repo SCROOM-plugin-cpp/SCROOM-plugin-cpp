@@ -35,7 +35,8 @@ private:
   /** Stores pointers to color files. */
   std::map<std::string, tiff *> channel_files = {};
 
-  const size_t nr_channels = channel_files.size();
+  /** Number of channels (=spp). Set after loading*/
+  size_t nr_channels = 0;
 
   /** Pointer to white ink file. */
   tiff *white_ink = nullptr;

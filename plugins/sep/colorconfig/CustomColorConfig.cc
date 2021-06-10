@@ -10,24 +10,23 @@
 #include <boost/algorithm/string.hpp>
 
 namespace pt = boost::property_tree;
-ColorConfig::Ptr ColorConfig::create() { return Ptr(new ColorConfig()); }
 
 ColorConfig::ColorConfig() {
-    loadFile();
+    colors = new std::vector<CustomColor>();
 }
 
-std::vector<CustomColor>* ColorConfig::colors = {};
 
 
 void ColorConfig::loadFile() {
+    colors->clear();
     pt::ptree root;
     boost::filesystem::path full_path(boost::filesystem::current_path());
     full_path.append("colours.json");
-
+    std::cout << full_path.c_str();
     pt::read_json(full_path.c_str(), root);
     std::cout<<"It worked!";
     for(pt::ptree::value_type& v : root.get_child("colours")){
-        std::string name = v.second.get<std::string>("colourName");
+        std::string name = v.second.get<std::string>("name");
         float c = v.second.get<float>("cMultiplier");
         float m = v.second.get<float>("mMultiplier");
         float y = v.second.get<float>("yMultiplier");
@@ -65,5 +64,6 @@ CustomColor* ColorConfig::getColorByNameOrAlias(std::string name) {
 std::vector<CustomColor>* ColorConfig::getDefinedColors() {
     return colors;
 }
+
 
 

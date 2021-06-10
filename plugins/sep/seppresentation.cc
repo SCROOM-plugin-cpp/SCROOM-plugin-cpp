@@ -23,6 +23,7 @@ SepPresentation::Ptr SepPresentation::create() {
 }
 
 bool SepPresentation::load(const std::string &file_name) {
+  ColorConfig::getInstance().loadFile();
   const SepFile file_content = SepSource::parseSep(file_name);
   this->file_name = file_name;
 
@@ -47,7 +48,7 @@ bool SepPresentation::load(const std::string &file_name) {
   // Set the colors relevant to this tiledbitmap
   std::vector<CustomColor*> bitmapColors = {};
   for(auto color: sep_source->getChannels()){
-      bitmapColors.push_back(ColorConfig::getColorByNameOrAlias(color));
+      bitmapColors.push_back(ColorConfig::getInstance().getColorByNameOrAlias(color));
   }
   layer_operations->setColors(bitmapColors);
   tbi = createTiledBitmap(width, height, {layer_operations});

@@ -15,20 +15,22 @@
 
 namespace pt = boost::property_tree;
 class ColorConfig{
-public:
-  using Ptr = boost::shared_ptr<ColorConfig>;
 
 private:
   ColorConfig();
 
 private:
-    static std::vector<CustomColor>* colors;
+  std::vector<CustomColor>* colors;
 
 
 public:
-  static Ptr create();
-  static std::vector<CustomColor>* getDefinedColors();
-  static CustomColor* getColorByNameOrAlias(std::string name);
+  static ColorConfig& getInstance(){
+      static ColorConfig INSTANCE;
+      return INSTANCE;
+  }
+
+  std::vector<CustomColor>* getDefinedColors();
+  CustomColor* getColorByNameOrAlias(std::string name);
   void loadFile();
 
 };
