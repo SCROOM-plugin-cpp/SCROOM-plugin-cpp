@@ -30,6 +30,9 @@ public:
         return aliasses;
     }
 
+    void setAliasses(std::vector<std::string> newAliasses){
+        aliasses = newAliasses;
+    }
 
     float * getColor(){
         float color[4] = {cMultiplier, mMultiplier, yMultiplier, kMultiplier};

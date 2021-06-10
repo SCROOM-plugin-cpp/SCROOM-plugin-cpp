@@ -35,6 +35,18 @@ void ColorConfig::loadFile() {
         //TODO Add alias loading. ALSO check that there are not duplicates of aliasses between colors
         // Maybe use a hashset?
 
+        try{
+            pt::ptree array = v.second.get_child("aliasses");
+            pt::ptree::iterator iterator = array.begin();
+
+            for(; iterator != array.end(); iterator++){
+                std::string test = iterator->second.get_value<std::string>();
+                std::cout << test << "\n";
+            }
+        } catch(const std::exception& e){
+                std::cout << "No aliasses found." << "\n";
+        }
+
         colors->push_back(newColour);
     }
 
