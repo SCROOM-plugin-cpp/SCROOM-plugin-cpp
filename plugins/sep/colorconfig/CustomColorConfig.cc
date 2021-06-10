@@ -76,9 +76,52 @@ void ColorConfig::loadFile() {
         colors->push_back(newColour);
     }
 
+    //Initialise an array to check whether default colours exist
+    bool defaultExist[4] = {false, false, false, false};
     for(CustomColor color : *colors){
         std::cout << color.getName()<<"\n";
 
+        //Convert colour name to lowercase
+        std::string lowerName = boost::algorithm::to_lower_copy(color.getName());
+
+        //Check the default names
+        if(lowerName == "c"){
+            defaultExist[0] = true;
+        } else if(lowerName == "m"){
+            defaultExist[1] = true;
+        } else if(lowerName == "y"){
+            defaultExist[2] = true;
+        } else if(lowerName == "k"){
+            defaultExist[3] = true;
+        }
+    }
+
+    //If no cyan configuration exists, add the default configuration
+    if(!defaultExist[0]){
+        CustomColor newColour = CustomColor("c", 1, 0, 0, 0);
+
+        colors->push_back(newColour);
+    }
+
+    //If no magenta configuration exists, add the default configuration
+    if(!defaultExist[1]){
+        CustomColor newColour = CustomColor("m", 0, 1, 0, 0);
+
+        colors->push_back(newColour);
+    }
+
+    //If no yellow configuration exists, add the default configuration
+    if(!defaultExist[2]){
+        CustomColor newColour = CustomColor("y", 0, 0, 1, 0);
+
+        colors->push_back(newColour);
+    }
+
+    //If no key configuration exists, add the default configuration
+    if(!defaultExist[3]){
+        CustomColor newColour = CustomColor("k", 0, 0, 0, 1);
+
+        colors->push_back(newColour);
     }
 
 }
