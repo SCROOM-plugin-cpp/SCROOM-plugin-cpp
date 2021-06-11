@@ -8,6 +8,7 @@
 #include <list>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
+#include <unordered_set>
 
 namespace pt = boost::property_tree;
 
@@ -26,16 +27,35 @@ void ColorConfig::loadFile() {
     pt::read_json(full_path.c_str(), root);
     std::cout<<"It worked!";
 
-    std::vector<std::string> allAliasses = {};
+    std::unordered_set<std::string> seenNamesAndAliasses = {};
 
     for(pt::ptree::value_type& v : root.get_child("colours")){
-        std::string name = v.second.get<std::string>("name");
+        auto name = v.second.get<std::string>("name");
+        boost::algorithm::to_lower(name); // Convert the name to lowercase
+
+        // Check if this name has not yet been seen before
+        if (seenNamesAndAliasses.find(name) != seenNamesAndAliasses.end())
+        {
+            // It exists
+            std::cout << "ERROR: Duplicate name or alias: " << name << "!\n";
+            // Color already exists, so it should not be added to the colors
+            continue;
+        }
+        // Color is new, so we can add it to the defined colors
+        // First add the name to the seen names and aliasses
+        seenNamesAndAliasses.insert(name);
+
         float c = v.second.get<float>("cMultiplier");
         float m = v.second.get<float>("mMultiplier");
         float y = v.second.get<float>("yMultiplier");
         float k = v.second.get<float>("kMultiplier");
         CustomColor newColour = CustomColor(name, c, m, y, k);
 
+
+
+
+        //Initialise aliasses vector
+        std::vector<std::string> aliasses = {};
         //Try to load aliasses, if the field exists
         try{
             //Get the aliasses array
@@ -43,24 +63,23 @@ void ColorConfig::loadFile() {
             //Initialise an iterator over the aliasses array
             pt::ptree::iterator iterator = array.begin();
 
-            //Initialise aliasses vector
-            std::vector<std::string> aliasses = {};
+
 
             //Store aliasses in vector
-            for(; iterator != array.end(); iterator++){
+            for(; iterator != array.end(); iterator++) {
                 //Load alias with uppercase included
-                std::string aliasCase = iterator->second.get_value<std::string>();
+                auto alias = iterator->second.get_value<std::string>();
                 //Convert alias to all lowercase
-                std::string alias = boost::algorithm::to_lower_copy(aliasCase);
+                boost::algorithm::to_lower(alias);
 
                 //Test if an alias already exists in a different colour
-                if(std::find(allAliasses.begin(), allAliasses.end(), alias) != allAliasses.end()){
+                if (seenNamesAndAliasses.find(alias) != seenNamesAndAliasses.end()) {
                     //It exists
                     std::cout << "ERROR: Duplicate alias: " << alias << "!\n";
                 } else {
                     //It is a new alias
                     std::cout << "New alias: " << alias << "\n";
-                    allAliasses.push_back(alias);
+                    seenNamesAndAliasses.insert(alias);
                 }
 
                 aliasses.push_back(alias);
@@ -78,24 +97,10 @@ void ColorConfig::loadFile() {
 
     //Initialise an array to check whether default colours exist
     bool defaultExist[4] = {false, false, false, false};
-    for(CustomColor color : *colors){
-        std::cout << color.getName()<<"\n";
-
-        //Convert colour name to lowercase
-        std::string lowerName = boost::algorithm::to_lower_copy(color.getName());
-
-        //Check the default names
-        if(lowerName == "c"){
-            defaultExist[0] = true;
-        } else if(lowerName == "m"){
-            defaultExist[1] = true;
-        } else if(lowerName == "y"){
-            defaultExist[2] = true;
-        } else if(lowerName == "k"){
-            defaultExist[3] = true;
-        }
-    }
-
+    if (getColorByNameOrAlias("c") != nullptr) defaultExist[0] = true;
+    if (getColorByNameOrAlias("m") != nullptr) defaultExist[1] = true;
+    if (getColorByNameOrAlias("y") != nullptr) defaultExist[2] = true;
+    if (getColorByNameOrAlias("k") != nullptr) defaultExist[3] = true;
     //If no cyan configuration exists, add the default configuration
     if(!defaultExist[0]){
         CustomColor newColour = CustomColor("c", 1, 0, 0, 0);
