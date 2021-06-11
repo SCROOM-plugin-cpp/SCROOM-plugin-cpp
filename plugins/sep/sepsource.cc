@@ -10,6 +10,7 @@
 #include <iostream>
 
 #include <iterator>
+#include <boost/algorithm/string.hpp>
 
 #include "sep-helpers.hh"
 
@@ -75,15 +76,19 @@ SepFile SepSource::parseSep(const std::string &file_name) {
     // Load the color corresponding to this name
     auto correctColor = ColorConfig::getInstance().getColorByNameOrAlias(result[0]);
     CustomColor newColor = CustomColor(result[0], 0.0, 0.0, 0.0, 0.0);
-    if (correctColor == nullptr) {
-      // Unsupported channel
+    if (correctColor == nullptr && boost::algorithm::to_lower_copy(result[0]) != "v") {
+      // Unsupported channel and it is not varnish
       warnings += "WARNING: The .sep file defines an unknown channel (" + result[0] + ")!\n";
       ColorConfig::getInstance().getDefinedColors()->push_back(newColor);
       correctColor = ColorConfig::getInstance().getColorByNameOrAlias(result[0]);
     }
-
-    // store the full file path to each file
-    sep_file.files[correctColor->getName()] = parent_dir / result[1];
+    else if (correctColor == nullptr){ // Unknown color is the varnish channel
+      sep_file.files["V"]  = parent_dir / result[1];
+    }
+    else {
+      // store the full file path to each file
+      sep_file.files[correctColor->getName()] = parent_dir / result[1];
+    }
   }
 
   // We no longer need to read from the file, so we
@@ -148,13 +153,12 @@ bool SepSource::getResolution(uint16_t &unit, float &x_resolution,
   uint16_t channel_res_unit;
   bool warning = false;
 
-  // Use the values for the c* (you mean the first channel?) channel as baseline
+  // Use resolution of first channel as a baseline
   getForOneChannel(channel_files[channels[0]], unit, x_resolution,
                    y_resolution);
-//  for (auto channel : {channel_files[channels[1]], channel_files[channels[2]],
-//                           channel_files[channels[3]]})
+
     bool first = true;
-    for(auto itr : channel_files) {//TODO Fix this for the custom amount of colors
+    for(const auto& itr : channel_files) {//TODO Fix this for the custom amount of colors
         auto channel = itr.second;
         if (first) {
             first = false;
