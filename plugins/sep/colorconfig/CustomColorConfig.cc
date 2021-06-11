@@ -127,16 +127,20 @@ void ColorConfig::loadFile() {
 }
 
 CustomColor* ColorConfig::getColorByNameOrAlias(std::string name) {
-    boost::algorithm::to_lower(name); //TODO Check for version of to_lower algorithm that copies instead of changing the variable
+    boost::algorithm::to_lower(name);
     auto colors = getDefinedColors();
+    std::string lowerName;
+    std::string lowerAlias;
     for (auto & color : *colors)
     {
-        std::string lowerName = boost::algorithm::to_lower_copy(color.getName());
-        if (lowerName == name){ //TODO Use found algorithm above to change color.getName() to lowercase
+        lowerName = boost::algorithm::to_lower_copy(color.getName());
+        if (lowerName == name){
             return &color;
         }
+
         for (auto const alias : color.getAliasses()){
-            if (alias == name) {
+            lowerAlias = boost::algorithm::to_lower_copy(alias);
+            if (lowerAlias == name) {
                 return &color;
             }
         }
