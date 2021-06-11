@@ -23,7 +23,6 @@ void ColorConfig::loadFile() {
     pt::ptree root;
     boost::filesystem::path full_path(boost::filesystem::current_path());
     full_path.append("colours.json");
-    std::cout << full_path.c_str();
     try {
         pt::read_json(full_path.c_str(), root);
     }
@@ -36,7 +35,8 @@ void ColorConfig::loadFile() {
     }
 
     std::unordered_set<std::string> seenNamesAndAliasses = {};
-
+    seenNamesAndAliasses.insert("v"); // Insert placeholder for varnish
+    std::cout << "Loading colour config file. NOTE: v is reserved for varnish, so should not be defined as name or alias!!\n";
     for(pt::ptree::value_type& v : root.get_child("colours")){
         auto name = v.second.get<std::string>("name");
         boost::algorithm::to_lower(name); // Convert the name to lowercase
