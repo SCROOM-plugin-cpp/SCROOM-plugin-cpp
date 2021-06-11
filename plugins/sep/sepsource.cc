@@ -9,6 +9,8 @@
 #include <fstream>
 #include <iostream>
 
+#include <iterator>
+
 #include "sep-helpers.hh"
 
 SepSource::SepSource() {}
@@ -72,10 +74,11 @@ SepFile SepSource::parseSep(const std::string &file_name) {
 
     // Load the color corresponding to this name
     auto correctColor = ColorConfig::getInstance().getColorByNameOrAlias(result[0]);
-
+    CustomColor newColor = CustomColor(result[0], 0.0, 0.0, 0.0, 0.0);
     if (correctColor == nullptr) {
       // Unsupported channel
       warnings += "WARNING: The .sep file defines an unknown channel (" + result[0] + ")!\n";
+      ColorConfig::getInstance().getDefinedColors()->push_back(newColor);
       continue;
     }
 
@@ -145,23 +148,32 @@ bool SepSource::getResolution(uint16_t &unit, float &x_resolution,
   uint16_t channel_res_unit;
   bool warning = false;
 
-  // Use the values for the c channel as baseline
+  // Use the values for the c* (you mean the first channel?) channel as baseline
   getForOneChannel(channel_files[channels[0]], unit, x_resolution,
                    y_resolution);
+//  for (auto channel : {channel_files[channels[1]], channel_files[channels[2]],
+//                           channel_files[channels[3]]})
+    bool first = true;
+    for(auto itr : channel_files) {//TODO Fix this for the custom amount of colors
+        auto channel = itr.second;
+        if (first) {
+            first = false;
+            continue;
+        }
+        else {
+            if (channel == nullptr) {
+                continue;
+            }
 
-  for (auto channel : {channel_files[channels[1]], channel_files[channels[2]],
-                       channel_files[channels[3]]}) {//TODO Fix this for the custom amount of colors
-    if (channel == nullptr) {
-      continue;
+            getForOneChannel(channel, channel_res_unit, channel_res_x, channel_res_y);
+            std::cout << "Res x: " << channel_res_x << " Res y: " << channel_res_y << "\n";
+            // check if the same as first values
+            // if not, set status flag and continue
+            warning |= std::abs(channel_res_x - x_resolution) > 1e-3 ||
+                       std::abs(channel_res_y - y_resolution) > 1e-3 ||
+                       channel_res_unit != unit;
+        }
     }
-
-    getForOneChannel(channel, channel_res_unit, channel_res_x, channel_res_y);
-    // check if the same as first values
-    // if not, set status flag and continue
-    warning |= std::abs(channel_res_x - x_resolution) > 1e-3 ||
-               std::abs(channel_res_y - y_resolution) > 1e-3 ||
-               channel_res_unit != unit;
-  }
 
   return !warning;
 }
