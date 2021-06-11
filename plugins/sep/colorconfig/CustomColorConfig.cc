@@ -97,32 +97,32 @@ void ColorConfig::loadFile() {
     }
 
     //If no cyan configuration exists, add the default configuration
-//    if(!defaultExist[0]){
-//        CustomColor newColour = CustomColor("c", 1, 0, 0, 0);
-//
-//        colors->push_back(newColour);
-//    }
-//
-//    //If no magenta configuration exists, add the default configuration
-//    if(!defaultExist[1]){
-//        CustomColor newColour = CustomColor("m", 0, 1, 0, 0);
-//
-//        colors->push_back(newColour);
-//    }
-//
-//    //If no yellow configuration exists, add the default configuration
-//    if(!defaultExist[2]){
-//        CustomColor newColour = CustomColor("y", 0, 0, 1, 0);
-//
-//        colors->push_back(newColour);
-//    }
-//
-//    //If no key configuration exists, add the default configuration
-//    if(!defaultExist[3]){
-//        CustomColor newColour = CustomColor("k", 0, 0, 0, 1);
-//
-//        colors->push_back(newColour);
-//    }
+    if(!defaultExist[0]){
+        CustomColor newColour = CustomColor("c", 1, 0, 0, 0);
+
+        colors->push_back(newColour);
+    }
+
+    //If no magenta configuration exists, add the default configuration
+    if(!defaultExist[1]){
+        CustomColor newColour = CustomColor("m", 0, 1, 0, 0);
+
+        colors->push_back(newColour);
+    }
+
+    //If no yellow configuration exists, add the default configuration
+    if(!defaultExist[2]){
+        CustomColor newColour = CustomColor("y", 0, 0, 1, 0);
+
+        colors->push_back(newColour);
+    }
+
+    //If no key configuration exists, add the default configuration
+    if(!defaultExist[3]){
+        CustomColor newColour = CustomColor("k", 0, 0, 0, 1);
+
+        colors->push_back(newColour);
+    }
 
 }
 

@@ -79,7 +79,7 @@ SepFile SepSource::parseSep(const std::string &file_name) {
       // Unsupported channel
       warnings += "WARNING: The .sep file defines an unknown channel (" + result[0] + ")!\n";
       ColorConfig::getInstance().getDefinedColors()->push_back(newColor);
-      continue;
+      correctColor = ColorConfig::getInstance().getColorByNameOrAlias(result[0]);
     }
 
     // store the full file path to each file
