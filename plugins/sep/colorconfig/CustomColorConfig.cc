@@ -24,8 +24,16 @@ void ColorConfig::loadFile() {
     boost::filesystem::path full_path(boost::filesystem::current_path());
     full_path.append("colours.json");
     std::cout << full_path.c_str();
-    pt::read_json(full_path.c_str(), root);
-    std::cout<<"It worked!";
+    try {
+        pt::read_json(full_path.c_str(), root);
+    }
+    catch (const std::exception& e){
+        // Loading didnt work
+        std::cout << "Loading colours file failed. Are you sure there is a file at: " + full_path.string() + "?\n";
+        std::cout << "Loading default CMYK \n";
+        addNonExistantDefaultColors();
+        return;
+    }
 
     std::unordered_set<std::string> seenNamesAndAliasses = {};
 
@@ -94,8 +102,11 @@ void ColorConfig::loadFile() {
 
         colors->push_back(newColour);
     }
+    addNonExistantDefaultColors();
 
-    //Initialise an array to check whether default colours exist
+}
+
+void ColorConfig::addNonExistantDefaultColors() {//Initialise an array to check whether default colours exist
     bool defaultExist[4] = {false, false, false, false};
     if (getColorByNameOrAlias("c") != nullptr) defaultExist[0] = true;
     if (getColorByNameOrAlias("m") != nullptr) defaultExist[1] = true;
@@ -128,7 +139,6 @@ void ColorConfig::loadFile() {
 
         colors->push_back(newColour);
     }
-
 }
 
 CustomColor* ColorConfig::getColorByNameOrAlias(std::string name) {
