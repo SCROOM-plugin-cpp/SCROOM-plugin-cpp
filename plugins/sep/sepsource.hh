@@ -15,6 +15,7 @@ struct SepFile {
   size_t height;
   int white_ink_choice;
   std::map<std::string, boost::filesystem::path> files;
+  boost::filesystem::path varnish_file;
 };
 
 /**

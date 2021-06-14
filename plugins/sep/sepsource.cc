@@ -54,6 +54,8 @@ SepFile SepSource::parseSep(const std::string &file_name) {
 
   // Initialize the files to an empty hashmap
   sep_file.files = {};
+  // Initialize the varnish file to an empty path
+  sep_file.varnish_file = "";
 
   // Read lines of the file
   while (std::getline(file, line)) {
@@ -81,13 +83,17 @@ SepFile SepSource::parseSep(const std::string &file_name) {
       warnings += "WARNING: The .sep file defines an unknown channel (" + result[0] + ")!\n";
       ColorConfig::getInstance().getDefinedColors()->push_back(newColor);
       correctColor = ColorConfig::getInstance().getColorByNameOrAlias(result[0]);
+      // Store the empty default color in the colors array if it is not defined in the file
+      sep_file.files[correctColor->getName()] = parent_dir / result[1];
     }
     else if (correctColor == nullptr){ // Unknown color is the varnish channel
-      continue;
-//      sep_file.files["V"]  = parent_dir / result[0];
+
+      sep_file.varnish_file = parent_dir / result[1];
     }
-    // store the full file path to each file
-    sep_file.files[correctColor->getName()] = parent_dir / result[1];
+    else {
+        // store the full file path to each file
+        sep_file.files[correctColor->getName()] = parent_dir / result[1];
+    }
   }
 
   // We no longer need to read from the file, so we
@@ -257,9 +263,9 @@ void SepSource::openFiles() {
   }
 
   // open varnish channel
-  if (sep_file.files.count("V") == 1) {
+  if (sep_file.varnish_file.string() != "") {
     SliLayer::Ptr varnishLayer =
-        SliLayer::create(sep_file.files["V"].string(), "Varnish", 0, 0);
+        SliLayer::create(sep_file.varnish_file.string(), "Varnish", 0, 0);
     if (varnishLayer->fillMetaFromTiff(8, 1)) {
       varnishLayer->fillBitmapFromTiff();
       varnish = Varnish::create(varnishLayer);
