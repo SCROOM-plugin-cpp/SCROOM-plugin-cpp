@@ -10,7 +10,7 @@
 
 #define SLI_NOF_LAYERS 4
 
-#include "constants.hh"
+#include "testglobals.hh"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Helper functions
@@ -53,56 +53,55 @@ BOOST_AUTO_TEST_SUITE(Sli_Tests)
 
 BOOST_AUTO_TEST_CASE(slipresentation_load_sli_tiffonly) {
   SliPresentation::Ptr presentation = createPresentation();
-  presentation->load((testFileDir / "sli_tiffonly.sli").string());
+  presentation->load(TestFiles::getPathToFile("sli_tiffonly.sli"));
   BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
 }
 
 BOOST_AUTO_TEST_CASE(slipresentation_load_sli_seponly) {
   SliPresentation::Ptr presentation = createPresentation();
-  presentation->load((testFileDir / "sli_seponly.sli").string());
+  presentation->load(TestFiles::getPathToFile("sli_seponly.sli"));
   BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
 }
 
 BOOST_AUTO_TEST_CASE(slipresentation_load_sli_septiffmixed) {
   SliPresentation::Ptr presentation = createPresentation();
-  presentation->load((testFileDir / "sli_septiffmixed.sli").string());
+  presentation->load(TestFiles::getPathToFile("sli_septiffmixed.sli"));
   BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
 }
 
 BOOST_AUTO_TEST_CASE(slipresentation_load_sli_scale) {
   SliPresentation::Ptr presentation = createPresentation();
-  presentation->load((testFileDir / "sli_scale.sli").string());
+  presentation->load(TestFiles::getPathToFile("sli_scale.sli"));
   BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
 }
 
 BOOST_AUTO_TEST_CASE(slipresentation_load_sli_xoffset) {
   SliPresentation::Ptr presentation = createPresentation();
-  presentation->load((testFileDir / "sli_xoffset.sli").string());
+  presentation->load(TestFiles::getPathToFile("sli_xoffset.sli"));
   BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
   dummyRedraw(presentation);
 }
 
 BOOST_AUTO_TEST_CASE(slipresentation_load_sli_varnish) {
   SliPresentation::Ptr presentation = createPresentation();
-  presentation->load((testFileDir / "sli_varnish.sli").string());
+  presentation->load(TestFiles::getPathToFile("sli_varnish.sli"));
   std::cout << presentation->getLayers().size() << '\n';
   BOOST_REQUIRE(presentation->getLayers().size() == SLI_NOF_LAYERS);
 }
 
 BOOST_AUTO_TEST_CASE(slipresentation_load_sli_varnish_wrongpath) {
   SliPresentation::Ptr presentation = createPresentation();
-  presentation->load((testFileDir / "sli_varnish_wrongpath.sli").string());
+  presentation->load(TestFiles::getPathToFile("sli_varnish_wrongpath.sli"));
   BOOST_REQUIRE(presentation->getLayers().size() == 0);
 }
 
 BOOST_AUTO_TEST_CASE(slipresentation_presentationinterface_inherited) {
-  std::string testFilePath = (testFileDir / "sli_xoffset.sli").string();
   SliPresentation::Ptr presentation = createPresentation();
-  presentation->load(testFileDir.string());
+  presentation->load(TestFiles::getPath());
 
   std::string nameStr = "testname";
   std::string valueStr;
@@ -117,7 +116,7 @@ BOOST_AUTO_TEST_CASE(slipresentation_presentationinterface_inherited) {
   BOOST_REQUIRE(presentation->getProperty(nameStr, valueStr) == true);
   BOOST_REQUIRE(valueStr == "testvalue");
 
-  BOOST_REQUIRE(presentation->getTitle() == testFileDir.string());
+  BOOST_REQUIRE(presentation->getTitle() == TestFiles::getPath());
 
   presentation.reset();
 }
@@ -125,7 +124,7 @@ BOOST_AUTO_TEST_CASE(slipresentation_presentationinterface_inherited) {
 BOOST_AUTO_TEST_CASE(slipresentation_pipette_tool_multiple_colors) {
   SliPresentation::Ptr presentation = createPresentation();
 
-  presentation->load((testFileDir / "sli_pipette.sli").string());
+  presentation->load(TestFiles::getPathToFile("sli_pipette.sli"));
   BOOST_REQUIRE(presentation->getLayers().size() == 1);
   dummyRedraw(presentation);
   // Testing 4 CMYK pixels + rectangle larger than the canvas
@@ -138,7 +137,7 @@ BOOST_AUTO_TEST_CASE(slipresentation_pipette_tool_multiple_colors) {
 BOOST_AUTO_TEST_CASE(slipresentation_pipette_tool_one_color) {
   SliPresentation::Ptr presentation = createPresentation();
 
-  presentation->load((testFileDir / "sli_pipette.sli").string());
+  presentation->load(TestFiles::getPathToFile("sli_pipette.sli"));
   BOOST_REQUIRE(presentation->getLayers().size() == 1);
   dummyRedraw(presentation);
   // C
@@ -161,7 +160,7 @@ BOOST_AUTO_TEST_CASE(slipresentation_pipette_tool_one_color) {
 
 BOOST_AUTO_TEST_CASE(slipresentation_pipette_tool_zero_area) {
   SliPresentation::Ptr presentation = createPresentation();
-  presentation->load((testFileDir / "sli_pipette.sli").string());
+  presentation->load(TestFiles::getPathToFile("sli_pipette.sli"));
   BOOST_REQUIRE(presentation->getLayers().size() == 1);
   dummyRedraw(presentation);
 
