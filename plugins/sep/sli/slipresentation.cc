@@ -3,6 +3,7 @@
 #include "slisource.hh"
 
 #include "../varnish/varnish.hh"
+#include "../colorconfig/CustomColorConfig.hh"
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
@@ -33,6 +34,7 @@ SliPresentation::create(ScroomInterface::Ptr scroomInterface_) {
 SliPresentation::~SliPresentation() {}
 
 bool SliPresentation::load(const std::string &fileName) {
+  ColorConfig::getInstance().loadFile();
   filepath = fileName;
   if (!parseSli(fileName)) {
     return false;
