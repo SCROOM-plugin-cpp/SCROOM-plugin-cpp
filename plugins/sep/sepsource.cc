@@ -83,12 +83,11 @@ SepFile SepSource::parseSep(const std::string &file_name) {
       correctColor = ColorConfig::getInstance().getColorByNameOrAlias(result[0]);
     }
     else if (correctColor == nullptr){ // Unknown color is the varnish channel
-      sep_file.files["V"]  = parent_dir / result[1];
+      continue;
+//      sep_file.files["V"]  = parent_dir / result[0];
     }
-    else {
-      // store the full file path to each file
-      sep_file.files[correctColor->getName()] = parent_dir / result[1];
-    }
+    // store the full file path to each file
+    sep_file.files[correctColor->getName()] = parent_dir / result[1];
   }
 
   // We no longer need to read from the file, so we
