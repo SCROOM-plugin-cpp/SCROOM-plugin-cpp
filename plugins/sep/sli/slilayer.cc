@@ -1,5 +1,6 @@
 #include "slilayer.hh"
 #include "../sep-helpers.hh"
+#include "../colorconfig/CustomColorConfig.hh"
 #include <boost/format.hpp>
 #include <tiffio.h>
 
@@ -84,6 +85,12 @@ bool SliLayer::fillMetaFromTiff(unsigned int allowedBps,
            height, xAspect, yAspect);
 
     TIFFClose(tif);
+    channels = {
+      ColorConfig::getInstance().getColorByNameOrAlias("c"),
+      ColorConfig::getInstance().getColorByNameOrAlias("m"),
+      ColorConfig::getInstance().getColorByNameOrAlias("y"),
+      ColorConfig::getInstance().getColorByNameOrAlias("k")
+    };
     return true;
 
   } catch (const std::exception &ex) {

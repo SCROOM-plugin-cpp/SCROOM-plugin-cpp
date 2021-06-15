@@ -206,19 +206,25 @@ void SepSource::fillSliLayerMeta(SliLayer::Ptr sli) {
 
   sli->height = values.height;
   sli->width = values.width;
-  sli->spp = nr_channels;
   sli->bps = 8;
 
   setData(values);
   openFiles();
   checkFiles();
+
+  sli->spp = nr_channels;
+
+  sli->channels = {}; // Copy the channels to the SLI layer;
+  for (std::string colorName : channels){
+      sli->channels.push_back(ColorConfig::getInstance().getColorByNameOrAlias(colorName));
+  }
 }
 
 void SepSource::fillSliLayerBitmap(SliLayer::Ptr sli) {
   uint16_t unit;
   getResolution(unit, sli->xAspect, sli->yAspect);
 
-  const int row_width = sli->width * nr_channels; // 4 bytes per pixel
+  const int row_width = sli->width * nr_channels; // nr_channels bytes per pixel (8 bits per channel)
   sli->bitmap.reset(new uint8_t[sli->height * row_width]);
 
   auto temp = std::vector<byte>(row_width);
@@ -322,24 +328,13 @@ void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr) {
     TIFFReadScanline_(channel_files[channels[i]], lines[i].data(), line_nr);
   }
 
-  auto w_line = std::vector<uint8_t>(size);
-  TIFFReadScanline_(white_ink, w_line.data(), line_nr);
+
 
   for (size_t i = 0; i < size; i++) {
     for (size_t j = 0; j < nr_channels; j++) {
-      out[nr_channels * i + j] = SepSource::applyWhiteInk(
-          w_line[i], lines[j][i], sep_file.white_ink_choice);
+      out[nr_channels * i + j] = lines[j][i];
     }
   }
-}
-
-uint8_t SepSource::applyWhiteInk(uint8_t white, uint8_t color, int type) {
-  if (type == 1) // 1 means subtractive model
-    return white >= color ? 0 : color - white;
-  else if (type == 2)                   // 2 means multiplicative model
-    return color - color * white / 255; // 255 is the maximum white value
-  else                                  // 0 means white ink is not present
-    return color;
 }
 
 void SepSource::fillTiles(int startLine, int line_count, int tileWidth,

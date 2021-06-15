@@ -118,7 +118,7 @@ private:
    * draw.
    */
   virtual void drawCmyk(uint8_t *surfacePointer, uint8_t *bitmap,
-                        int bitmapStart, int bitmapOffset);
+                        int bitmapStart, int bitmapOffset, SliLayer::Ptr layer);
 
   /**
    * Draw the CMYK data onto the surface. It is similar to drawCmyk but it also
@@ -139,7 +139,7 @@ private:
                                int bitmapStart, int bitmapOffset,
                                Scroom::Utils::Rectangle<int> layerRect,
                                Scroom::Utils::Rectangle<int> intersectRect,
-                               int layerBound, int stride);
+                               int layerBound, int stride, SliLayer::Ptr layer);
 
   /**
    * Converts the a CMYK surface to an RGB surface.
@@ -230,4 +230,8 @@ public:
    * toggled layers and trigger a redraw.
    */
   virtual void wipeCacheAndRedraw();
+
+    void advanceIAndSurfacePointer(const Scroom::Utils::Rectangle<int> &layerRect,
+                                   const Scroom::Utils::Rectangle<int> &intersectRect, int layerBound, int stride,
+                                   uint8_t *&surfacePointer, int &i) const;
 };

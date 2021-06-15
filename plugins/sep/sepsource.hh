@@ -129,14 +129,6 @@ public:
   void checkFiles();
 
   /**
-   * Applies the effect of white ink.
-   * @param white - value of white pixel
-   * @param color - value of colored pixel
-   * @param type - desired effect of white ink
-   */
-  static uint8_t applyWhiteInk(uint8_t white, uint8_t color, int type);
-
-  /**
    * Wrapper around the TIFFReadScanLine() function from LibTiff.
    * Motivation for having this wrapper is because TIFFReadScanLine
    * acts expectedly/throws errors when supplied with a NULL. So,

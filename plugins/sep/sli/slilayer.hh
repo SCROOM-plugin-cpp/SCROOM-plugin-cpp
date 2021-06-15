@@ -3,6 +3,7 @@
 #include <memory>
 
 #include <scroom/scroominterface.hh>
+#include "../colorconfig/CustomColor.hh"
 
 class SliLayer : public virtual Scroom::Utils::Base {
 public:
@@ -13,6 +14,12 @@ public:
 
   /** Width of the layer (in pixels) */
   int width;
+
+  /**
+   * Vector of colour names used in this SLI layer.
+   * For TIFF files, only CMYK can be used, but CMYK can still be redifined in the colours config file
+   */
+  std::vector<CustomColor*> channels = {};
 
   /** Samples per pixel */
   unsigned int spp = 0;
