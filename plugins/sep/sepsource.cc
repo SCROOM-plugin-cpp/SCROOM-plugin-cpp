@@ -206,7 +206,7 @@ void SepSource::fillSliLayerMeta(SliLayer::Ptr sli) {
 
   sli->height = values.height;
   sli->width = values.width;
-  sli->spp = 4;
+  sli->spp = nr_channels;
   sli->bps = 8;
 
   setData(values);
@@ -218,7 +218,7 @@ void SepSource::fillSliLayerBitmap(SliLayer::Ptr sli) {
   uint16_t unit;
   getResolution(unit, sli->xAspect, sli->yAspect);
 
-  const int row_width = sli->width * 4; // 4 bytes per pixel
+  const int row_width = sli->width * nr_channels; // 4 bytes per pixel
   sli->bitmap.reset(new uint8_t[sli->height * row_width]);
 
   auto temp = std::vector<byte>(row_width);
