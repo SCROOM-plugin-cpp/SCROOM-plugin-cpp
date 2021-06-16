@@ -231,7 +231,9 @@ public:
    */
   virtual void wipeCacheAndRedraw();
 
-    void advanceIAndSurfacePointer(const Scroom::Utils::Rectangle<int> &layerRect,
-                                   const Scroom::Utils::Rectangle<int> &intersectRect, int layerBound, int stride,
-                                   uint8_t *&surfacePointer, int &i) const;
+  void
+  advanceIAndSurfacePointer(const Scroom::Utils::Rectangle<int> &layerRect,
+                            const Scroom::Utils::Rectangle<int> &intersectRect,
+                            int layerBound, int stride,
+                            uint8_t *&surfacePointer, int &i) const;
 };

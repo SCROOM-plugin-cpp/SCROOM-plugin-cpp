@@ -1,7 +1,7 @@
 #include "slisource.hh"
+#include "../colorconfig/CustomColorHelpers.hh"
 #include "../sep-helpers.hh"
 #include "../sepsource.hh"
-#include "../colorconfig/CustomColorHelpers.hh"
 
 #include <scroom/bitmap-helpers.hh>
 
@@ -281,25 +281,29 @@ void SliSource::convertCmyk(uint8_t *surfacePointer, uint32_t *targetPointer,
 }
 
 void SliSource::drawCmyk(uint8_t *surfacePointer, uint8_t *bitmap,
-                         int bitmapStart, int bitmapOffset, SliLayer::Ptr layer) {
+                         int bitmapStart, int bitmapOffset,
+                         SliLayer::Ptr layer) {
 
-  for (int i = bitmapStart; i < bitmapStart + bitmapOffset; i+= layer->spp) { // Iterate over all pixels
-    int32_t C = *surfacePointer; // Initialize the CMYK holder values to the current values for their color
-    int32_t M = *(surfacePointer+1);
-    int32_t Y = *(surfacePointer+2);
-    int32_t K = *(surfacePointer+3);
-    for (uint j = 0; j < layer->spp; j++) { // Add values to the 32bit cmyk holders
-        auto color = layer->channels.at(j);
-        C += color->cMultiplier * static_cast<float>(bitmap[i + j]);
-        M += color->mMultiplier * static_cast<float>(bitmap[i + j]);
-        Y += color->yMultiplier * static_cast<float>(bitmap[i + j]);
-        K += color->kMultiplier * static_cast<float>(bitmap[i + j]);
-
+  for (int i = bitmapStart; i < bitmapStart + bitmapOffset;
+       i += layer->spp) {        // Iterate over all pixels
+    int32_t C = *surfacePointer; // Initialize the CMYK holder values to the
+                                 // current values for their color
+    int32_t M = *(surfacePointer + 1);
+    int32_t Y = *(surfacePointer + 2);
+    int32_t K = *(surfacePointer + 3);
+    for (uint j = 0; j < layer->spp;
+         j++) { // Add values to the 32bit cmyk holders
+      auto color = layer->channels.at(j);
+      C += color->cMultiplier * static_cast<float>(bitmap[i + j]);
+      M += color->mMultiplier * static_cast<float>(bitmap[i + j]);
+      Y += color->yMultiplier * static_cast<float>(bitmap[i + j]);
+      K += color->kMultiplier * static_cast<float>(bitmap[i + j]);
     }
-    *surfacePointer = CustomColorHelpers::toUint8(C); // Store the CMYK values back into the surface, clipped to uint_8
-    *(surfacePointer+1) = CustomColorHelpers::toUint8(M);
-    *(surfacePointer+2) = CustomColorHelpers::toUint8(Y);
-    *(surfacePointer+3) = CustomColorHelpers::toUint8(K);
+    *surfacePointer = CustomColorHelpers::toUint8(
+        C); // Store the CMYK values back into the surface, clipped to uint_8
+    *(surfacePointer + 1) = CustomColorHelpers::toUint8(M);
+    *(surfacePointer + 2) = CustomColorHelpers::toUint8(Y);
+    *(surfacePointer + 3) = CustomColorHelpers::toUint8(K);
 
     surfacePointer += 4; // Advance the pointer
   }
@@ -309,61 +313,67 @@ void SliSource::drawCmykXoffset(uint8_t *surfacePointer, uint8_t *bitmap,
                                 int bitmapStart, int bitmapOffset,
                                 Scroom::Utils::Rectangle<int> layerRect,
                                 Scroom::Utils::Rectangle<int> intersectRect,
-                                int layerBound, int stride, SliLayer::Ptr layer) {
+                                int layerBound, int stride,
+                                SliLayer::Ptr layer) {
   for (int i = bitmapStart; i < bitmapStart + bitmapOffset;) {
-      int k = i;
-      std::vector<uint8_t*> addresses = {};
-      addresses.push_back(surfacePointer); // Store the address, so it can later be written to
-      int32_t C = *surfacePointer; // Initialize the CMYK holder values to the current values for their color
-      // Advance k and the surface pointer, while keeping the the layer bounds in mind
-      advanceIAndSurfacePointer(layerRect, intersectRect, layerBound, stride, surfacePointer, k);
+    int k = i;
+    std::vector<uint8_t *> addresses = {};
+    addresses.push_back(
+        surfacePointer); // Store the address, so it can later be written to
+    int32_t C = *surfacePointer; // Initialize the CMYK holder values to the
+                                 // current values for their color
+    // Advance k and the surface pointer, while keeping the the layer bounds in
+    // mind
+    advanceIAndSurfacePointer(layerRect, intersectRect, layerBound, stride,
+                              surfacePointer, k);
 
-      addresses.push_back(surfacePointer); // Store the m address
-      int32_t M = *surfacePointer; // Surface pointer has been advanced, so now the M value can be loaded
-      advanceIAndSurfacePointer(layerRect, intersectRect, layerBound, stride, surfacePointer, k);
+    addresses.push_back(surfacePointer); // Store the m address
+    int32_t M = *surfacePointer; // Surface pointer has been advanced, so now
+                                 // the M value can be loaded
+    advanceIAndSurfacePointer(layerRect, intersectRect, layerBound, stride,
+                              surfacePointer, k);
 
-      addresses.push_back(surfacePointer);
-      int32_t Y = *surfacePointer;
-      advanceIAndSurfacePointer(layerRect, intersectRect, layerBound, stride, surfacePointer, k);
+    addresses.push_back(surfacePointer);
+    int32_t Y = *surfacePointer;
+    advanceIAndSurfacePointer(layerRect, intersectRect, layerBound, stride,
+                              surfacePointer, k);
 
-      addresses.push_back(surfacePointer);
-      int32_t K = *surfacePointer;
-      advanceIAndSurfacePointer(layerRect, intersectRect, layerBound, stride, surfacePointer, k);
+    addresses.push_back(surfacePointer);
+    int32_t K = *surfacePointer;
+    advanceIAndSurfacePointer(layerRect, intersectRect, layerBound, stride,
+                              surfacePointer, k);
 
+    for (uint j = 0; j < layer->spp;
+         j++) { // Add values to the 32bit cmyk holders
+      auto color = layer->channels.at(j);
+      C += color->cMultiplier * static_cast<float>(bitmap[i + j]);
+      M += color->mMultiplier * static_cast<float>(bitmap[i + j]);
+      Y += color->yMultiplier * static_cast<float>(bitmap[i + j]);
+      K += color->kMultiplier * static_cast<float>(bitmap[i + j]);
+    }
+    // Write the CMYK values back to the surface, clipped to uint_8
 
-      for (uint j = 0; j < layer->spp; j++) { // Add values to the 32bit cmyk holders
-          auto color = layer->channels.at(j);
-          C += color->cMultiplier * static_cast<float>(bitmap[i + j]);
-          M += color->mMultiplier * static_cast<float>(bitmap[i + j]);
-          Y += color->yMultiplier * static_cast<float>(bitmap[i + j]);
-          K += color->kMultiplier * static_cast<float>(bitmap[i + j]);
-
-      }
-      // Write the CMYK values back to the surface, clipped to uint_8
-
-      *(addresses.at(0)) = CustomColorHelpers::toUint8(C);
-      *(addresses.at(1)) = CustomColorHelpers::toUint8(M);
-      *(addresses.at(2)) = CustomColorHelpers::toUint8(Y);
-      *(addresses.at(3)) = CustomColorHelpers::toUint8(K);
-      // set i to the incremented value
-      i = k;
-
+    *(addresses.at(0)) = CustomColorHelpers::toUint8(C);
+    *(addresses.at(1)) = CustomColorHelpers::toUint8(M);
+    *(addresses.at(2)) = CustomColorHelpers::toUint8(Y);
+    *(addresses.at(3)) = CustomColorHelpers::toUint8(K);
+    // set i to the incremented value
+    i = k;
   }
 }
 
-void SliSource::advanceIAndSurfacePointer(const Scroom::Utils::Rectangle<int> &layerRect,
-                                          const Scroom::Utils::Rectangle<int> &intersectRect, int layerBound,
-                                          int stride, uint8_t *&surfacePointer,
-                                          int &i) const {
-    i++;
-    surfacePointer++;
-    // we are past the image bounds; go to the next next line
-    if (i % layerRect.getWidth() == layerBound) {
-      surfacePointer += stride - intersectRect.getWidth();
-      i += layerRect.getWidth() - intersectRect.getWidth();
-    }
+void SliSource::advanceIAndSurfacePointer(
+    const Scroom::Utils::Rectangle<int> &layerRect,
+    const Scroom::Utils::Rectangle<int> &intersectRect, int layerBound,
+    int stride, uint8_t *&surfacePointer, int &i) const {
+  i++;
+  surfacePointer++;
+  // we are past the image bounds; go to the next next line
+  if (i % layerRect.getWidth() == layerBound) {
+    surfacePointer += stride - intersectRect.getWidth();
+    i += layerRect.getWidth() - intersectRect.getWidth();
+  }
 }
-
 
 void SliSource::computeRgb() {
   SurfaceWrapper::Ptr surface = SurfaceWrapper::create();

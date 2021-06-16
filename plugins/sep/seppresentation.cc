@@ -5,9 +5,9 @@
 #include <scroom/tiledbitmaplayer.hh>
 #include <string>
 
-#include "sep-helpers.hh"
 #include "colorconfig/CustomColorConfig.hh"
 #include "colorconfig/CustomColorOperations.hh"
+#include "sep-helpers.hh"
 
 /////////////////////////////////////////////////////////
 ///// SepPresentation ///////////////////////////////////
@@ -47,8 +47,9 @@ bool SepPresentation::load(const std::string &fileName) {
 
   // Set the colors relevant to this tiledbitmap
   std::vector<CustomColor::Ptr> bitmapColors = {};
-  for(auto color: sep_source->getChannels()){
-      bitmapColors.push_back(ColorConfig::getInstance().getColorByNameOrAlias(color));
+  for (auto color : sep_source->getChannels()) {
+    bitmapColors.push_back(
+        ColorConfig::getInstance().getColorByNameOrAlias(color));
   }
   layer_operations->setColors(bitmapColors);
   tbi = createTiledBitmap(width, height, {layer_operations});

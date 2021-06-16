@@ -2,8 +2,8 @@
 #include "../sep-helpers.hh"
 #include "slisource.hh"
 
-#include "../varnish/varnish.hh"
 #include "../colorconfig/CustomColorConfig.hh"
+#include "../varnish/varnish.hh"
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>

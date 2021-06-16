@@ -105,36 +105,40 @@ gboolean slider_event_handler(GtkWidget *widget, GdkEvent *event,
   UNUSED(event);
 
   if (widget == cPanel->widgets[SLIDER_LOW]) {
-    GtkAdjustment *adj_other =
-        gtk_range_get_adjustment(reinterpret_cast<GtkRange *> (cPanel->widgets[SLIDER_HIGH]));
+    GtkAdjustment *adj_other = gtk_range_get_adjustment(
+        reinterpret_cast<GtkRange *>(cPanel->widgets[SLIDER_HIGH]));
     int max = gtk_adjustment_get_upper(adj_other);
     int min = gtk_adjustment_get_lower(adj_other);
     gdouble other_value = gtk_adjustment_get_value(adj_other);
     gdouble this_old_value = cPanel->oldValue[SLIDER_LOW];
-    gdouble this_new_value = gtk_range_get_value(reinterpret_cast<GtkRange *> (widget));
+    gdouble this_new_value =
+        gtk_range_get_value(reinterpret_cast<GtkRange *>(widget));
 
     if (abs(this_old_value - this_new_value) > 0) {
       cPanel->lastFocused = SLIDER_LOW;
       cPanel->oldValue[SLIDER_LOW] = this_new_value;
-      update_tree_model(reinterpret_cast<GtkTreeView *> (cPanel->widgets[TREEVIEW]), min, max,
-                        this_new_value, other_value);
+      update_tree_model(
+          reinterpret_cast<GtkTreeView *>(cPanel->widgets[TREEVIEW]), min, max,
+          this_new_value, other_value);
       toggle_and_redraw(this_old_value, this_new_value, other_value, widget,
                         cPanel);
     }
   } else if (widget == cPanel->widgets[SLIDER_HIGH]) {
-    GtkAdjustment *adj_other =
-        gtk_range_get_adjustment(reinterpret_cast<GtkRange *> (cPanel->widgets[SLIDER_LOW]));
+    GtkAdjustment *adj_other = gtk_range_get_adjustment(
+        reinterpret_cast<GtkRange *>(cPanel->widgets[SLIDER_LOW]));
     int max = gtk_adjustment_get_upper(adj_other);
     int min = gtk_adjustment_get_lower(adj_other);
     gdouble other_value = gtk_adjustment_get_value(adj_other);
     gdouble this_old_value = cPanel->oldValue[SLIDER_HIGH];
-    gdouble this_new_value = gtk_range_get_value(reinterpret_cast<GtkRange *> (widget));
+    gdouble this_new_value =
+        gtk_range_get_value(reinterpret_cast<GtkRange *>(widget));
 
     if (abs(this_old_value - this_new_value) > 0) {
       cPanel->lastFocused = SLIDER_HIGH;
       cPanel->oldValue[SLIDER_HIGH] = this_new_value;
-      update_tree_model(reinterpret_cast<GtkTreeView *> (cPanel->widgets[TREEVIEW]), min, max,
-                        other_value, this_new_value);
+      update_tree_model(
+          reinterpret_cast<GtkTreeView *>(cPanel->widgets[TREEVIEW]), min, max,
+          other_value, this_new_value);
       toggle_and_redraw(this_old_value, this_new_value, other_value, widget,
                         cPanel);
     }
@@ -148,14 +152,15 @@ gboolean change_value(GtkRange *range, GtkScrollType scroll, gdouble this_value,
   UNUSED(range);
   UNUSED(scroll);
 
-  if (range == reinterpret_cast<GtkRange *> (cPanel->widgets[SLIDER_LOW])) {
-    gdouble other_value =
-        gtk_range_get_value(reinterpret_cast<GtkRange *> (cPanel->widgets[SLIDER_HIGH]));
+  if (range == reinterpret_cast<GtkRange *>(cPanel->widgets[SLIDER_LOW])) {
+    gdouble other_value = gtk_range_get_value(
+        reinterpret_cast<GtkRange *>(cPanel->widgets[SLIDER_HIGH]));
     if (other_value - this_value < 0)
       return TRUE;
-  } else if (range == reinterpret_cast<GtkRange *> (cPanel->widgets[SLIDER_HIGH])) {
-    gdouble other_value =
-        gtk_range_get_value(reinterpret_cast<GtkRange *> (cPanel->widgets[SLIDER_LOW]));
+  } else if (range ==
+             reinterpret_cast<GtkRange *>(cPanel->widgets[SLIDER_HIGH])) {
+    gdouble other_value = gtk_range_get_value(
+        reinterpret_cast<GtkRange *>(cPanel->widgets[SLIDER_LOW]));
     if (this_value - other_value < 0)
       return TRUE;
   }

@@ -3,31 +3,31 @@
 #include <scroom/cairo-helpers.hh>
 #include <scroom/viewinterface.hh>
 
-Varnish::Varnish(const SliLayer::Ptr& sliLayer) {
+Varnish::Varnish(const SliLayer::Ptr &sliLayer) {
   this->layer = sliLayer;
   inverted = false;
   // Precalculate the surface and save it.
   int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, sliLayer->width);
-  surface =
-      cairo_image_surface_create_for_data(sliLayer->bitmap.get(), CAIRO_FORMAT_A8,
-                                          sliLayer->width, sliLayer->height, stride);
+  surface = cairo_image_surface_create_for_data(
+      sliLayer->bitmap.get(), CAIRO_FORMAT_A8, sliLayer->width,
+      sliLayer->height, stride);
   // Map is read inverted by cairo, so we invert it here once
   invertSurface();
 }
 
-Varnish::Ptr Varnish::create(const SliLayer::Ptr& layer) {
+Varnish::Ptr Varnish::create(const SliLayer::Ptr &layer) {
   Varnish::Ptr result = Ptr(new Varnish(layer));
   return result;
 }
 
 Varnish::~Varnish() { cairo_surface_destroy(surface); }
 
-void Varnish::setView(const ViewInterface::WeakPtr& viewWeakPtr) {
+void Varnish::setView(const ViewInterface::WeakPtr &viewWeakPtr) {
   registerUI(viewWeakPtr);
   this->viewWeak = viewWeakPtr;
 }
 
-void Varnish::resetView(const ViewInterface::WeakPtr& viewWeakPtr) {
+void Varnish::resetView(const ViewInterface::WeakPtr &viewWeakPtr) {
   this->viewWeak = viewWeakPtr;
 
   gdk_threads_enter();
@@ -66,7 +66,7 @@ void Varnish::fixVarnishState() {
   }
 }
 
-void Varnish::registerUI(const ViewInterface::WeakPtr& viewWeakPtr) {
+void Varnish::registerUI(const ViewInterface::WeakPtr &viewWeakPtr) {
   box = gtk_vbox_new(false, 0);
   GtkWidget *expander = gtk_expander_new("Overlay properties");
   GtkWidget *expander_box = gtk_vbox_new(false, 0);

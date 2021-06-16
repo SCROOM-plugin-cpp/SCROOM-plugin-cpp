@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include <scroom/scroominterface.hh>
 #include "../colorconfig/CustomColor.hh"
+#include <scroom/scroominterface.hh>
 
 class SliLayer : public virtual Scroom::Utils::Base {
 public:
@@ -17,7 +17,8 @@ public:
 
   /**
    * Vector of colour names used in this SLI layer.
-   * For TIFF files, only CMYK can be used, but CMYK can still be redifined in the colours config file
+   * For TIFF files, only CMYK can be used, but CMYK can still be redifined in
+   * the colours config file
    */
   std::vector<CustomColor::Ptr> channels = {};
 

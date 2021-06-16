@@ -147,8 +147,8 @@ halfSegBitmask(boost::dynamic_bitset<> toggledSegments) {
       last = static_cast<int>(i);
   }
 
-  for (unsigned int i = first; i < first + static_cast<unsigned int>(((last - first) / 2));
-       i++)
+  for (unsigned int i = first;
+       i < first + static_cast<unsigned int>(((last - first) / 2)); i++)
     bitmask.set(i);
 
   return bitmask;

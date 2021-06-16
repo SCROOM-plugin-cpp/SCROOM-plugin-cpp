@@ -11,6 +11,4 @@ const gchar *g_module_check_init(GModule *) {
 
 void g_module_unload(GModule *) {}
 
-PluginInformationInterface::Ptr getPluginInformation() {
-  return Sep::create();
-}
+PluginInformationInterface::Ptr getPluginInformation() { return Sep::create(); }

@@ -28,7 +28,8 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep) {
   BOOST_CHECK(file.files.size() == 4);
 
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] == TestFiles::getPathToFile(colour + ".tif"));
+    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] ==
+                TestFiles::getPathToFile(colour + ".tif"));
   }
 
   BOOST_CHECK(file.width == 600);
@@ -42,7 +43,8 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_extra_lines) {
   BOOST_CHECK(file.files.size() == 4);
 
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] == TestFiles::getPathToFile(colour + ".tif"));
+    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] ==
+                TestFiles::getPathToFile(colour + ".tif"));
   }
 
   BOOST_CHECK(file.width == 600);
@@ -56,7 +58,8 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_empty_line) {
   BOOST_CHECK(file.files.size() == 4);
 
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] == TestFiles::getPathToFile(colour + ".tif"));
+    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] ==
+                TestFiles::getPathToFile(colour + ".tif"));
   }
 
   BOOST_CHECK(file.width == 600);
@@ -71,7 +74,8 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_missing_channel) {
   BOOST_CHECK(file.files.size() == 3);
 
   for (const std::string &colour : {"C", "M", "K"}) {
-    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] == TestFiles::getPathToFile(colour + ".tif"));
+    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] ==
+                TestFiles::getPathToFile(colour + ".tif"));
   }
 
   BOOST_CHECK(file.files["Y"].empty());
@@ -87,7 +91,8 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_missing_channel_2) {
   BOOST_CHECK(file.files.size() == 3);
 
   for (const std::string &colour : {"M", "Y", "K"}) {
-    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] == TestFiles::getPathToFile(colour + ".tif"));
+    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] ==
+                TestFiles::getPathToFile(colour + ".tif"));
   }
 
   BOOST_CHECK(file.files["C"].empty());
@@ -148,8 +153,9 @@ BOOST_AUTO_TEST_CASE(sepsource_set_data) {
   BOOST_CHECK(source->sep_file.files.size() == 4);
 
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(source->sep_file.files[boost::algorithm::to_lower_copy(colour)] ==
-                TestFiles::getPathToFile(colour + ".tif"));
+    BOOST_CHECK(
+        source->sep_file.files[boost::algorithm::to_lower_copy(colour)] ==
+        TestFiles::getPathToFile(colour + ".tif"));
   }
 
   BOOST_CHECK(source->sep_file.width == 600);
@@ -168,7 +174,9 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files) {
 
   // Check that all the CMYK files have been opened
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(source->channel_files[boost::algorithm::to_lower_copy(colour)] != nullptr);
+    BOOST_CHECK(
+        source->channel_files[boost::algorithm::to_lower_copy(colour)] !=
+        nullptr);
   }
 
   // Check that white ink and varnish are not opened
@@ -186,7 +194,8 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files_twice) {
   // Save the TIFF pointers to make sure they don't change
   std::map<std::string, tiff *> files;
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    files[colour] = source->channel_files[boost::algorithm::to_lower_copy(colour)];
+    files[colour] =
+        source->channel_files[boost::algorithm::to_lower_copy(colour)];
   }
 
   // Tested call
@@ -194,7 +203,9 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files_twice) {
 
   // Check that all the CMYK files have not been opened again
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(source->channel_files[boost::algorithm::to_lower_copy(colour)] == files[colour]);
+    BOOST_CHECK(
+        source->channel_files[boost::algorithm::to_lower_copy(colour)] ==
+        files[colour]);
   }
 }
 
@@ -212,7 +223,9 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files_extra) {
 
   // Check that all the CMYK files have been opened
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(source->channel_files[boost::algorithm::to_lower_copy(colour)] != nullptr);
+    BOOST_CHECK(
+        source->channel_files[boost::algorithm::to_lower_copy(colour)] !=
+        nullptr);
   }
 
   // Check that varnish has also been opened
@@ -267,7 +280,6 @@ BOOST_AUTO_TEST_CASE(sepsource_apply_white_multiply_2) {
 }
 */
 
-
 BOOST_AUTO_TEST_CASE(sepsource_tiff_wrapper_nullptr) {
   auto res = SepSource::TIFFReadScanline_(nullptr, nullptr, 1);
   BOOST_CHECK(res == -1);
@@ -296,7 +308,7 @@ BOOST_AUTO_TEST_CASE(sepsource_fill_sli_1) {
   sepSource->fillSliLayerBitmap(sli);
   BOOST_CHECK(sli->width == 600);
   BOOST_CHECK(sli->height == 400);
-  //BOOST_CHECK(sli->spp == 4); No longer specifically 4
+  // BOOST_CHECK(sli->spp == 4); No longer specifically 4
   BOOST_CHECK(sli->bps == 8);
   BOOST_CHECK(sli->bitmap != nullptr);
   BOOST_CHECK(std::abs(sli->xAspect - 1.0) < 1e-4);

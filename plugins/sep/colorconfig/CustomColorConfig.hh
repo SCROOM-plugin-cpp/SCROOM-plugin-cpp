@@ -3,35 +3,33 @@
 //
 
 #pragma once
-#include <iostream>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/shared_ptr.hpp>
+#include <iostream>
 
+#include "CustomColor.hh"
 #include <scroom/plugininformationinterface.hh>
 #include <scroom/utilities.hh>
-#include "CustomColor.hh"
 
 namespace pt = boost::property_tree;
-class ColorConfig{
+class ColorConfig {
 
 private:
   ColorConfig();
 
 private:
-  std::vector<CustomColor::Ptr>* colors;
-
+  std::vector<CustomColor::Ptr> *colors;
 
 public:
-  static ColorConfig& getInstance(){
-      static ColorConfig INSTANCE;
-      return INSTANCE;
+  static ColorConfig &getInstance() {
+    static ColorConfig INSTANCE;
+    return INSTANCE;
   }
 
-  std::vector<CustomColor::Ptr>* getDefinedColors();
+  std::vector<CustomColor::Ptr> *getDefinedColors();
   CustomColor::Ptr getColorByNameOrAlias(std::string name);
   void loadFile();
 
   void addNonExistentDefaultColors();
 };
-

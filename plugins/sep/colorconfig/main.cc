@@ -9,6 +9,6 @@
 
 #include "CustomColorConfig.hh"
 
-
-
-PluginInformationInterface::Ptr getPluginInformation() { return ColorConfig::create(); }
+PluginInformationInterface::Ptr getPluginInformation() {
+  return ColorConfig::create();
+}

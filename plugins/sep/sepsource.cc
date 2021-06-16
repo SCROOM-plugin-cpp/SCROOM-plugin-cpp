@@ -1,16 +1,16 @@
 #include "sepsource.hh"
 
+#include "colorconfig/CustomColor.hh"
+#include "colorconfig/CustomColorConfig.hh"
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/copy.hpp>
-#include "colorconfig/CustomColor.hh"
-#include "colorconfig/CustomColorConfig.hh"
 #include <fstream>
 #include <iostream>
 
-#include <iterator>
 #include <boost/algorithm/string.hpp>
+#include <iterator>
 
 #include "sep-helpers.hh"
 
@@ -76,26 +76,27 @@ SepFile SepSource::parseSep(const std::string &file_name) {
     }
 
     // Load the color corresponding to this name
-    auto correctColor = ColorConfig::getInstance().getColorByNameOrAlias(result[0]);
+    auto correctColor =
+        ColorConfig::getInstance().getColorByNameOrAlias(result[0]);
 
-    if (correctColor == nullptr && boost::algorithm::to_lower_copy(result[0]) != "v") {
+    if (correctColor == nullptr &&
+        boost::algorithm::to_lower_copy(result[0]) != "v") {
       // Unsupported channel and it is not varnish
-      warnings += "WARNING: The .sep file defines an unknown channel (" + result[0] + ")!\n";
-    }
-    else if (correctColor == nullptr){ // Unknown color is the varnish channel
+      warnings += "WARNING: The .sep file defines an unknown channel (" +
+                  result[0] + ")!\n";
+    } else if (correctColor ==
+               nullptr) { // Unknown color is the varnish channel
 
       sep_file.varnish_file = parent_dir / result[1];
-    }
-    else {
-        // store the full file path to each file
-        sep_file.files[correctColor->getName()] = parent_dir / result[1];
+    } else {
+      // store the full file path to each file
+      sep_file.files[correctColor->getName()] = parent_dir / result[1];
     }
   }
 
   // We no longer need to read from the file, so we
   // can safely close it.
   file.close();
-
 
   // Ask the user how to interpret the white ink values
   // if a white ink channel is given.
@@ -109,9 +110,7 @@ SepFile SepSource::parseSep(const std::string &file_name) {
     auto choice = gtk_dialog_run(GTK_DIALOG(choice_dialog));
     sep_file.white_ink_choice = choice == GTK_RESPONSE_ACCEPT ? 1 : 2;
 
-
     gtk_widget_destroy(choice_dialog);
-
   }
 
   // show errors if there are any
@@ -153,26 +152,25 @@ bool SepSource::getResolution(uint16_t &unit, float &x_resolution,
   float channel_res_x, channel_res_y;
   uint16_t channel_res_unit;
   bool warning = false;
-    x_resolution = 1;
-    y_resolution = 1;
+  x_resolution = 1;
+  y_resolution = 1;
 
-    for(const auto& itr : channel_files) {
-        auto channel = itr.second;
+  for (const auto &itr : channel_files) {
+    auto channel = itr.second;
 
-
-            if (channel == nullptr) {
-                continue;
-            }
-
-            getForOneChannel(channel, channel_res_unit, channel_res_x, channel_res_y);
-            std::cout << "Res x: " << channel_res_x << " Res y: " << channel_res_y << "\n";
-            // check if the same as first values
-            // if not, set status flag and continue
-            warning |= std::abs(channel_res_x - x_resolution) > 1e-3 ||
-                       std::abs(channel_res_y - y_resolution) > 1e-3 ||
-                       channel_res_unit != unit;
-
+    if (channel == nullptr) {
+      continue;
     }
+
+    getForOneChannel(channel, channel_res_unit, channel_res_x, channel_res_y);
+    std::cout << "Res x: " << channel_res_x << " Res y: " << channel_res_y
+              << "\n";
+    // check if the same as first values
+    // if not, set status flag and continue
+    warning |= std::abs(channel_res_x - x_resolution) > 1e-3 ||
+               std::abs(channel_res_y - y_resolution) > 1e-3 ||
+               channel_res_unit != unit;
+  }
 
   return !warning;
 }
@@ -205,8 +203,9 @@ void SepSource::fillSliLayerMeta(SliLayer::Ptr sli) {
   sli->spp = nr_channels;
 
   sli->channels = {}; // Copy the channels to the SLI layer;
-  for (std::string colorName : channels){
-      sli->channels.push_back(ColorConfig::getInstance().getColorByNameOrAlias(colorName));
+  for (std::string colorName : channels) {
+    sli->channels.push_back(
+        ColorConfig::getInstance().getColorByNameOrAlias(colorName));
   }
 }
 
@@ -214,7 +213,9 @@ void SepSource::fillSliLayerBitmap(SliLayer::Ptr sli) {
   uint16_t unit;
   getResolution(unit, sli->xAspect, sli->yAspect);
 
-  const int row_width = sli->width * nr_channels; // nr_channels bytes per pixel (8 bits per channel)
+  const int row_width =
+      sli->width *
+      nr_channels; // nr_channels bytes per pixel (8 bits per channel)
   sli->bitmap.reset(new uint8_t[sli->height * row_width]);
 
   auto temp = std::vector<byte>(row_width);
@@ -225,11 +226,12 @@ void SepSource::fillSliLayerBitmap(SliLayer::Ptr sli) {
 }
 
 void SepSource::setData(SepFile file) {
-    sep_file = file;
+  sep_file = file;
 
-    // Set the channels to the keys of the files map
-    boost::copy(sep_file.files | boost::adaptors::map_keys, std::back_inserter(channels));
-    nr_channels = channels.size();
+  // Set the channels to the keys of the files map
+  boost::copy(sep_file.files | boost::adaptors::map_keys,
+              std::back_inserter(channels));
+  nr_channels = channels.size();
 }
 
 void SepSource::setName(const std::string &file_name_) {
@@ -237,7 +239,7 @@ void SepSource::setName(const std::string &file_name_) {
 }
 
 void SepSource::openFiles() {
-  for (const auto& c : channels) {
+  for (const auto &c : channels) {
     if (channel_files[c] != nullptr) {
       printf("WARNING: %s file has already been initialized. Cannot open it "
              "again.\n",
@@ -249,7 +251,7 @@ void SepSource::openFiles() {
   bool show_warning = false;
 
   // open color channels
-  for (const auto& c : channels) {
+  for (const auto &c : channels) {
     channel_files[c] = TIFFOpen(sep_file.files[c].string().c_str(), "r");
 
     // Don't show a warning when the file path is empty. This means
@@ -283,7 +285,7 @@ void SepSource::checkFiles() {
   std::string warning = "";
 
   // check CMYK
-  for (const auto& c : channels) {
+  for (const auto &c : channels) {
     if (channel_files[c] != nullptr &&
         TIFFGetField(channel_files[c], TIFFTAG_SAMPLESPERPIXEL, &spp) == 1 &&
         spp != 1) {
@@ -317,8 +319,6 @@ void SepSource::readCombinedScanline(std::vector<byte> &out, size_t line_nr) {
     lines[i] = std::vector<uint8_t>(size);
     TIFFReadScanline_(channel_files[channels[i]], lines[i].data(), line_nr);
   }
-
-
 
   for (size_t i = 0; i < size; i++) {
     for (size_t j = 0; j < nr_channels; j++) {
@@ -394,10 +394,6 @@ void SepSource::done() {
 
 std::string SepSource::getName() { return file_name; }
 
-size_t SepSource::getSpp() {
-    return nr_channels;
-}
+size_t SepSource::getSpp() { return nr_channels; }
 
-std::vector<std::string> SepSource::getChannels() {
-    return channels;
-}
+std::vector<std::string> SepSource::getChannels() { return channels; }

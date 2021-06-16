@@ -6,8 +6,8 @@
 #include <scroom/layeroperations.hh>
 #include <scroom/presentationinterface.hh>
 
-#include "sepsource.hh"
 #include "colorconfig/CustomColorOperations.hh"
+#include "sepsource.hh"
 
 ////////////////////////////////////////////////////////////////
 ////////////// SepPresentation
