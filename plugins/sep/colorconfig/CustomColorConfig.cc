@@ -24,7 +24,7 @@ void ColorConfig::loadFile() {
     boost::filesystem::path full_path(boost::filesystem::current_path());
     full_path.append("colours.json");
     try {
-        pt::read_json(full_path.c_str(), root);
+        pt::read_json(full_path.string(), root);
     }
     catch (const std::exception& e){
         // Loading didnt work
