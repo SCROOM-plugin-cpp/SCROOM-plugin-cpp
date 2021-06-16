@@ -30,7 +30,7 @@ void ColorConfig::loadFile() {
         // Loading didnt work
         std::cout << "Loading colours file failed. Are you sure there is a file at: " + full_path.string() + "?\n";
         std::cout << "Loading default CMYK \n";
-        addNonExistantDefaultColors();
+        addNonExistentDefaultColors();
         return;
     }
 
@@ -102,11 +102,11 @@ void ColorConfig::loadFile() {
 
         colors->push_back(newColour);
     }
-    addNonExistantDefaultColors();
+    addNonExistentDefaultColors();
 
 }
 
-void ColorConfig::addNonExistantDefaultColors() {//Initialise an array to check whether default colours exist
+void ColorConfig::addNonExistentDefaultColors() {//Initialise an array to check whether default colours exist
     bool defaultExist[4] = {false, false, false, false};
     if (getColorByNameOrAlias("c") != nullptr) defaultExist[0] = true;
     if (getColorByNameOrAlias("m") != nullptr) defaultExist[1] = true;

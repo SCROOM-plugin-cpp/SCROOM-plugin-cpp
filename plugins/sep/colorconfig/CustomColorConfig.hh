@@ -33,6 +33,6 @@ public:
   CustomColor* getColorByNameOrAlias(std::string name);
   void loadFile();
 
-  void addNonExistantDefaultColors();
+  void addNonExistentDefaultColors();
 };
 
