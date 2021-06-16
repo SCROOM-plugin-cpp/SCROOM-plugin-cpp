@@ -19,7 +19,7 @@ public:
    * Vector of colour names used in this SLI layer.
    * For TIFF files, only CMYK can be used, but CMYK can still be redifined in the colours config file
    */
-  std::vector<CustomColor*> channels = {};
+  std::vector<CustomColor::Ptr> channels = {};
 
   /** Samples per pixel */
   unsigned int spp = 0;

@@ -19,7 +19,7 @@ private:
   ColorConfig();
 
 private:
-  std::vector<CustomColor>* colors;
+  std::vector<CustomColor::Ptr>* colors;
 
 
 public:
@@ -28,8 +28,8 @@ public:
       return INSTANCE;
   }
 
-  std::vector<CustomColor>* getDefinedColors();
-  CustomColor* getColorByNameOrAlias(std::string name);
+  std::vector<CustomColor::Ptr>* getDefinedColors();
+  CustomColor::Ptr getColorByNameOrAlias(std::string name);
   void loadFile();
 
   void addNonExistentDefaultColors();

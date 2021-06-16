@@ -64,7 +64,7 @@ Scroom::Utils::Stuff OperationsCustomColors::cache(const ConstTile::Ptr tile) {
     const uint8_t *cur = tile->data.get();
 
     for (int i = 0; i < spp * tile->height * tile->width; i += spp) {
-        // Convert custom colors to CMKY and then to ARGB, because cairo doesn't know how to render CMYK.
+        // Convert custom colors to CMYK and then to ARGB, because cairo doesn't know how to render CMYK.
         int32_t C = 0;
         int32_t M = 0;
         int32_t Y = 0;
@@ -157,6 +157,6 @@ void PipetteCommonOperationsCustomColor::setSpp(int samplesPerPixel) {
     spp = samplesPerPixel;
 }
 
-void PipetteCommonOperationsCustomColor::setColors(std::vector<CustomColor*> colors_) {
+void PipetteCommonOperationsCustomColor::setColors(std::vector<CustomColor::Ptr> colors_) {
     colors = colors_;
 }

@@ -18,7 +18,7 @@ class PipetteCommonOperationsCustomColor
 protected:
     int bps;
     int spp;
-    std::vector<CustomColor*> colors;
+    std::vector<CustomColor::Ptr> colors;
 
 
 public:
@@ -30,7 +30,7 @@ public:
         spp = 0;
     };
     void                 setSpp(int samplesPerPixel);
-    void                 setColors(std::vector<CustomColor*> colors_);
+    void                 setColors(std::vector<CustomColor::Ptr> colors_);
     PipetteLayerOperations::PipetteColor sumPixelValues(Scroom::Utils::Rectangle<int> area, const ConstTile::Ptr tile) override;
 };
 

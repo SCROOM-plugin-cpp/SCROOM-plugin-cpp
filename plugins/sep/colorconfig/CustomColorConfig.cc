@@ -13,7 +13,7 @@
 namespace pt = boost::property_tree;
 
 ColorConfig::ColorConfig() {
-    colors = new std::vector<CustomColor>();
+    colors = new std::vector<CustomColor::Ptr>();
 }
 
 
@@ -34,15 +34,16 @@ void ColorConfig::loadFile() {
         return;
     }
 
-    std::unordered_set<std::string> seenNamesAndAliasses = {};
-    seenNamesAndAliasses.insert("v"); // Insert placeholder for varnish
+    std::unordered_set<std::string> seenNamesAndAliases = {};
+    seenNamesAndAliases.insert("v"); // Insert placeholder for varnish
+
     std::cout << "Loading colour config file. NOTE: v is reserved for varnish, so should not be defined as name or alias!!\n";
     for(pt::ptree::value_type& v : root.get_child("colours")){
         auto name = v.second.get<std::string>("name");
         boost::algorithm::to_lower(name); // Convert the name to lowercase
 
         // Check if this name has not yet been seen before
-        if (seenNamesAndAliasses.find(name) != seenNamesAndAliasses.end())
+        if (seenNamesAndAliases.find(name) != seenNamesAndAliases.end())
         {
             // It exists
             std::cout << "ERROR: Duplicate name or alias: " << name << "!\n";
@@ -50,30 +51,30 @@ void ColorConfig::loadFile() {
             continue;
         }
         // Color is new, so we can add it to the defined colors
-        // First add the name to the seen names and aliasses
-        seenNamesAndAliasses.insert(name);
+        // First add the name to the seen names and aliases
+        seenNamesAndAliases.insert(name);
 
-        float c = v.second.get<float>("cMultiplier");
-        float m = v.second.get<float>("mMultiplier");
-        float y = v.second.get<float>("yMultiplier");
-        float k = v.second.get<float>("kMultiplier");
-        CustomColor newColour = CustomColor(name, c, m, y, k);
-
-
+        auto c = v.second.get<float>("cMultiplier");
+        auto m = v.second.get<float>("mMultiplier");
+        auto y = v.second.get<float>("yMultiplier");
+        auto k = v.second.get<float>("kMultiplier");
+        CustomColor::Ptr newColour = CustomColor::Ptr (boost::make_shared<CustomColor>(name, c, m, y, k));
 
 
-        //Initialise aliasses vector
-        std::vector<std::string> aliasses = {};
-        //Try to load aliasses, if the field exists
+
+
+        //Initialise aliases vector
+        std::vector<std::string> aliases = {};
+        //Try to load aliases, if the field exists
         try{
-            //Get the aliasses array
-            pt::ptree array = v.second.get_child("aliasses");
-            //Initialise an iterator over the aliasses array
+            //Get the aliases array
+            pt::ptree array = v.second.get_child("aliases");
+            //Initialise an iterator over the aliases array
             pt::ptree::iterator iterator = array.begin();
 
 
 
-            //Store aliasses in vector
+            //Store aliases in vector
             for(; iterator != array.end(); iterator++) {
                 //Load alias with uppercase included
                 auto alias = iterator->second.get_value<std::string>();
@@ -81,23 +82,23 @@ void ColorConfig::loadFile() {
                 boost::algorithm::to_lower(alias);
 
                 //Test if an alias already exists in a different colour
-                if (seenNamesAndAliasses.find(alias) != seenNamesAndAliasses.end()) {
+                if (seenNamesAndAliases.find(alias) != seenNamesAndAliases.end()) {
                     //It exists
                     std::cout << "ERROR: Duplicate alias: " << alias << "!\n";
                 } else {
                     //It is a new alias
                     std::cout << "New alias: " << alias << "\n";
-                    seenNamesAndAliasses.insert(alias);
+                    seenNamesAndAliases.insert(alias);
                 }
 
-                aliasses.push_back(alias);
+                aliases.push_back(alias);
             }
 
             //Set aliassses for newColour
-            newColour.setAliasses(aliasses);
+            newColour->setAliases(aliases);
         } catch(const std::exception& e){
             //When no aliases exist, ignore exception
-            std::cout << "No aliasses found." << "\n";
+            std::cout << "No aliases found." << "\n";
         }
 
         colors->push_back(newColour);
@@ -114,49 +115,49 @@ void ColorConfig::addNonExistentDefaultColors() {//Initialise an array to check 
     if (getColorByNameOrAlias("k") != nullptr) defaultExist[3] = true;
     //If no cyan configuration exists, add the default configuration
     if(!defaultExist[0]){
-        CustomColor newColour = CustomColor("c", 1, 0, 0, 0);
+        CustomColor::Ptr newColour = CustomColor::Ptr (boost::make_shared<CustomColor>("c", 1, 0, 0, 0));
 
         colors->push_back(newColour);
     }
 
     //If no magenta configuration exists, add the default configuration
     if(!defaultExist[1]){
-        CustomColor newColour = CustomColor("m", 0, 1, 0, 0);
+        CustomColor::Ptr newColour = CustomColor::Ptr (boost::make_shared<CustomColor>("m", 0, 1, 0, 0));
 
         colors->push_back(newColour);
     }
 
     //If no yellow configuration exists, add the default configuration
     if(!defaultExist[2]){
-        CustomColor newColour = CustomColor("y", 0, 0, 1, 0);
+        CustomColor::Ptr newColour = CustomColor::Ptr (boost::make_shared<CustomColor>("y", 0, 0, 1, 0));
 
         colors->push_back(newColour);
     }
 
     //If no key configuration exists, add the default configuration
     if(!defaultExist[3]){
-        CustomColor newColour = CustomColor("k", 0, 0, 0, 1);
+        CustomColor::Ptr newColour = CustomColor::Ptr (boost::make_shared<CustomColor>("k", 0, 0, 0, 1));
 
         colors->push_back(newColour);
     }
 }
 
-CustomColor* ColorConfig::getColorByNameOrAlias(std::string name) {
+CustomColor::Ptr ColorConfig::getColorByNameOrAlias(std::string name) {
     boost::algorithm::to_lower(name);
-    auto colors = getDefinedColors();
+    auto definedColors = getDefinedColors();
     std::string lowerName;
     std::string lowerAlias;
-    for (auto & color : *colors)
+    for (auto & color : *definedColors)
     {
-        lowerName = boost::algorithm::to_lower_copy(color.getName());
+        lowerName = boost::algorithm::to_lower_copy(color->getName());
         if (lowerName == name){
-            return &color;
+            return color;
         }
 
-        for (auto const alias : color.getAliasses()){
+        for (auto const alias : color->getAliases()){
             lowerAlias = boost::algorithm::to_lower_copy(alias);
             if (lowerAlias == name) {
-                return &color;
+                return color;
             }
         }
 
@@ -164,7 +165,7 @@ CustomColor* ColorConfig::getColorByNameOrAlias(std::string name) {
     return nullptr;
 }
 
-std::vector<CustomColor>* ColorConfig::getDefinedColors() {
+std::vector<CustomColor::Ptr>* ColorConfig::getDefinedColors() {
     return colors;
 }
 

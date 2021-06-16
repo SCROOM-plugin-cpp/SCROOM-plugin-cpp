@@ -8,8 +8,10 @@
 
 class CustomColor {
 public:
+    using Ptr = boost::shared_ptr<CustomColor>;
+    
     std::string name;
-    std::vector<std::string> aliasses;
+    std::vector<std::string> aliases;
     float cMultiplier;
     float mMultiplier;
     float yMultiplier;
@@ -26,19 +28,14 @@ public:
         return name;
     }
 
-    std::vector<std::string> getAliasses() {
-        return aliasses;
+    std::vector<std::string> getAliases() {
+        return aliases;
     }
 
-    void setAliasses(std::vector<std::string> newAliasses){
-        aliasses = newAliasses;
+    void setAliases(std::vector<std::string> newAliasses){
+        aliases = newAliasses;
     }
 
-    float * getColor(){
-        float color[4] = {cMultiplier, mMultiplier, yMultiplier, kMultiplier};
-
-        return color;
-    }
 };
 
 
