@@ -355,6 +355,8 @@ void SliSource::advanceIAndSurfacePointer(const Scroom::Utils::Rectangle<int> &l
                                           const Scroom::Utils::Rectangle<int> &intersectRect, int layerBound,
                                           int stride, uint8_t *&surfacePointer,
                                           int &i) const {
+    i++;
+    surfacePointer++;
     // we are past the image bounds; go to the next next line
     if (i % layerRect.getWidth() == layerBound) {
       surfacePointer += stride - intersectRect.getWidth();
