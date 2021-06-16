@@ -157,19 +157,13 @@ bool SepSource::getResolution(uint16_t &unit, float &x_resolution,
   float channel_res_x, channel_res_y;
   uint16_t channel_res_unit;
   bool warning = false;
+    x_resolution = 1;
+    y_resolution = 1;
 
-  // Use resolution of first channel as a baseline
-  getForOneChannel(channel_files[channels[0]], unit, x_resolution,
-                   y_resolution);
-
-    bool first = true;
-    for(const auto& itr : channel_files) {//TODO Fix this for the custom amount of colors
+    for(const auto& itr : channel_files) {
         auto channel = itr.second;
-        if (first) {
-            first = false;
-            continue;
-        }
-        else {
+
+
             if (channel == nullptr) {
                 continue;
             }
@@ -181,7 +175,7 @@ bool SepSource::getResolution(uint16_t &unit, float &x_resolution,
             warning |= std::abs(channel_res_x - x_resolution) > 1e-3 ||
                        std::abs(channel_res_y - y_resolution) > 1e-3 ||
                        channel_res_unit != unit;
-        }
+
     }
 
   return !warning;

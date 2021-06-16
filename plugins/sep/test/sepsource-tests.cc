@@ -7,6 +7,7 @@
 #include "../sepsource.hh"
 #include "../sli/slilayer.hh"
 #include "testglobals.hh"
+#include <boost/algorithm/string.hpp>
 
 /** Test cases for sepsource.hh */
 
@@ -27,7 +28,7 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep) {
   BOOST_CHECK(file.files.size() == 4);
 
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(file.files[colour] == TestFiles::getPathToFile(colour + ".tif"));
+    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] == TestFiles::getPathToFile(colour + ".tif"));
   }
 
   BOOST_CHECK(file.width == 600);
@@ -41,7 +42,7 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_extra_lines) {
   BOOST_CHECK(file.files.size() == 4);
 
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(file.files[colour] == TestFiles::getPathToFile(colour + ".tif"));
+    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] == TestFiles::getPathToFile(colour + ".tif"));
   }
 
   BOOST_CHECK(file.width == 600);
@@ -55,7 +56,7 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_empty_line) {
   BOOST_CHECK(file.files.size() == 4);
 
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(file.files[colour] == TestFiles::getPathToFile(colour + ".tif"));
+    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] == TestFiles::getPathToFile(colour + ".tif"));
   }
 
   BOOST_CHECK(file.width == 600);
@@ -67,10 +68,10 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_missing_channel) {
   // Y channel is not defined in this file
   SepFile file =
       SepSource::parseSep(TestFiles::getPathToFile("sep_missing_channel.sep"));
-  BOOST_CHECK(file.files.size() == 4);
+  BOOST_CHECK(file.files.size() == 3);
 
   for (const std::string &colour : {"C", "M", "K"}) {
-    BOOST_CHECK(file.files[colour] == TestFiles::getPathToFile(colour + ".tif"));
+    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] == TestFiles::getPathToFile(colour + ".tif"));
   }
 
   BOOST_CHECK(file.files["Y"].empty());
@@ -83,10 +84,10 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_missing_channel_2) {
   // C channel is not defined in this file + empty line
   SepFile file =
       SepSource::parseSep(TestFiles::getPathToFile("sep_empty_line_3.sep"));
-  BOOST_CHECK(file.files.size() == 4);
+  BOOST_CHECK(file.files.size() == 3);
 
   for (const std::string &colour : {"M", "Y", "K"}) {
-    BOOST_CHECK(file.files[colour] == TestFiles::getPathToFile(colour + ".tif"));
+    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] == TestFiles::getPathToFile(colour + ".tif"));
   }
 
   BOOST_CHECK(file.files["C"].empty());
@@ -124,10 +125,10 @@ BOOST_AUTO_TEST_CASE(sepsource_get_resolution_null) {
 BOOST_AUTO_TEST_CASE(sepsource_get_transformation) {
   auto source = SepSource::create();
 
-  source->channel_files["C"] = nullptr;
-  source->channel_files["M"] = nullptr;
-  source->channel_files["Y"] = nullptr;
-  source->channel_files["K"] = nullptr;
+  source->channel_files["c"] = nullptr;
+  source->channel_files["m"] = nullptr;
+  source->channel_files["y"] = nullptr;
+  source->channel_files["k"] = nullptr;
 
   auto res = source->getTransform()->getAspectRatio();
   BOOST_CHECK(std::abs(res.x - 1.0) < 1e4);
@@ -147,7 +148,7 @@ BOOST_AUTO_TEST_CASE(sepsource_set_data) {
   BOOST_CHECK(source->sep_file.files.size() == 4);
 
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(source->sep_file.files[colour] ==
+    BOOST_CHECK(source->sep_file.files[boost::algorithm::to_lower_copy(colour)] ==
                 TestFiles::getPathToFile(colour + ".tif"));
   }
 
@@ -167,7 +168,7 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files) {
 
   // Check that all the CMYK files have been opened
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(source->channel_files[colour] != nullptr);
+    BOOST_CHECK(source->channel_files[boost::algorithm::to_lower_copy(colour)] != nullptr);
   }
 
   // Check that white ink and varnish are not opened
@@ -185,7 +186,7 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files_twice) {
   // Save the TIFF pointers to make sure they don't change
   std::map<std::string, tiff *> files;
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    files[colour] = source->channel_files[colour];
+    files[colour] = source->channel_files[boost::algorithm::to_lower_copy(colour)];
   }
 
   // Tested call
@@ -193,7 +194,7 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files_twice) {
 
   // Check that all the CMYK files have not been opened again
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(source->channel_files[colour] == files[colour]);
+    BOOST_CHECK(source->channel_files[boost::algorithm::to_lower_copy(colour)] == files[colour]);
   }
 }
 
@@ -211,11 +212,10 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files_extra) {
 
   // Check that all the CMYK files have been opened
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(source->channel_files[colour] != nullptr);
+    BOOST_CHECK(source->channel_files[boost::algorithm::to_lower_copy(colour)] != nullptr);
   }
 
-  // Check that white ink and varnish have also been opened
-  BOOST_CHECK(source->white_ink != nullptr);
+  // Check that varnish has also been opened
   BOOST_CHECK(source->varnish != nullptr);
 }
 

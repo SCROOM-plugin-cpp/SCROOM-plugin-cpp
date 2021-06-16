@@ -28,7 +28,7 @@ void ColorConfig::loadFile() {
     }
     catch (const std::exception& e){
         // Loading didnt work
-        std::cout << "Loading colours file failed. Are you sure there is a file at: " + full_path.string() + "?\n";
+        std::cout << "WARNING: Loading colours file failed. Are you sure there is a file at: " + full_path.string() + "?\n";
         std::cout << "Loading default CMYK \n";
         addNonExistentDefaultColors();
         return;
