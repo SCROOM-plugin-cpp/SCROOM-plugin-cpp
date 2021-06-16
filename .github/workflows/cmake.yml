@@ -44,7 +44,7 @@ jobs:
             ${{ runner.os }}-ccache-
 
       - name: Install Ubuntu Dependencies
-        run: sudo apt install git ccache python3-pip libjsoncpp-dev libboost-test-dev libboost-dev libboost-filesystem-dev libboost-program-options-dev libboost-system-dev libboost-thread-dev libgtest-dev google-mock libcairo2-dev libglade2-dev libglib2.0-dev libgtk2.0-dev libtiff5-dev pkg-config doxygen graphviz libc6-dev
+        run: sudo apt install git ccache python3-pip libboost-test-dev libboost-dev libboost-filesystem-dev libboost-program-options-dev libboost-system-dev libboost-thread-dev libgtest-dev google-mock libcairo2-dev libglade2-dev libglib2.0-dev libgtk2.0-dev libtiff5-dev pkg-config doxygen graphviz libc6-dev
       - name: Install conan
         run: pip install conan
 
@@ -86,7 +86,6 @@ jobs:
           mingw-w64-x86_64-gtk2
           mingw-w64-x86_64-libglade
           mingw-w64-x86_64-toolchain
-          mingw-w64-x86_64-jsoncpp
           pkg-config
           zip
           mingw64/mingw-w64-x86_64-cmake
