@@ -13,7 +13,7 @@ public:
   ViewInterface::WeakPtr viewWeak;
 
 private:
-  Varnish(SliLayer::Ptr layer);
+  Varnish(const SliLayer::Ptr& sliLayer);
   GtkWidget *box;
   GtkWidget *radio_enabled;
   GtkWidget *radio_disabled;
@@ -21,15 +21,15 @@ private:
   GtkWidget *check_show_background;
   GtkWidget *colorpicker;
   void invertSurface();
-  void registerUI(ViewInterface::WeakPtr view);
+  void registerUI(const ViewInterface::WeakPtr& viewWeakPtr);
   SliLayer::Ptr layer;
   cairo_surface_t *surface;
   bool inverted;
 
 public:
-  static Ptr create(SliLayer::Ptr layer);
-  void setView(ViewInterface::WeakPtr view);
-  void resetView(ViewInterface::WeakPtr view);
+  static Ptr create(const SliLayer::Ptr& layer);
+  void setView(const ViewInterface::WeakPtr& viewWeakPtr);
+  void resetView(const ViewInterface::WeakPtr& viewWeakPtr);
   void fixVarnishState();
 
   ~Varnish();

@@ -63,18 +63,18 @@ Scroom::Utils::Stuff OperationsCustomColors::cache(const ConstTile::Ptr tile) {
     // Cur is a pointer to the start of the row in the tile (source)
     const uint8_t *cur = tile->data.get();
 
-    for (int i = 0; i < spp * tile->height * tile->width; i += spp) {
+    for (uint i = 0; i < spp * tile->height * tile->width; i += spp) {
         // Convert custom colors to CMYK and then to ARGB, because cairo doesn't know how to render CMYK.
         int32_t C = 0;
         int32_t M = 0;
         int32_t Y = 0;
         int32_t K = 0;
-        for (int j = 0; j < spp; j++){
+        for (uint j = 0; j < spp; j++){
             auto color = colors.at(j);
-            C += color->cMultiplier * static_cast<float>(cur[i + j]);
-            M += color->mMultiplier * static_cast<float>(cur[i + j]);
-            Y += color->yMultiplier * static_cast<float>(cur[i + j]);
-            K += color->kMultiplier * static_cast<float>(cur[i + j]);
+            C += color->cMultiplier * cur[i + j];
+            M += color->mMultiplier * cur[i + j];
+            Y += color->yMultiplier * cur[i + j];
+            K += color->kMultiplier * cur[i + j];
         }
 
         auto C_i = static_cast<uint8_t>(255 - CustomColorHelpers::toUint8(C));
@@ -87,7 +87,7 @@ Scroom::Utils::Stuff OperationsCustomColors::cache(const ConstTile::Ptr tile) {
         uint32_t B = static_cast<uint8_t>((Y_i * K_i) / 255);
 
         // Write 255 as alpha (fully opaque)
-        int target  = i * 4 / spp ; // Scale the target to the 4 channel target row, from the n channel source row
+        uint target  = i * 4 / spp ; // Scale the target to the 4 channel target row, from the n channel source row
         row[target / 4] = 255u << 24 | R << 16 | G << 8 | B;
     }
 
@@ -117,7 +117,7 @@ void OperationsCustomColors::reduce(Tile::Ptr target, const ConstTile::Ptr sourc
             std::map<std::string, size_t> sums = {};
 
             // Initialize sums of all colors to 0
-            for (auto color : colors){
+            for (const auto& color : colors){
                 sums[color->getName()] = 0;
             }
 
@@ -126,14 +126,14 @@ void OperationsCustomColors::reduce(Tile::Ptr target, const ConstTile::Ptr sourc
             {
                 for(size_t current = 0; current < 8 * spp; current += spp) // Iterate over pixels
                 {
-                    for (int i = 0; i < spp; i++){ // Iterate over samples in pixel
+                    for (uint i = 0; i < spp; i++){ // Iterate over samples in pixel
                         sums[colors.at(i)->getName()] += row[current+i];
                     }
                 }
             }
 
             // Calculate and store the average in the target
-            for (int i = 0; i < spp; i++) {
+            for (uint i = 0; i < spp; i++) {
                 targetPtr[i] = static_cast<byte>(sums[colors.at(i)->getName()] / 64);
             }
 

@@ -28,7 +28,6 @@ BOOST_AUTO_TEST_CASE(slihelpers_clearsurface) {
   cairo_paint(cr); // paint everything whites
   int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
   uint8_t *data = cairo_image_surface_get_data(surfaceWrapper->surface);
-  Scroom::Utils::Rectangle<int> rect = {0, 0, 5, 10}; // in bytes
   bool allWhite = true;
   bool allClear = true;
 

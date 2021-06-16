@@ -124,7 +124,7 @@ void SliSource::fillCache() {
 void SliSource::reduceSegments(SurfaceWrapper::Ptr targetSurface,
                                boost::dynamic_bitset<> toggledSegments,
                                int baseSegHeight, int zoom) {
-  for (int i = 0; i < (int)toggledSegments.size(); i++) {
+  for (int i = 0; i < static_cast<int>(toggledSegments.size()); i++) {
     if (!toggledSegments[i])
       continue;
 
@@ -133,7 +133,7 @@ void SliSource::reduceSegments(SurfaceWrapper::Ptr targetSurface,
     const int sourceStride = rgbCache[zoom + 1]->getStride();
 
     int targetSegHeight;
-    if (i == (int)toggledSegments.size() - 1) {
+    if (i == static_cast<int>(toggledSegments.size()) - 1) {
       // the last segment will probably have leftover pixels
       int leftoverPixels = (total_height % baseSegHeight) / pow(2, -zoom);
       targetSegHeight = (baseSegHeight / pow(2, -zoom)) + leftoverPixels;
@@ -191,14 +191,14 @@ void SliSource::reduceRgb(int zoom, bool multithreading) {
 
   unsigned int nSegments = 24; // just an arbitrary choice
   int baseSegHeight = findBestSegFit(nSegments, total_height);
-  nSegments = (unsigned int)(total_height / baseSegHeight);
+  nSegments = static_cast<unsigned int>(total_height / baseSegHeight);
   boost::dynamic_bitset<> toggledSegments{nSegments};
   auto spanRect = spannedRectangle(toggled, layers);
 
   // find which segments intersect with the rectangle spanned by the toggled
   // layers
   int n = 0;
-  for (int i = 0; i < (int)nSegments; i++) {
+  for (int i = 0; i < static_cast<int>(nSegments); i++) {
     Scroom::Utils::Rectangle<int> seg = {0, baseSegHeight * i, total_width,
                                          baseSegHeight};
     if (seg.intersects(spanRect)) {
@@ -209,7 +209,7 @@ void SliSource::reduceRgb(int zoom, bool multithreading) {
 
   // since all segments are disjoint, we can assign one thread to cover half of
   // them
-  if (multithreading && (n / (double)nSegments) >= 0.25) {
+  if (multithreading && (n / static_cast<double>(nSegments)) >= 0.25) {
     auto bitmask = halfSegBitmask(toggledSegments);
     auto toggledSegments1 = toggledSegments & bitmask;
     auto toggledSegments2 = toggledSegments & ~bitmask;
@@ -288,7 +288,7 @@ void SliSource::drawCmyk(uint8_t *surfacePointer, uint8_t *bitmap,
     int32_t M = *(surfacePointer+1);
     int32_t Y = *(surfacePointer+2);
     int32_t K = *(surfacePointer+3);
-    for (int j = 0; j < layer->spp; j++) { // Add values to the 32bit cmyk holders
+    for (uint j = 0; j < layer->spp; j++) { // Add values to the 32bit cmyk holders
         auto color = layer->channels.at(j);
         C += color->cMultiplier * static_cast<float>(bitmap[i + j]);
         M += color->mMultiplier * static_cast<float>(bitmap[i + j]);
@@ -331,7 +331,7 @@ void SliSource::drawCmykXoffset(uint8_t *surfacePointer, uint8_t *bitmap,
       advanceIAndSurfacePointer(layerRect, intersectRect, layerBound, stride, surfacePointer, k);
 
 
-      for (int j = 0; j < layer->spp; j++) { // Add values to the 32bit cmyk holders
+      for (uint j = 0; j < layer->spp; j++) { // Add values to the 32bit cmyk holders
           auto color = layer->channels.at(j);
           C += color->cMultiplier * static_cast<float>(bitmap[i + j]);
           M += color->mMultiplier * static_cast<float>(bitmap[i + j]);

@@ -15,7 +15,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Helper functions
 
-void dummyFunc(){};
+void dummyFunc(){}
 
 SliPresentation::Ptr createPresentation() {
   SliPresentation::Ptr presentation = SliPresentation::create(nullptr);

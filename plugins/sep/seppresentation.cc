@@ -22,10 +22,10 @@ SepPresentation::Ptr SepPresentation::create() {
   return Ptr(new SepPresentation());
 }
 
-bool SepPresentation::load(const std::string &file_name) {
+bool SepPresentation::load(const std::string &fileName) {
   ColorConfig::getInstance().loadFile();
-  const SepFile file_content = SepSource::parseSep(file_name);
-  this->file_name = file_name;
+  const SepFile file_content = SepSource::parseSep(fileName);
+  this->file_name = fileName;
 
   width = file_content.width;
   height = file_content.height;
@@ -36,7 +36,7 @@ bool SepPresentation::load(const std::string &file_name) {
     return false;
 
   sep_source->setData(file_content);
-  sep_source->setName(file_name);
+  sep_source->setName(fileName);
   sep_source->openFiles();
   sep_source->checkFiles();
 

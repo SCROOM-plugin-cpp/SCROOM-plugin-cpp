@@ -3,32 +3,32 @@
 #include <scroom/cairo-helpers.hh>
 #include <scroom/viewinterface.hh>
 
-Varnish::Varnish(SliLayer::Ptr layer) {
-  this->layer = layer;
+Varnish::Varnish(const SliLayer::Ptr& sliLayer) {
+  this->layer = sliLayer;
   inverted = false;
   // Precalculate the surface and save it.
-  int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, layer->width);
+  int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, sliLayer->width);
   surface =
-      cairo_image_surface_create_for_data(layer->bitmap.get(), CAIRO_FORMAT_A8,
-                                          layer->width, layer->height, stride);
+      cairo_image_surface_create_for_data(sliLayer->bitmap.get(), CAIRO_FORMAT_A8,
+                                          sliLayer->width, sliLayer->height, stride);
   // Map is read inverted by cairo, so we invert it here once
   invertSurface();
 }
 
-Varnish::Ptr Varnish::create(SliLayer::Ptr layer) {
+Varnish::Ptr Varnish::create(const SliLayer::Ptr& layer) {
   Varnish::Ptr result = Ptr(new Varnish(layer));
   return result;
 }
 
 Varnish::~Varnish() { cairo_surface_destroy(surface); }
 
-void Varnish::setView(ViewInterface::WeakPtr viewWeak) {
-  registerUI(viewWeak);
-  this->viewWeak = viewWeak;
+void Varnish::setView(const ViewInterface::WeakPtr& viewWeakPtr) {
+  registerUI(viewWeakPtr);
+  this->viewWeak = viewWeakPtr;
 }
 
-void Varnish::resetView(ViewInterface::WeakPtr viewWeak) {
-  this->viewWeak = viewWeak;
+void Varnish::resetView(const ViewInterface::WeakPtr& viewWeakPtr) {
+  this->viewWeak = viewWeakPtr;
 
   gdk_threads_enter();
   GtkWidget *newBox = gtk_vbox_new(false, 0);
@@ -37,7 +37,7 @@ void Varnish::resetView(ViewInterface::WeakPtr viewWeak) {
     gtk_widget_reparent(GTK_WIDGET(iter->data), newBox);
   }
   box = newBox;
-  viewWeak.lock()->addSideWidget("Varnish", box);
+  viewWeakPtr.lock()->addSideWidget("Varnish", box);
   gdk_threads_leave();
 }
 
@@ -66,7 +66,7 @@ void Varnish::fixVarnishState() {
   }
 }
 
-void Varnish::registerUI(ViewInterface::WeakPtr viewWeak) {
+void Varnish::registerUI(const ViewInterface::WeakPtr& viewWeakPtr) {
   box = gtk_vbox_new(false, 0);
   GtkWidget *expander = gtk_expander_new("Overlay properties");
   GtkWidget *expander_box = gtk_vbox_new(false, 0);
@@ -80,7 +80,7 @@ void Varnish::registerUI(ViewInterface::WeakPtr viewWeak) {
   gtk_color_selection_set_current_color(GTK_COLOR_SELECTION(colorpicker),
                                         &color);
   // Add radio buttons for each display mode
-  radio_disabled = gtk_radio_button_new_with_label(NULL, "Disabled");
+  radio_disabled = gtk_radio_button_new_with_label(nullptr, "Disabled");
   radio_enabled = gtk_radio_button_new_with_label_from_widget(
       GTK_RADIO_BUTTON(radio_disabled), "Normal");
   radio_inverted = gtk_radio_button_new_with_label_from_widget(
@@ -110,7 +110,7 @@ void Varnish::registerUI(ViewInterface::WeakPtr viewWeak) {
   gtk_widget_show_all(box);
 
   // Add the box to the sidebar
-  ViewInterface::Ptr view(viewWeak);
+  ViewInterface::Ptr view(viewWeakPtr);
   gdk_threads_enter();
   view->addSideWidget("Varnish", box);
   gdk_threads_leave();

@@ -16,8 +16,8 @@ class PipetteCommonOperationsCustomColor
                 , public CommonOperations
 {
 protected:
-    int bps;
-    int spp;
+    uint bps;
+    uint spp;
     std::vector<CustomColor::Ptr> colors;
 
 

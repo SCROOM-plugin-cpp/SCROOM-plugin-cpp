@@ -54,7 +54,7 @@ public:
   /**
    * Load the SEP file whose filename is passed as argument.
    */
-  bool load(const std::string &file_name);
+  bool load(const std::string &fileName);
 
   /**
    * Return the transformation data for the loaded file.

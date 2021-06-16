@@ -8,7 +8,7 @@ int Show(std::string message, GtkMessageType type_gtk) {
   // We don't have a pointer to the parent window, so nullptr should suffice
   GtkWidget *dialog =
       gtk_message_dialog_new(nullptr, GTK_DIALOG_DESTROY_WITH_PARENT, type_gtk,
-                             GTK_BUTTONS_CLOSE, message.c_str());
+                             GTK_BUTTONS_CLOSE, "%s", message.c_str());
 
   int signal = gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);

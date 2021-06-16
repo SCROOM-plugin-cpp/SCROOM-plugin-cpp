@@ -81,11 +81,6 @@ SepFile SepSource::parseSep(const std::string &file_name) {
     if (correctColor == nullptr && boost::algorithm::to_lower_copy(result[0]) != "v") {
       // Unsupported channel and it is not varnish
       warnings += "WARNING: The .sep file defines an unknown channel (" + result[0] + ")!\n";
-      CustomColor::Ptr newColor = CustomColor::Ptr (boost::make_shared<CustomColor>(result[0], 0.0, 0.0, 0.0, 0.0));
-      ColorConfig::getInstance().getDefinedColors()->push_back(newColor);
-      correctColor = ColorConfig::getInstance().getColorByNameOrAlias(result[0]);
-      // Store the empty default color in the colors array if it is not defined in the file
-      sep_file.files[correctColor->getName()] = parent_dir / result[1];
     }
     else if (correctColor == nullptr){ // Unknown color is the varnish channel
 

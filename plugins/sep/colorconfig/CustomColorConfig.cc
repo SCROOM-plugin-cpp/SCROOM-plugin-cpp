@@ -58,7 +58,7 @@ void ColorConfig::loadFile() {
         auto m = v.second.get<float>("mMultiplier");
         auto y = v.second.get<float>("yMultiplier");
         auto k = v.second.get<float>("kMultiplier");
-        CustomColor::Ptr newColour = CustomColor::Ptr (boost::make_shared<CustomColor>(name, c, m, y, k));
+        CustomColor::Ptr newColour = boost::make_shared<CustomColor>(name, c, m, y, k);
 
 
 
@@ -115,28 +115,28 @@ void ColorConfig::addNonExistentDefaultColors() {//Initialise an array to check 
     if (getColorByNameOrAlias("k") != nullptr) defaultExist[3] = true;
     //If no cyan configuration exists, add the default configuration
     if(!defaultExist[0]){
-        CustomColor::Ptr newColour = CustomColor::Ptr (boost::make_shared<CustomColor>("c", 1, 0, 0, 0));
+        CustomColor::Ptr newColour = boost::make_shared<CustomColor>("c", 1, 0, 0, 0);
 
         colors->push_back(newColour);
     }
 
     //If no magenta configuration exists, add the default configuration
     if(!defaultExist[1]){
-        CustomColor::Ptr newColour = CustomColor::Ptr (boost::make_shared<CustomColor>("m", 0, 1, 0, 0));
+        CustomColor::Ptr newColour = boost::make_shared<CustomColor>("m", 0, 1, 0, 0);
 
         colors->push_back(newColour);
     }
 
     //If no yellow configuration exists, add the default configuration
     if(!defaultExist[2]){
-        CustomColor::Ptr newColour = CustomColor::Ptr (boost::make_shared<CustomColor>("y", 0, 0, 1, 0));
+        CustomColor::Ptr newColour = boost::make_shared<CustomColor>("y", 0, 0, 1, 0);
 
         colors->push_back(newColour);
     }
 
     //If no key configuration exists, add the default configuration
     if(!defaultExist[3]){
-        CustomColor::Ptr newColour = CustomColor::Ptr (boost::make_shared<CustomColor>("k", 0, 0, 0, 1));
+        CustomColor::Ptr newColour = boost::make_shared<CustomColor>("k", 0, 0, 0, 1);
 
         colors->push_back(newColour);
     }
@@ -154,7 +154,7 @@ CustomColor::Ptr ColorConfig::getColorByNameOrAlias(std::string name) {
             return color;
         }
 
-        for (auto const alias : color->getAliases()){
+        for (auto const& alias : color->getAliases()){
             lowerAlias = boost::algorithm::to_lower_copy(alias);
             if (lowerAlias == name) {
                 return color;

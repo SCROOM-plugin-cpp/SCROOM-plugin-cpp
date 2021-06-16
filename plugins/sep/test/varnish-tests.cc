@@ -19,7 +19,7 @@ public:
   DummyViewInterface(){};
   ~DummyViewInterface(){};
   void invalidate(){};
-  ProgressInterface::Ptr getProgressInterface(){};
+  ProgressInterface::Ptr getProgressInterface(){return nullptr;}
 
   static ViewInterface::Ptr create() {
     return ViewInterface::Ptr(new DummyViewInterface());
@@ -44,7 +44,7 @@ public:
   void addToolButton(GtkToggleButton *, ToolStateListener::Ptr){};
 };
 
-void dummyFunction(){};
+void dummyFunction(){}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Tests for varnish ui construction
@@ -68,13 +68,13 @@ BOOST_AUTO_TEST_CASE(varnish_load_ui) {
   test_varnish->invertSurface();
   int surface_data_after =
       cairo_image_surface_get_data(test_varnish->surface)[0];
-  BOOST_REQUIRE(surface_data_before == surface_data_after ^ 255);
+  BOOST_REQUIRE((surface_data_before == surface_data_after) ^ 255);
   BOOST_REQUIRE(surface_data_before != surface_data_after);
 
   test_varnish->invertSurface();
   int surface_data_twice =
       cairo_image_surface_get_data(test_varnish->surface)[0];
-  BOOST_REQUIRE(surface_data_after == surface_data_twice ^ 255);
+  BOOST_REQUIRE((surface_data_after == surface_data_twice) ^ 255);
   BOOST_REQUIRE(surface_data_after != surface_data_twice);
   BOOST_REQUIRE(surface_data_before == surface_data_twice);
 
