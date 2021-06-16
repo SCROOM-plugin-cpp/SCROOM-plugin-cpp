@@ -63,7 +63,7 @@ Scroom::Utils::Stuff OperationsCustomColors::cache(const ConstTile::Ptr tile) {
   // Cur is a pointer to the start of the row in the tile (source)
   const uint8_t *cur = tile->data.get();
 
-  for (uint16_t i = 0; i < spp * tile->height * tile->width; i += spp) {
+  for (uint32_t i = 0; i < spp * tile->height * tile->width; i += spp) {
     // Convert custom colors to CMYK and then to ARGB, because cairo doesn't
     // know how to render CMYK.
     int32_t C = 0;
@@ -88,7 +88,7 @@ Scroom::Utils::Stuff OperationsCustomColors::cache(const ConstTile::Ptr tile) {
     uint32_t B = static_cast<uint8_t>((Y_i * K_i) / 255);
 
     // Write 255 as alpha (fully opaque)
-    uint16_t target = i * 4 / spp; // Scale the target to the 4 channel target
+    uint32_t target = i * 4 / spp; // Scale the target to the 4 channel target
                                    // row, from the n channel source row
     row[target / 4] = 255u << 24 | R << 16 | G << 8 | B;
   }

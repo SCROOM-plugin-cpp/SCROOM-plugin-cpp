@@ -291,7 +291,7 @@ void SliSource::drawCmyk(uint8_t *surfacePointer, uint8_t *bitmap,
     int32_t M = *(surfacePointer + 1);
     int32_t Y = *(surfacePointer + 2);
     int32_t K = *(surfacePointer + 3);
-    for (uint j = 0; j < layer->spp;
+    for (uint16_t j = 0; j < layer->spp;
          j++) { // Add values to the 32bit cmyk holders
       auto color = layer->channels.at(j);
       C += color->cMultiplier * static_cast<float>(bitmap[i + j]);
@@ -343,7 +343,7 @@ void SliSource::drawCmykXoffset(uint8_t *surfacePointer, uint8_t *bitmap,
     advanceIAndSurfacePointer(layerRect, intersectRect, layerBound, stride,
                               surfacePointer, k);
 
-    for (uint j = 0; j < layer->spp;
+    for (uint16_t j = 0; j < layer->spp;
          j++) { // Add values to the 32bit cmyk holders
       auto color = layer->channels.at(j);
       C += color->cMultiplier * static_cast<float>(bitmap[i + j]);
