@@ -293,11 +293,8 @@ void SliSource::drawCmyk(uint8_t *surfacePointer, uint8_t *bitmap,
     int32_t K = *(surfacePointer + 3);
     for (uint16_t j = 0; j < layer->spp;
          j++) { // Add values to the 32bit cmyk holders
-      auto color = layer->channels.at(j);
-      C += color->cMultiplier * static_cast<float>(bitmap[i + j]);
-      M += color->mMultiplier * static_cast<float>(bitmap[i + j]);
-      Y += color->yMultiplier * static_cast<float>(bitmap[i + j]);
-      K += color->kMultiplier * static_cast<float>(bitmap[i + j]);
+      auto &color = layer->channels.at(j);
+      CustomColorHelpers::calculateCMYK(color, C, M, Y, K, bitmap[i + j]);
     }
     *surfacePointer = CustomColorHelpers::toUint8(
         C); // Store the CMYK values back into the surface, clipped to uint_8
@@ -346,10 +343,7 @@ void SliSource::drawCmykXoffset(uint8_t *surfacePointer, uint8_t *bitmap,
     for (uint16_t j = 0; j < layer->spp;
          j++) { // Add values to the 32bit cmyk holders
       auto color = layer->channels.at(j);
-      C += color->cMultiplier * static_cast<float>(bitmap[i + j]);
-      M += color->mMultiplier * static_cast<float>(bitmap[i + j]);
-      Y += color->yMultiplier * static_cast<float>(bitmap[i + j]);
-      K += color->kMultiplier * static_cast<float>(bitmap[i + j]);
+      CustomColorHelpers::calculateCMYK(color, C, M, Y, K, bitmap[i + j]);
     }
     // Write the CMYK values back to the surface, clipped to uint_8
 
