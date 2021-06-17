@@ -48,7 +48,8 @@ void dummyFunction() {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Tests for varnish ui construction
-// DISABLED as the test are not able to work without initializing GTK, which breaks other tests
+// DISABLED as the test are not able to work without initializing GTK, which
+// breaks other tests
 /*
 BOOST_AUTO_TEST_SUITE(varnish_ui_tests)
 BOOST_AUTO_TEST_CASE(varnish_load_ui) {
