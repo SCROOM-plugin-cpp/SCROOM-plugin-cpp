@@ -50,6 +50,7 @@ if(ENABLE_BOOST_TEST)
   target_sources(spsep_tests
           PRIVATE
           test/main.cc
+          test/colorconfig-tests.cc
           test/sep-tests.cc
           test/sephelpers-tests.cc
           test/seppresentation-tests.cc

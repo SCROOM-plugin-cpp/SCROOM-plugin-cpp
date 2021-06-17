@@ -14,11 +14,15 @@ namespace pt = boost::property_tree;
 
 ColorConfig::ColorConfig() { colors = new std::vector<CustomColor::Ptr>(); }
 
-void ColorConfig::loadFile() {
+void ColorConfig::loadFile(std::string file) {
   colors->clear();
   pt::ptree root;
   boost::filesystem::path full_path(boost::filesystem::current_path());
-  full_path.append("colours.json");
+  if(file == "colours.json"){
+    full_path.append(file);
+  } else {
+    full_path = file;
+  }
   try {
     pt::read_json(full_path.string(), root);
   } catch (const std::exception &e) {
