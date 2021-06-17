@@ -63,7 +63,7 @@ Scroom::Utils::Stuff OperationsCustomColors::cache(const ConstTile::Ptr tile) {
   // Cur is a pointer to the start of the row in the tile (source)
   const uint8_t *cur = tile->data.get();
 
-  for (uint32_t i = 0; i < spp * tile->height * tile->width; i += spp) {
+  for (int i = 0; i < spp * tile->height * tile->width; i += spp) {
     // Convert custom colors to CMYK and then to ARGB, because cairo doesn't
     // know how to render CMYK.
     int32_t C = 0;
@@ -71,11 +71,8 @@ Scroom::Utils::Stuff OperationsCustomColors::cache(const ConstTile::Ptr tile) {
     int32_t Y = 0;
     int32_t K = 0;
     for (uint16_t j = 0; j < spp; j++) {
-      auto color = colors.at(j);
-      C += color->cMultiplier * cur[i + j];
-      M += color->mMultiplier * cur[i + j];
-      Y += color->yMultiplier * cur[i + j];
-      K += color->kMultiplier * cur[i + j];
+      auto &color = colors.at(j);
+      CustomColorHelpers::calculateCMYK(color, C, M, Y, K, cur[i + j]);
     }
 
     auto C_i = static_cast<uint8_t>(255 - CustomColorHelpers::toUint8(C));
@@ -83,9 +80,9 @@ Scroom::Utils::Stuff OperationsCustomColors::cache(const ConstTile::Ptr tile) {
     auto Y_i = static_cast<uint8_t>(255 - CustomColorHelpers::toUint8(Y));
     auto K_i = static_cast<uint8_t>(255 - CustomColorHelpers::toUint8(K));
 
-    uint32_t R = static_cast<uint8_t>((C_i * K_i) / 255);
-    uint32_t G = static_cast<uint8_t>((M_i * K_i) / 255);
-    uint32_t B = static_cast<uint8_t>((Y_i * K_i) / 255);
+    auto R = static_cast<uint8_t>((C_i * K_i) / 255);
+    auto G = static_cast<uint8_t>((M_i * K_i) / 255);
+    auto B = static_cast<uint8_t>((Y_i * K_i) / 255);
 
     // Write 255 as alpha (fully opaque)
     uint32_t target = i * 4 / spp; // Scale the target to the 4 channel target
