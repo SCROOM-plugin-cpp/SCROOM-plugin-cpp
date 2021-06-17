@@ -43,9 +43,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-ccache-
 
+      - name: Update Ubuntu package repos
+        run: sudo apt-get update
+
       - name: Install Ubuntu Dependencies
         run: >
-            sudo apt install --fix-missing
+            sudo apt-get install
             git 
             ccache 
             python3-pip 
@@ -67,7 +70,7 @@ jobs:
             libc6-dev
             
       - name: Install conan
-        run: pip install conan
+        run: pip install wheel conan
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
