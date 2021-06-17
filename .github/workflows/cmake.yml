@@ -49,6 +49,7 @@ jobs:
       - name: Install Ubuntu Dependencies
         run: >
             sudo apt-get install
+            build-essential
             git 
             ccache 
             python3-pip 
