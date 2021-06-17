@@ -48,7 +48,8 @@ void dummyFunction(){};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Tests for varnish ui construction
-
+// DISABLED as the test are not able to work without initializing GTK, which breaks other tests
+/*
 BOOST_AUTO_TEST_SUITE(varnish_ui_tests)
 BOOST_AUTO_TEST_CASE(varnish_load_ui) {
   ViewInterface::Ptr dvi = DummyViewInterface::create();
@@ -137,7 +138,7 @@ BOOST_AUTO_TEST_CASE(varnish_load_ui) {
   test_varnish->drawOverlay(nullptr, cr, rect, 1);
   test_varnish->drawOverlay(nullptr, cr, rect, 2);
 }
-BOOST_AUTO_TEST_SUITE_END()
+BOOST_AUTO_TEST_SUITE_END()*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // Tests for varnish loading
