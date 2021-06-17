@@ -240,7 +240,7 @@ SliControlPanel::SliControlPanel(
   n_layers = layers.size();
   ViewInterface::Ptr view(viewWeak);
 
-  hbox = gtk_hbox_new(false, 10);
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
   GtkWidget *treeview = gtk_tree_view_new();
   widgets[TREEVIEW] = treeview;
 
@@ -248,8 +248,10 @@ SliControlPanel::SliControlPanel(
   gtk_box_pack_start(GTK_BOX(hbox), treeview, false, false, 0);
 
   if (n_layers > 1) {
-    GtkWidget *slider_low = gtk_vscale_new_with_range(0, n_layers - 1, 1);
-    GtkWidget *slider_high = gtk_vscale_new_with_range(0, n_layers - 1, 1);
+    GtkWidget *slider_low =
+        gtk_scale_new_with_range(GTK_ORIENTATION_VERTICAL, 0, n_layers - 1, 1);
+    GtkWidget *slider_high =
+        gtk_scale_new_with_range(GTK_ORIENTATION_VERTICAL, 0, n_layers - 1, 1);
     widgets[SLIDER_LOW] = slider_low;
     widgets[SLIDER_HIGH] = slider_high;
 
@@ -329,10 +331,11 @@ void SliControlPanel::reAttach(ViewInterface::WeakPtr viewWeak_) {
 
   // Re-assign all widgets to a new hbox and attach it to the sidebar
   gdk_threads_enter();
-  GtkWidget *newHbox = gtk_hbox_new(false, 0);
+  GtkWidget *newHbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   for (GList *iter = gtk_container_get_children(GTK_CONTAINER(hbox));
        iter != nullptr; iter = iter->next) {
-    gtk_widget_reparent(GTK_WIDGET(iter->data), newHbox);
+    gtk_container_add(GTK_CONTAINER(newHbox), GTK_WIDGET(iter->data));
+    gtk_container_remove(GTK_CONTAINER(hbox), GTK_WIDGET(iter->data));
   }
   hbox = newHbox;
   viewWeak.lock()->addSideWidget("Layers", hbox);
