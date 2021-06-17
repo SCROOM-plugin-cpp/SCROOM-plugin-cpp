@@ -103,7 +103,8 @@ void Varnish::registerUI(const ViewInterface::WeakPtr &viewWeakPtr) {
   gtk_box_pack_start(GTK_BOX(box), radio_enabled, true, false, 0);
   gtk_box_pack_start(GTK_BOX(box), radio_inverted, true, false, 0);
   gtk_box_pack_start(GTK_BOX(box), expander, true, false, 0);
-  gtk_box_pack_start(GTK_BOX(expander_box), check_show_background, true, false, 0);
+  gtk_box_pack_start(GTK_BOX(expander_box), check_show_background, true, false,
+                     0);
   gtk_box_pack_start(GTK_BOX(expander_box), colorpicker, true, false, 0);
   gtk_container_add(GTK_CONTAINER(expander), expander_box);
   gtk_widget_show_all(expander);
