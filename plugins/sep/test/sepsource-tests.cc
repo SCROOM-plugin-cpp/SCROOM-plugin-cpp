@@ -27,7 +27,8 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep) {
   BOOST_CHECK(file.files.size() == 4);
 
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(file.files[colour] == TestFiles::getPathToFile(colour + ".tif"));
+    BOOST_CHECK(file.files[colour] ==
+                TestFiles::getPathToFile(colour + ".tif"));
   }
 
   BOOST_CHECK(file.width == 600);
@@ -41,7 +42,8 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_extra_lines) {
   BOOST_CHECK(file.files.size() == 4);
 
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(file.files[colour] == TestFiles::getPathToFile(colour + ".tif"));
+    BOOST_CHECK(file.files[colour] ==
+                TestFiles::getPathToFile(colour + ".tif"));
   }
 
   BOOST_CHECK(file.width == 600);
@@ -55,7 +57,8 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_empty_line) {
   BOOST_CHECK(file.files.size() == 4);
 
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(file.files[colour] == TestFiles::getPathToFile(colour + ".tif"));
+    BOOST_CHECK(file.files[colour] ==
+                TestFiles::getPathToFile(colour + ".tif"));
   }
 
   BOOST_CHECK(file.width == 600);
@@ -70,7 +73,8 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_missing_channel) {
   BOOST_CHECK(file.files.size() == 4);
 
   for (const std::string &colour : {"C", "M", "K"}) {
-    BOOST_CHECK(file.files[colour] == TestFiles::getPathToFile(colour + ".tif"));
+    BOOST_CHECK(file.files[colour] ==
+                TestFiles::getPathToFile(colour + ".tif"));
   }
 
   BOOST_CHECK(file.files["Y"].empty());
@@ -86,7 +90,8 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_missing_channel_2) {
   BOOST_CHECK(file.files.size() == 4);
 
   for (const std::string &colour : {"M", "Y", "K"}) {
-    BOOST_CHECK(file.files[colour] == TestFiles::getPathToFile(colour + ".tif"));
+    BOOST_CHECK(file.files[colour] ==
+                TestFiles::getPathToFile(colour + ".tif"));
   }
 
   BOOST_CHECK(file.files["C"].empty());
