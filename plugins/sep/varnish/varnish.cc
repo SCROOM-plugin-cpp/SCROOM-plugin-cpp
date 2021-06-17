@@ -31,7 +31,7 @@ void Varnish::resetView(const ViewInterface::WeakPtr &viewWeakPtr) {
   this->viewWeak = viewWeakPtr;
 
   gdk_threads_enter();
-  GtkWidget *newBox = gtk_vbox_new(false, 0);
+  GtkWidget *newBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   for (GList *iter = gtk_container_get_children(GTK_CONTAINER(box));
        iter != nullptr; iter = iter->next) {
     gtk_widget_reparent(GTK_WIDGET(iter->data), newBox);
@@ -52,14 +52,14 @@ void Varnish::fixVarnishState() {
   if (inverted) {
     // If we're currently inverted and moving to normal,
     // We need to invert back
-    if (GTK_TOGGLE_BUTTON(radio_enabled)->active) {
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radio_enabled))) {
       invertSurface();
       inverted = false;
     }
   } else {
     // If we're currently normal and moving to normal,
     // We need to invert back
-    if (GTK_TOGGLE_BUTTON(radio_inverted)->active) {
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radio_inverted))) {
       invertSurface();
       inverted = true;
     }
@@ -67,9 +67,9 @@ void Varnish::fixVarnishState() {
 }
 
 void Varnish::registerUI(const ViewInterface::WeakPtr &viewWeakPtr) {
-  box = gtk_vbox_new(false, 0);
+  box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *expander = gtk_expander_new("Overlay properties");
-  GtkWidget *expander_box = gtk_vbox_new(false, 0);
+  GtkWidget *expander_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   colorpicker = gtk_color_selection_new();
   check_show_background = gtk_check_button_new_with_label("Show background");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_show_background), true);
@@ -99,12 +99,12 @@ void Varnish::registerUI(const ViewInterface::WeakPtr &viewWeakPtr) {
                    G_CALLBACK(varnish_toggled), this);
 
   // Add all elements into 1 box
-  gtk_box_pack_start_defaults(GTK_BOX(box), radio_disabled);
-  gtk_box_pack_start_defaults(GTK_BOX(box), radio_enabled);
-  gtk_box_pack_start_defaults(GTK_BOX(box), radio_inverted);
-  gtk_box_pack_start_defaults(GTK_BOX(box), expander);
-  gtk_box_pack_start_defaults(GTK_BOX(expander_box), check_show_background);
-  gtk_box_pack_start_defaults(GTK_BOX(expander_box), colorpicker);
+  gtk_box_pack_start(GTK_BOX(box), radio_disabled, true, false, 0);
+  gtk_box_pack_start(GTK_BOX(box), radio_enabled, true, false, 0);
+  gtk_box_pack_start(GTK_BOX(box), radio_inverted, true, false, 0);
+  gtk_box_pack_start(GTK_BOX(box), expander, true, false, 0);
+  gtk_box_pack_start(GTK_BOX(expander_box), check_show_background, true, false, 0);
+  gtk_box_pack_start(GTK_BOX(expander_box), colorpicker, true, false, 0);
   gtk_container_add(GTK_CONTAINER(expander), expander_box);
   gtk_widget_show_all(expander);
   gtk_widget_show_all(box);
@@ -131,7 +131,7 @@ void Varnish::invertSurface() {
 void Varnish::drawOverlay(ViewInterface::Ptr const &, cairo_t *cr,
                           Scroom::Utils::Rectangle<double> presentationArea,
                           int zoom) {
-  if (GTK_TOGGLE_BUTTON(radio_disabled)->active) {
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radio_disabled))) {
     // if the varnish overlay is disabled, return without drawing anything.
     return;
   }
@@ -163,7 +163,7 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &, cairo_t *cr,
   b = color.blue / 65535.0;
   a = alpha / 65535.0;
 
-  if (!GTK_TOGGLE_BUTTON(check_show_background)->active) {
+  if (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_show_background))) {
     // Clear the background
     cairo_rectangle(cr, 0, 0, layer->width, layer->height);
     cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);

@@ -35,7 +35,7 @@ target_link_libraries(
         PRIVATE project_options project_warnings
         PUBLIC PkgConfig::gtk threadpool PkgConfig::cairo
         Boost::filesystem
-		tiledbitmap
+        tiledbitmap
         scroom_lib
         TIFF::TIFF
         m
