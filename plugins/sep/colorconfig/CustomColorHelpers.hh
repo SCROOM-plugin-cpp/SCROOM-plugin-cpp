@@ -32,4 +32,3 @@ public:
   static void calculateCMYK(CustomColor::Ptr &color, int32_t &C, int32_t &M,
                             int32_t &Y, int32_t &K, uint8_t value);
 };
-

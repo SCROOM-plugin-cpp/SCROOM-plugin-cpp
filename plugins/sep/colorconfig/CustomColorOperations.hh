@@ -20,7 +20,9 @@ public:
   using Ptr = boost::shared_ptr<PipetteCommonOperationsCustomColor>;
 
 public:
-  PipetteCommonOperationsCustomColor(int bps_, int spp_ ) : bps(bps_) { spp = spp_; };
+  PipetteCommonOperationsCustomColor(int bps_, int spp_) : bps(bps_) {
+    spp = spp_;
+  };
   void setSpp(int samplesPerPixel);
   void setColors(std::vector<CustomColor::Ptr> colors_);
   PipetteLayerOperations::PipetteColor
@@ -38,5 +40,3 @@ public:
   void reduce(Tile::Ptr target, const ConstTile::Ptr source, int x,
               int y) override;
 };
-
-

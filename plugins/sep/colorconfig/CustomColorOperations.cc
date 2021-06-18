@@ -24,7 +24,7 @@ PipetteCommonOperationsCustomColor::sumPixelValues(
 
   // Initialize sums of all colors to 0
   for (int i = 0; i < spp; i++) {
-      sums.push_back(0);
+    sums.push_back(0);
   }
 
   for (int y = area.getTop(); y < area.getBottom(); y++) {
@@ -38,8 +38,8 @@ PipetteCommonOperationsCustomColor::sumPixelValues(
 
   // Copy map to vector of pairs
   PipetteColor result = {};
-  for (int i = 0; i < spp; i++){
-      result.push_back(std::pair<std::string, double>(colors[i]->name, sums[i]));
+  for (int i = 0; i < spp; i++) {
+    result.push_back(std::pair<std::string, double>(colors[i]->name, sums[i]));
   }
 
   return result;
@@ -48,8 +48,10 @@ PipetteCommonOperationsCustomColor::sumPixelValues(
 OperationsCustomColors::OperationsCustomColors(int spp_)
     : PipetteCommonOperationsCustomColor(8, spp_) {}
 
-PipetteCommonOperationsCustomColor::Ptr OperationsCustomColors::create(int spp) {
-  return PipetteCommonOperationsCustomColor::Ptr(new OperationsCustomColors(spp));
+PipetteCommonOperationsCustomColor::Ptr
+OperationsCustomColors::create(int spp) {
+  return PipetteCommonOperationsCustomColor::Ptr(
+      new OperationsCustomColors(spp));
 }
 
 Scroom::Utils::Stuff OperationsCustomColors::cache(const ConstTile::Ptr tile) {
@@ -120,7 +122,7 @@ void OperationsCustomColors::reduce(Tile::Ptr target,
       std::vector<size_t> sums = {};
 
       // Initialize sums of all colors to 0
-      for (int i = 0; i < spp; i++){
+      for (int i = 0; i < spp; i++) {
         sums[i] = 0;
       }
 

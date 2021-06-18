@@ -30,12 +30,11 @@ public:
 
   std::vector<CustomColor::Ptr> getDefinedColors();
   CustomColor::Ptr getColorByNameOrAlias(std::string name);
-  void loadFile(std::string file="colours.json");
+  void loadFile(std::string file = "colours.json");
 
   void addNonExistentDefaultColors();
 
-
 private:
-    void parseColor(pt::ptree::value_type &v,
-                    std::unordered_set<std::string> &seenNamesAndAliases);
+  void parseColor(pt::ptree::value_type &v,
+                  std::unordered_set<std::string> &seenNamesAndAliases);
 };
