@@ -29,7 +29,7 @@ public:
 
   std::vector<CustomColor::Ptr> *getDefinedColors();
   CustomColor::Ptr getColorByNameOrAlias(std::string name);
-  void loadFile();
+  void loadFile(std::string file="colours.json");
 
   void addNonExistentDefaultColors();
 };
