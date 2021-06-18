@@ -52,7 +52,7 @@ void ColorConfig::loadFile(std::string file) {
       continue;
     }
     // Color is new, so we can add it to the defined colors
-    // First add the name to the seen names and aliases
+    // First add the name to the seen names and validAliases
     seenNamesAndAliases.insert(name);
 
     auto c = v.second.get<double>("cMultiplier");
@@ -62,16 +62,16 @@ void ColorConfig::loadFile(std::string file) {
     CustomColor::Ptr newColour =
         boost::make_shared<CustomColor>(name, c, m, y, k);
 
-    // Initialise aliases vector
-    std::vector<std::string> aliases = {};
-    // Try to load aliases, if the field exists
+    // Initialise validAliases vector
+    std::vector<std::string> validAliases = {};
+    // Try to load validAliases, if the field exists
     try {
-      // Get the aliases array
-      pt::ptree array = v.second.get_child("aliases");
-      // Initialise an iterator over the aliases array
+      // Get the validAliases array
+      pt::ptree array = v.second.get_child("validAliases");
+      // Initialise an iterator over the validAliases array
       pt::ptree::iterator iterator = array.begin();
 
-      // Store aliases in vector
+      // Store validAliases in vector
       for (; iterator != array.end(); iterator++) {
         // Load alias with uppercase included
         auto alias = iterator->second.get_value<std::string>();
@@ -88,14 +88,14 @@ void ColorConfig::loadFile(std::string file) {
           seenNamesAndAliases.insert(alias);
         }
 
-        aliases.push_back(alias);
+        validAliases.push_back(alias);
       }
 
       // Set aliassses for newColour
-      newColour->setAliases(aliases);
+      newColour->aliases = validAliases;
     } catch (const std::exception &e) {
-      // When no aliases exist, ignore exception
-      std::cout << "No aliases found."
+      // When no validAliases exist, ignore exception
+      std::cout << "No validAliases found."
                 << "\n";
     }
 
@@ -155,12 +155,12 @@ CustomColor::Ptr ColorConfig::getColorByNameOrAlias(std::string name) {
   std::string lowerName;
   std::string lowerAlias;
   for (auto &color : *definedColors) {
-    lowerName = boost::algorithm::to_lower_copy(color->getName());
+    lowerName = boost::algorithm::to_lower_copy(color->name);
     if (lowerName == name) {
       return color;
     }
 
-    for (auto const &alias : color->getAliases()) {
+    for (auto const &alias : color->aliases) {
       lowerAlias = boost::algorithm::to_lower_copy(alias);
       if (lowerAlias == name) {
         return color;

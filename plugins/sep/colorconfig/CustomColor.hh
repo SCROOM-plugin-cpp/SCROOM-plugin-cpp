@@ -4,6 +4,7 @@
 
 #pragma once
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
@@ -19,19 +20,11 @@ public:
   double yMultiplier;
   double kMultiplier;
   CustomColor(std::string colorName, double c, double m, double y, double k) {
-    name = colorName;
+    name = std::move(colorName);
     cMultiplier = c;
     mMultiplier = m;
     yMultiplier = y;
     kMultiplier = k;
-  }
-
-  std::string getName() { return name; }
-
-  std::vector<std::string> getAliases() { return aliases; }
-
-  void setAliases(std::vector<std::string> newAliasses) {
-    aliases = newAliasses;
   }
 };
 

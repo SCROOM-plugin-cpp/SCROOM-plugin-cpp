@@ -23,14 +23,14 @@ PipetteCommonOperationsCustomColor::sumPixelValues(
   std::map<std::string, size_t> sums = {};
 
   // Initialize sums of all colors to 0
-  for (auto color : colors) {
-    sums[color->getName()] = 0;
+  for (auto &color : colors) {
+    sums[color->name] = 0;
   }
 
   for (int y = area.getTop(); y < area.getBottom(); y++) {
     for (int x = area.getLeft(); x < area.getRight(); x++) {
-      for (auto color : colors) {
-        sums[color->getName()] += *si++;
+      for (auto &color : colors) {
+        sums[color->name] += *si++;
       }
     }
     si += stride;
@@ -119,7 +119,7 @@ void OperationsCustomColors::reduce(Tile::Ptr target,
 
       // Initialize sums of all colors to 0
       for (const auto &color : colors) {
-        sums[color->getName()] = 0;
+        sums[color->name] = 0;
       }
 
       for (const byte *row = base; row < end;
@@ -129,14 +129,14 @@ void OperationsCustomColors::reduce(Tile::Ptr target,
              current += spp) // Iterate over pixels
         {
           for (uint16_t i = 0; i < spp; i++) { // Iterate over samples in pixel
-            sums[colors.at(i)->getName()] += row[current + i];
+            sums[colors.at(i)->name] += row[current + i];
           }
         }
       }
 
       // Calculate and store the average in the target
       for (uint16_t i = 0; i < spp; i++) {
-        targetPtr[i] = static_cast<byte>(sums[colors.at(i)->getName()] / 64);
+        targetPtr[i] = static_cast<byte>(sums[colors.at(i)->name] / 64);
       }
 
       targetPtr += spp;
