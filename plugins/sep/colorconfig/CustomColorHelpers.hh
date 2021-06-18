@@ -2,8 +2,7 @@
 // Created by jelle on 09-06-21.
 //
 
-#ifndef SCROOMCPPPLUGINS_CUSTOMCOLORHELPERS_HH
-#define SCROOMCPPPLUGINS_CUSTOMCOLORHELPERS_HH
+#pragma once
 
 #include "CustomColor.hh"
 #include <cstdint>
@@ -34,4 +33,3 @@ public:
                             int32_t &Y, int32_t &K, uint8_t value);
 };
 
-#endif // SCROOMCPPPLUGINS_CUSTOMCOLORHELPERS_HH

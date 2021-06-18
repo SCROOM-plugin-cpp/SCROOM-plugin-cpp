@@ -2,8 +2,7 @@
 // Created by jelle on 02/06/2021.
 //
 
-#ifndef SCROOMCPPPLUGINS_CUSTOMCOLOROPERATIONS_HH
-#define SCROOMCPPPLUGINS_CUSTOMCOLOROPERATIONS_HH
+#pragma once
 
 #include "CustomColor.hh"
 #include <boost/shared_ptr.hpp>
@@ -40,4 +39,4 @@ public:
               int y) override;
 };
 
-#endif // SCROOMCPPPLUGINS_CUSTOMCOLOROPERATIONS_HH
+
