@@ -12,10 +12,10 @@
 
 namespace pt = boost::property_tree;
 
-ColorConfig::ColorConfig() { colors = new std::vector<CustomColor::Ptr>(); }
+ColorConfig::ColorConfig() {}
 
 void ColorConfig::loadFile(std::string file) {
-  colors->clear();
+  colors.clear();
   pt::ptree root;
   boost::filesystem::path full_path(boost::filesystem::current_path());
   if(file == "colours.json"){
@@ -99,7 +99,7 @@ void ColorConfig::loadFile(std::string file) {
                 << "\n";
     }
 
-    colors->push_back(newColour);
+    colors.push_back(newColour);
   }
   addNonExistentDefaultColors();
 }
@@ -121,7 +121,7 @@ void ColorConfig::addNonExistentDefaultColors() { // Initialise an array to
     CustomColor::Ptr newColour =
         boost::make_shared<CustomColor>("c", 1, 0, 0, 0);
 
-    colors->push_back(newColour);
+    colors.push_back(newColour);
   }
 
   // If no magenta configuration exists, add the default configuration
@@ -129,7 +129,7 @@ void ColorConfig::addNonExistentDefaultColors() { // Initialise an array to
     CustomColor::Ptr newColour =
         boost::make_shared<CustomColor>("m", 0, 1, 0, 0);
 
-    colors->push_back(newColour);
+    colors.push_back(newColour);
   }
 
   // If no yellow configuration exists, add the default configuration
@@ -137,7 +137,7 @@ void ColorConfig::addNonExistentDefaultColors() { // Initialise an array to
     CustomColor::Ptr newColour =
         boost::make_shared<CustomColor>("y", 0, 0, 1, 0);
 
-    colors->push_back(newColour);
+    colors.push_back(newColour);
   }
 
   // If no key configuration exists, add the default configuration
@@ -145,7 +145,7 @@ void ColorConfig::addNonExistentDefaultColors() { // Initialise an array to
     CustomColor::Ptr newColour =
         boost::make_shared<CustomColor>("k", 0, 0, 0, 1);
 
-    colors->push_back(newColour);
+    colors.push_back(newColour);
   }
 }
 
@@ -154,7 +154,7 @@ CustomColor::Ptr ColorConfig::getColorByNameOrAlias(std::string name) {
   auto definedColors = getDefinedColors();
   std::string lowerName;
   std::string lowerAlias;
-  for (auto &color : *definedColors) {
+  for (auto &color : definedColors) {
     lowerName = boost::algorithm::to_lower_copy(color->name);
     if (lowerName == name) {
       return color;
@@ -170,6 +170,6 @@ CustomColor::Ptr ColorConfig::getColorByNameOrAlias(std::string name) {
   return nullptr;
 }
 
-std::vector<CustomColor::Ptr> *ColorConfig::getDefinedColors() {
+std::vector<CustomColor::Ptr> ColorConfig::getDefinedColors() {
   return colors;
 }

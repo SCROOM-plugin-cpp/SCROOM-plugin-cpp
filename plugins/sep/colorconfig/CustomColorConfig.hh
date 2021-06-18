@@ -19,7 +19,7 @@ private:
   ColorConfig();
 
 private:
-  std::vector<CustomColor::Ptr> *colors;
+  std::vector<CustomColor::Ptr> colors;
 
 public:
   static ColorConfig &getInstance() {
@@ -27,7 +27,7 @@ public:
     return INSTANCE;
   }
 
-  std::vector<CustomColor::Ptr> *getDefinedColors();
+  std::vector<CustomColor::Ptr> getDefinedColors();
   CustomColor::Ptr getColorByNameOrAlias(std::string name);
   void loadFile(std::string file="colours.json");
 
