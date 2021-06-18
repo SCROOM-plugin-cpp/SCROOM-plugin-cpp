@@ -14,11 +14,11 @@ public:
 
   std::string name;
   std::vector<std::string> aliases;
-  float cMultiplier;
-  float mMultiplier;
-  float yMultiplier;
-  float kMultiplier;
-  CustomColor(std::string colorName, float c, float m, float y, float k) {
+  double cMultiplier;
+  double mMultiplier;
+  double yMultiplier;
+  double kMultiplier;
+  CustomColor(std::string colorName, double c, double m, double y, double k) {
     name = colorName;
     cMultiplier = c;
     mMultiplier = m;

@@ -13,11 +13,11 @@ void CustomColorHelpers::calculateCMYK(CustomColor::Ptr &color, int32_t &C,
                                        int32_t &M, int32_t &Y, int32_t &K,
                                        uint8_t value) {
   C += static_cast<int32_t>(
-      roundf(color->cMultiplier * static_cast<float>(value)));
+      round(color->cMultiplier * static_cast<double>(value)));
   M += static_cast<int32_t>(
-      roundf(color->mMultiplier * static_cast<float>(value)));
+      round(color->mMultiplier * static_cast<double>(value)));
   Y += static_cast<int32_t>(
-      roundf(color->yMultiplier * static_cast<float>(value)));
+      round(color->yMultiplier * static_cast<double>(value)));
   K += static_cast<int32_t>(
-      roundf(color->kMultiplier * static_cast<float>(value)));
+      round(color->kMultiplier * static_cast<double>(value)));
 }
