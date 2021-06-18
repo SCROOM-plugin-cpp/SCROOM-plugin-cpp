@@ -9,7 +9,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 set(SCROOMBINDIR scroom/)
-# Tests for SEP are broken at the moment
+
 if(ENABLE_BOOST_TEST OR ENABLE_GOOGLE_TEST)
   enable_testing()
 endif()

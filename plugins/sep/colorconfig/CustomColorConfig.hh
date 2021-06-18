@@ -11,6 +11,7 @@
 #include "CustomColor.hh"
 #include <scroom/plugininformationinterface.hh>
 #include <scroom/utilities.hh>
+#include <unordered_set>
 
 namespace pt = boost::property_tree;
 class ColorConfig {
@@ -19,7 +20,7 @@ private:
   ColorConfig();
 
 private:
-  std::vector<CustomColor::Ptr> *colors;
+  std::vector<CustomColor::Ptr> colors;
 
 public:
   static ColorConfig &getInstance() {
@@ -27,9 +28,14 @@ public:
     return INSTANCE;
   }
 
-  std::vector<CustomColor::Ptr> *getDefinedColors();
+  std::vector<CustomColor::Ptr> getDefinedColors();
   CustomColor::Ptr getColorByNameOrAlias(std::string name);
   void loadFile(std::string file="colours.json");
 
   void addNonExistentDefaultColors();
+
+
+private:
+    void parseColor(pt::ptree::value_type &v,
+                    std::unordered_set<std::string> &seenNamesAndAliases);
 };

@@ -34,7 +34,6 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep) {
 
   BOOST_CHECK(file.width == 600);
   BOOST_CHECK(file.height == 400);
-  BOOST_CHECK(file.white_ink_choice == 0);
 }
 
 BOOST_AUTO_TEST_CASE(sepsource_parse_sep_extra_lines) {
@@ -49,7 +48,6 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_extra_lines) {
 
   BOOST_CHECK(file.width == 600);
   BOOST_CHECK(file.height == 400);
-  BOOST_CHECK(file.white_ink_choice == 0);
 }
 
 BOOST_AUTO_TEST_CASE(sepsource_parse_sep_empty_line) {
@@ -64,7 +62,6 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_empty_line) {
 
   BOOST_CHECK(file.width == 600);
   BOOST_CHECK(file.height == 400);
-  BOOST_CHECK(file.white_ink_choice == 0);
 }
 
 BOOST_AUTO_TEST_CASE(sepsource_parse_sep_missing_channel) {
@@ -81,7 +78,6 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_missing_channel) {
   BOOST_CHECK(file.files["Y"].empty());
   BOOST_CHECK(file.width == 600);
   BOOST_CHECK(file.height == 400);
-  BOOST_CHECK(file.white_ink_choice == 0);
 }
 
 BOOST_AUTO_TEST_CASE(sepsource_parse_sep_missing_channel_2) {
@@ -98,7 +94,6 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_missing_channel_2) {
   BOOST_CHECK(file.files["C"].empty());
   BOOST_CHECK(file.width == 600);
   BOOST_CHECK(file.height == 400);
-  BOOST_CHECK(file.white_ink_choice == 0);
 }
 
 BOOST_AUTO_TEST_CASE(sepsource_get_for_none) {
@@ -160,7 +155,6 @@ BOOST_AUTO_TEST_CASE(sepsource_set_data) {
 
   BOOST_CHECK(source->sep_file.width == 600);
   BOOST_CHECK(source->sep_file.height == 400);
-  BOOST_CHECK(source->sep_file.white_ink_choice == 0);
 }
 
 BOOST_AUTO_TEST_CASE(sepsource_open_files) {
@@ -179,8 +173,7 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files) {
         nullptr);
   }
 
-  // Check that white ink and varnish are not opened
-  BOOST_CHECK(source->white_ink == nullptr);
+  // Check that varnish is not opened
   BOOST_CHECK(source->varnish == nullptr);
 }
 
@@ -308,7 +301,7 @@ BOOST_AUTO_TEST_CASE(sepsource_fill_sli_1) {
   sepSource->fillSliLayerBitmap(sli);
   BOOST_CHECK(sli->width == 600);
   BOOST_CHECK(sli->height == 400);
-  // BOOST_CHECK(sli->spp == 4); No longer specifically 4
+  BOOST_CHECK(sli->spp == 4); // This file specifically has 4 channels
   BOOST_CHECK(sli->bps == 8);
   BOOST_CHECK(sli->bitmap != nullptr);
   BOOST_CHECK(std::abs(sli->xAspect - 1.0) < 1e-4);
