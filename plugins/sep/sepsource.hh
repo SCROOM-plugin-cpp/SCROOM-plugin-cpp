@@ -39,7 +39,6 @@ private:
   /** Number of channels (=spp). Set after loading*/
   size_t nr_channels = 0;
 
-
   /** Name of this sep */
   std::string file_name;
 
