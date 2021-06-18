@@ -98,20 +98,6 @@ SepFile SepSource::parseSep(const std::string &file_name) {
   // can safely close it.
   file.close();
 
-  // Ask the user how to interpret the white ink values
-  // if a white ink channel is given.
-  sep_file.white_ink_choice = 0;
-  if (sep_file.files.count("W") == 1) {
-    auto choice_dialog = gtk_dialog_new_with_buttons(
-        "White Ink Effect", nullptr, GTK_DIALOG_DESTROY_WITH_PARENT,
-        "Subtractive", GTK_RESPONSE_ACCEPT, "Multiplicative",
-        GTK_RESPONSE_REJECT, nullptr);
-
-    auto choice = gtk_dialog_run(GTK_DIALOG(choice_dialog));
-    sep_file.white_ink_choice = choice == GTK_RESPONSE_ACCEPT ? 1 : 2;
-
-    gtk_widget_destroy(choice_dialog);
-  }
 
   // show errors if there are any
   if (!warnings.empty()) {

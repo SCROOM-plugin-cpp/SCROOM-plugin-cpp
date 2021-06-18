@@ -39,8 +39,6 @@ private:
   /** Number of channels (=spp). Set after loading*/
   size_t nr_channels = 0;
 
-  /** Pointer to white ink file. */
-  tiff *white_ink = nullptr;
 
   /** Name of this sep */
   std::string file_name;

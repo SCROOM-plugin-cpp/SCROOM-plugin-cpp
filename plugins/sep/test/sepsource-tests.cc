@@ -179,8 +179,7 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files) {
         nullptr);
   }
 
-  // Check that white ink and varnish are not opened
-  BOOST_CHECK(source->white_ink == nullptr);
+  // Check that varnish is not opened
   BOOST_CHECK(source->varnish == nullptr);
 }
 
