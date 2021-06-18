@@ -98,21 +98,6 @@ SepFile SepSource::parseSep(const std::string &file_name) {
   // can safely close it.
   file.close();
 
-  // Ask the user how to interpret the white ink values
-  // if a white ink channel is given.
-  sep_file.white_ink_choice = 0;
-  if (sep_file.files.count("W") == 1) {
-    auto choice_dialog = gtk_dialog_new_with_buttons(
-        "White Ink Effect", nullptr, GTK_DIALOG_DESTROY_WITH_PARENT,
-        "Subtractive", GTK_RESPONSE_ACCEPT, "Multiplicative",
-        GTK_RESPONSE_REJECT, nullptr);
-
-    auto choice = gtk_dialog_run(GTK_DIALOG(choice_dialog));
-    sep_file.white_ink_choice = choice == GTK_RESPONSE_ACCEPT ? 1 : 2;
-
-    gtk_widget_destroy(choice_dialog);
-  }
-
   // show errors if there are any
   if (!warnings.empty()) {
     std::cerr << warnings;
@@ -152,26 +137,34 @@ bool SepSource::getResolution(uint16_t &unit, float &x_resolution,
   float channel_res_x, channel_res_y;
   uint16_t channel_res_unit;
   bool warning = false;
-  x_resolution = 1;
-  y_resolution = 1;
 
-  for (const auto &itr : channel_files) {
-    auto channel = itr.second;
+  // Use the values for the first channel as baseline, if there is a first
+  // channel
+  if (channels.size() > 0) {
+    getForOneChannel(channel_files[channels[0]], unit, x_resolution,
+                     y_resolution);
+  } else { // Otherwise use nullptr
+    getForOneChannel(nullptr, unit, x_resolution, y_resolution);
+  }
 
+  bool first = true;
+  for (const auto &channelName : channels) {
+    auto channel = channel_files[channelName];
     if (channel == nullptr) {
+      continue;
+    }
+    if (first) {
+      first = false;
       continue;
     }
 
     getForOneChannel(channel, channel_res_unit, channel_res_x, channel_res_y);
-    std::cout << "Res x: " << channel_res_x << " Res y: " << channel_res_y
-              << "\n";
     // check if the same as first values
     // if not, set status flag and continue
     warning |= std::abs(channel_res_x - x_resolution) > 1e-3 ||
                std::abs(channel_res_y - y_resolution) > 1e-3 ||
                channel_res_unit != unit;
   }
-
   return !warning;
 }
 

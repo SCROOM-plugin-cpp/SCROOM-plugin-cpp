@@ -296,8 +296,8 @@ void SliSource::drawCmyk(uint8_t *surfacePointer, uint8_t *bitmap,
       auto &color = layer->channels.at(j);
       CustomColorHelpers::calculateCMYK(color, C, M, Y, K, bitmap[i + j]);
     }
-    *surfacePointer = CustomColorHelpers::toUint8(
-        C); // Store the CMYK values back into the surface, clipped to uint_8
+    // Store the CMYK values back into the surface, clipped to uint_8
+    *surfacePointer = CustomColorHelpers::toUint8(C);
     *(surfacePointer + 1) = CustomColorHelpers::toUint8(M);
     *(surfacePointer + 2) = CustomColorHelpers::toUint8(Y);
     *(surfacePointer + 3) = CustomColorHelpers::toUint8(K);
@@ -396,7 +396,7 @@ void SliSource::computeRgb() {
     auto layer = layers[j];
     auto bitmap = layer->bitmap.get();
     Scroom::Utils::Rectangle<int> layerRect =
-        toBytesRectangle(layer->toRectangle());
+        toBytesRectangle(layer->toRectangle(), layer->spp);
 
     if (!layerRect.intersects(toggledRect))
       continue;

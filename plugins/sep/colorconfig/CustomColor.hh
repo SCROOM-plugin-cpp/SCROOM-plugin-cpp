@@ -27,5 +27,3 @@ public:
     kMultiplier = k;
   }
 };
-
-

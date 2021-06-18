@@ -20,7 +20,9 @@ public:
   using Ptr = boost::shared_ptr<PipetteCommonOperationsCustomColor>;
 
 public:
-  PipetteCommonOperationsCustomColor(int bps_) : bps(bps_) { spp = 0; };
+  PipetteCommonOperationsCustomColor(int bps_, int spp_) : bps(bps_) {
+    spp = spp_;
+  };
   void setSpp(int samplesPerPixel);
   void setColors(std::vector<CustomColor::Ptr> colors_);
   PipetteLayerOperations::PipetteColor
@@ -30,13 +32,11 @@ public:
 
 class OperationsCustomColors : public PipetteCommonOperationsCustomColor {
 public:
-  static Ptr create();
-  OperationsCustomColors();
+  static Ptr create(int spp);
+  OperationsCustomColors(int spp_);
 
   int getBpp() override;
   Scroom::Utils::Stuff cache(const ConstTile::Ptr tile) override;
   void reduce(Tile::Ptr target, const ConstTile::Ptr source, int x,
               int y) override;
 };
-
-
