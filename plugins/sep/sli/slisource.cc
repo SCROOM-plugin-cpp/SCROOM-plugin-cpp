@@ -396,7 +396,7 @@ void SliSource::computeRgb() {
     auto layer = layers[j];
     auto bitmap = layer->bitmap.get();
     Scroom::Utils::Rectangle<int> layerRect =
-        toBytesRectangle(layer->toRectangle());
+        toBytesRectangle(layer->toRectangle(), layer->spp);
 
     if (!layerRect.intersects(toggledRect))
       continue;
