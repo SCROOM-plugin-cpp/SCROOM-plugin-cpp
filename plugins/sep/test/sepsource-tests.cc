@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep) {
   BOOST_CHECK(file.files.size() == 4);
 
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] ==
+    BOOST_CHECK(file.files[boost::algorithm::to_upper_copy(colour)] ==
                 TestFiles::getPathToFile(colour + ".tif"));
   }
 
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_extra_lines) {
   BOOST_CHECK(file.files.size() == 4);
 
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] ==
+    BOOST_CHECK(file.files[boost::algorithm::to_upper_copy(colour)] ==
                 TestFiles::getPathToFile(colour + ".tif"));
   }
 
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_empty_line) {
   BOOST_CHECK(file.files.size() == 4);
 
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
-    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] ==
+    BOOST_CHECK(file.files[boost::algorithm::to_upper_copy(colour)] ==
                 TestFiles::getPathToFile(colour + ".tif"));
   }
 
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_missing_channel) {
   BOOST_CHECK(file.files.size() == 3);
 
   for (const std::string &colour : {"C", "M", "K"}) {
-    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] ==
+    BOOST_CHECK(file.files[boost::algorithm::to_upper_copy(colour)] ==
                 TestFiles::getPathToFile(colour + ".tif"));
   }
 
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_missing_channel_2) {
   BOOST_CHECK(file.files.size() == 3);
 
   for (const std::string &colour : {"M", "Y", "K"}) {
-    BOOST_CHECK(file.files[boost::algorithm::to_lower_copy(colour)] ==
+    BOOST_CHECK(file.files[boost::algorithm::to_upper_copy(colour)] ==
                 TestFiles::getPathToFile(colour + ".tif"));
   }
 
@@ -125,10 +125,10 @@ BOOST_AUTO_TEST_CASE(sepsource_get_resolution_null) {
 BOOST_AUTO_TEST_CASE(sepsource_get_transformation) {
   auto source = SepSource::create();
 
-  source->channel_files["c"] = nullptr;
-  source->channel_files["m"] = nullptr;
-  source->channel_files["y"] = nullptr;
-  source->channel_files["k"] = nullptr;
+  source->channel_files["C"] = nullptr;
+  source->channel_files["M"] = nullptr;
+  source->channel_files["Y"] = nullptr;
+  source->channel_files["K"] = nullptr;
 
   auto res = source->getTransform()->getAspectRatio();
   BOOST_CHECK(std::abs(res.x - 1.0) < 1e4);
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(sepsource_set_data) {
 
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
     BOOST_CHECK(
-        source->sep_file.files[boost::algorithm::to_lower_copy(colour)] ==
+        source->sep_file.files[boost::algorithm::to_upper_copy(colour)] ==
         TestFiles::getPathToFile(colour + ".tif"));
   }
 
@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files) {
   // Check that all the CMYK files have been opened
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
     BOOST_CHECK(
-        source->channel_files[boost::algorithm::to_lower_copy(colour)] !=
+        source->channel_files[boost::algorithm::to_upper_copy(colour)] !=
         nullptr);
   }
 
@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files_twice) {
   std::map<std::string, tiff *> files;
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
     files[colour] =
-        source->channel_files[boost::algorithm::to_lower_copy(colour)];
+        source->channel_files[boost::algorithm::to_upper_copy(colour)];
   }
 
   // Tested call
@@ -197,7 +197,7 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files_twice) {
   // Check that all the CMYK files have not been opened again
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
     BOOST_CHECK(
-        source->channel_files[boost::algorithm::to_lower_copy(colour)] ==
+        source->channel_files[boost::algorithm::to_upper_copy(colour)] ==
         files[colour]);
   }
 }
@@ -217,7 +217,7 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files_extra) {
   // Check that all the CMYK files have been opened
   for (const std::string &colour : {"C", "M", "Y", "K"}) {
     BOOST_CHECK(
-        source->channel_files[boost::algorithm::to_lower_copy(colour)] !=
+        source->channel_files[boost::algorithm::to_upper_copy(colour)] !=
         nullptr);
   }
 
