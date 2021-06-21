@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(colorOperations_setspp) {
   OperationsCustomColors operations(8);
   BOOST_CHECK(operations.getBpp() == 64);
 }
-
+/*
 BOOST_AUTO_TEST_CASE(colorOperations_cache) {
   OperationsCustomColors operations(1);
   Scroom::MemoryBlobs::RawPageData::ConstPtr data;
@@ -42,5 +42,5 @@ BOOST_AUTO_TEST_CASE(colorOperations_reduce) {
   operations.reduce(tile, ptr, 0, 0);
   // TODO figure out how to test reduce
 }
-
+*/
 BOOST_AUTO_TEST_SUITE_END()
