@@ -68,7 +68,9 @@ jobs:
             libc6-dev
             
       - name: Install conan
-        run: pip install wheel conan
+        run: |
+          python3 -m pip install --upgrade pip setuptools
+          python3 -m pip install --no-warn-script-location conan
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -129,4 +131,3 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           path: scroom-win-*.zip
-
