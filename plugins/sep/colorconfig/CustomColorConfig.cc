@@ -44,7 +44,7 @@ void ColorConfig::loadFile(std::string file) {
   }
 
   std::unordered_set<std::string> seenNamesAndAliases = {};
-  seenNamesAndAliases.insert("v"); // Insert placeholder for varnish
+  seenNamesAndAliases.insert("V"); // Insert placeholder for varnish
 
   std::cout << "Loading colour config file. NOTE: v is reserved for varnish, "
                "so should not be defined as name or alias!!\n";
@@ -59,7 +59,7 @@ void ColorConfig::addNonExistentDefaultColors() {
   // If no cyan configuration exists, add the default configuration
   if (!getColorByNameOrAlias("c")) {
     CustomColor::Ptr newColour =
-        boost::make_shared<CustomColor>("c", 1, 0, 0, 0);
+        boost::make_shared<CustomColor>("C", 1, 0, 0, 0);
 
     colors.push_back(newColour);
   }
@@ -67,7 +67,7 @@ void ColorConfig::addNonExistentDefaultColors() {
   // If no magenta configuration exists, add the default configuration
   if (!getColorByNameOrAlias("m")) {
     CustomColor::Ptr newColour =
-        boost::make_shared<CustomColor>("m", 0, 1, 0, 0);
+        boost::make_shared<CustomColor>("M", 0, 1, 0, 0);
 
     colors.push_back(newColour);
   }
@@ -75,7 +75,7 @@ void ColorConfig::addNonExistentDefaultColors() {
   // If no yellow configuration exists, add the default configuration
   if (!getColorByNameOrAlias("y")) {
     CustomColor::Ptr newColour =
-        boost::make_shared<CustomColor>("y", 0, 0, 1, 0);
+        boost::make_shared<CustomColor>("Y", 0, 0, 1, 0);
 
     colors.push_back(newColour);
   }
@@ -83,25 +83,25 @@ void ColorConfig::addNonExistentDefaultColors() {
   // If no key configuration exists, add the default configuration
   if (!getColorByNameOrAlias("k")) {
     CustomColor::Ptr newColour =
-        boost::make_shared<CustomColor>("k", 0, 0, 0, 1);
+        boost::make_shared<CustomColor>("K", 0, 0, 0, 1);
 
     colors.push_back(newColour);
   }
 }
 
 CustomColor::Ptr ColorConfig::getColorByNameOrAlias(std::string name) {
-  boost::algorithm::to_lower(name);
+  boost::algorithm::to_upper(name);
   auto definedColors = getDefinedColors();
   std::string lowerName;
   std::string lowerAlias;
   for (auto &color : definedColors) {
-    lowerName = boost::algorithm::to_lower_copy(color->name);
+    lowerName = boost::algorithm::to_upper_copy(color->name);
     if (lowerName == name) {
       return color;
     }
 
     for (auto const &alias : color->aliases) {
-      lowerAlias = boost::algorithm::to_lower_copy(alias);
+      lowerAlias = boost::algorithm::to_upper_copy(alias);
       if (lowerAlias == name) {
         return color;
       }
@@ -116,7 +116,7 @@ void ColorConfig::parseColor(
     pt::ptree::value_type &v,
     std::unordered_set<std::string> &seenNamesAndAliases) {
   auto name = v.second.get<std::string>("name");
-  boost::algorithm::to_lower(name); // Convert the name to lowercase
+  boost::algorithm::to_upper(name); // Convert the name to uppercase
 
   // Check if this name has not yet been seen before
   if (seenNamesAndAliases.find(name) != seenNamesAndAliases.end()) {
@@ -149,8 +149,8 @@ void ColorConfig::parseColor(
     for (; iterator != array.end(); iterator++) {
       // Load alias with uppercase included
       auto alias = iterator->second.get_value<std::string>();
-      // Convert alias to all lowercase
-      boost::algorithm::to_lower(alias);
+      // Convert alias to all upercase
+      boost::algorithm::to_upper(alias);
 
       // Test if an alias already exists in a different colour
       if (seenNamesAndAliases.find(alias) != seenNamesAndAliases.end()) {

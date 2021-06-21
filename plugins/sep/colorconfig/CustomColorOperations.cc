@@ -4,6 +4,7 @@
 
 #include "CustomColorOperations.hh"
 #include "CustomColorHelpers.hh"
+#include <iostream>
 #include <scroom/bitmap-helpers.hh>
 #include <utility>
 
@@ -55,7 +56,7 @@ OperationsCustomColors::create(int spp) {
 }
 
 Scroom::Utils::Stuff OperationsCustomColors::cache(const ConstTile::Ptr tile) {
-
+  auto start = std::chrono::high_resolution_clock::now();
   // Allocate the space for the cache - stride is the height of one row
   const int stride =
       cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, tile->width);
@@ -93,7 +94,11 @@ Scroom::Utils::Stuff OperationsCustomColors::cache(const ConstTile::Ptr tile) {
                                    // row, from the n channel source row
     row[target / 4] = 255u << 24 | R << 16 | G << 8 | B;
   }
+  auto end = std::chrono::high_resolution_clock::now();
 
+  auto duration =
+      std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+  std::cout << duration.count() / 1000 << std::endl;
   return Scroom::Bitmap::BitmapSurface::create(
       tile->width, tile->height, CAIRO_FORMAT_ARGB32, stride, data);
 }
@@ -152,10 +157,6 @@ void OperationsCustomColors::reduce(Tile::Ptr target,
 }
 
 int OperationsCustomColors::getBpp() { return spp * bps; }
-
-void PipetteCommonOperationsCustomColor::setSpp(int samplesPerPixel) {
-  spp = samplesPerPixel;
-}
 
 void PipetteCommonOperationsCustomColor::setColors(
     std::vector<CustomColor::Ptr> colors_) {

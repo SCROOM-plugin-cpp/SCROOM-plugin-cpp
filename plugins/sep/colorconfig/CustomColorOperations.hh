@@ -23,7 +23,7 @@ public:
   PipetteCommonOperationsCustomColor(int bps_, int spp_) : bps(bps_) {
     spp = spp_;
   };
-  void setSpp(int samplesPerPixel);
+
   void setColors(std::vector<CustomColor::Ptr> colors_);
   PipetteLayerOperations::PipetteColor
   sumPixelValues(Scroom::Utils::Rectangle<int> area,

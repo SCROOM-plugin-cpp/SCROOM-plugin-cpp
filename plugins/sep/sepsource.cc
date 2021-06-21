@@ -80,7 +80,7 @@ SepFile SepSource::parseSep(const std::string &file_name) {
         ColorConfig::getInstance().getColorByNameOrAlias(result[0]);
 
     if (correctColor == nullptr &&
-        boost::algorithm::to_lower_copy(result[0]) != "v") {
+        boost::algorithm::to_upper_copy(result[0]) != "V") {
       // Unsupported channel and it is not varnish
       warnings += "WARNING: The .sep file defines an unknown channel (" +
                   result[0] + ")!\n";
