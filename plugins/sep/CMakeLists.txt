@@ -49,21 +49,21 @@ install_plugin_dependencies(spsep)
 
 if(ENABLE_BOOST_TEST)
   add_executable(spsep_tests)
-  target_sources(spsep_tests
-          PRIVATE
-          test/main.cc
-          test/colorhelpers-tests.cc
-          test/coloroperations-tests.cc
-          test/colorconfig-tests.cc
-          test/sep-tests.cc
-          test/sephelpers-tests.cc
-          test/seppresentation-tests.cc
-          test/sepsource-tests.cc
-          test/slihelpers-tests.cc
-          test/slipresentation-tests.cc
-          test/slisource-tests.cc
-          test/varnish-tests.cc
-          test/testglobals.hh)
+  target_sources(
+    spsep_tests
+    PRIVATE test/main.cc
+            test/colorhelpers-tests.cc
+            test/coloroperations-tests.cc
+            test/colorconfig-tests.cc
+            test/sep-tests.cc
+            test/sephelpers-tests.cc
+            test/seppresentation-tests.cc
+            test/sepsource-tests.cc
+            test/slihelpers-tests.cc
+            test/slipresentation-tests.cc
+            test/slisource-tests.cc
+            test/varnish-tests.cc
+            test/testglobals.hh)
   target_include_directories(spsep_tests PRIVATE . sli varnish)
   target_link_libraries(
     spsep_tests
