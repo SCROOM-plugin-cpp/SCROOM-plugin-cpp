@@ -23,6 +23,9 @@ rm -r $1/lib;
 rm -r $1/include;
 rm -r $1/share;
 
+# Copy the default color config
+cp ../SCROOM-plugin-cpp/plugins/sep/test/testfiles/colors.json $1;
+
 mkdir -p $1/lib/gdk-pixbuf-2.0/
 if ! cp -r /mingw64/lib/gdk-pixbuf-2.0/ $1/lib/; then
   echo "Warning: Failed to copy GTK theme";
