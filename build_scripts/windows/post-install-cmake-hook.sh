@@ -24,7 +24,7 @@ rm -r $1/include;
 rm -r $1/share;
 
 # Copy the default color config
-cp ../SCROOM-plugin-cpp/plugins/sep/test/testfiles/colors.json $1;
+cp ../SCROOM-plugin-cpp/plugins/sep/colorconfig/colours.json $1/colours.json;
 
 mkdir -p $1/lib/gdk-pixbuf-2.0/
 if ! cp -r /mingw64/lib/gdk-pixbuf-2.0/ $1/lib/; then
