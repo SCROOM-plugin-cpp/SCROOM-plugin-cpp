@@ -1,11 +1,42 @@
 {
   "colours": [
     {
-      "name": "b",
+      "name": "c",
+      "cMultiplier": 1,
+      "mMultiplier": 0,
+      "yMultiplier": 0,
+      "kMultiplier": 0
+    },
+
+    {
+      "name": "m",
+      "aliasses": ["magenta", "pink", "antiGreen"],
       "cMultiplier": 0,
       "mMultiplier": 1,
       "yMultiplier": 0,
       "kMultiplier": 0
+    },
+    {
+      "name": "y",
+      "cMultiplier": 0,
+      "mMultiplier": 0,
+      "yMultiplier": 1,
+      "kMultiplier": 0
+    },
+    {
+      "name": "k",
+      "cMultiplier": 0,
+      "mMultiplier": 0,
+      "yMultiplier": 0,
+      "kMultiplier": 1
+    },
+    {
+      "name": "w",
+      "cMultiplier": -1,
+      "mMultiplier": -1,
+      "yMultiplier": -1,
+      "kMultiplier": -1
     }
   ]
 }
+
