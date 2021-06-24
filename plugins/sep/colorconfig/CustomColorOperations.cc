@@ -119,12 +119,8 @@ void OperationsCustomColors::reduce(Tile::Ptr target,
       const byte *base = sourceBase + 8 * spp * x; // start of the row
       const byte *end = base + 8 * sourceStride;   // end of the row
 
-      std::vector<size_t> sums = {};
-
       // Initialize sums of all colors to 0
-      for (int i = 0; i < spp; i++) {
-        sums[i] = 0;
-      }
+      std::vector<size_t> sums(spp, 0);
 
       for (const byte *row = base; row < end;
            row += sourceStride) // Iterate over rows
