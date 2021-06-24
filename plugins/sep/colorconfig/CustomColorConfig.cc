@@ -129,10 +129,10 @@ void ColorConfig::parseColor(
   // First add the name to the seen names and aliases
   seenNamesAndAliases.insert(name);
 
-  auto c = v.second.get<double>("cMultiplier");
-  auto m = v.second.get<double>("mMultiplier");
-  auto y = v.second.get<double>("yMultiplier");
-  auto k = v.second.get<double>("kMultiplier");
+  auto c = v.second.get<float>("cMultiplier");
+  auto m = v.second.get<float>("mMultiplier");
+  auto y = v.second.get<float>("yMultiplier");
+  auto k = v.second.get<float>("kMultiplier");
   CustomColor::Ptr newColour =
       boost::make_shared<CustomColor>(name, c, m, y, k);
 

@@ -60,8 +60,7 @@ Scroom::Utils::Stuff OperationsCustomColors::cache(const ConstTile::Ptr tile) {
   // Allocate the space for the cache - stride is the height of one row
   const int stride =
       cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, tile->width);
-  boost::shared_ptr<uint8_t> data =
-      shared_malloc(static_cast<size_t>(stride * tile->height));
+  boost::shared_ptr<uint8_t> data = shared_malloc(stride * tile->height);
 
   // Row is a pointer to a row of pixels (destination)
   auto *row = reinterpret_cast<uint32_t *>(data.get());
@@ -71,23 +70,23 @@ Scroom::Utils::Stuff OperationsCustomColors::cache(const ConstTile::Ptr tile) {
   for (int i = 0; i < spp * tile->height * tile->width; i += spp) {
     // Convert custom colors to CMYK and then to ARGB, because cairo doesn't
     // know how to render CMYK.
-    int32_t C = 0;
-    int32_t M = 0;
-    int32_t Y = 0;
-    int32_t K = 0;
+    int16_t C = 0;
+    int16_t M = 0;
+    int16_t Y = 0;
+    int16_t K = 0;
     for (uint16_t j = 0; j < spp; j++) {
       auto &color = colors[j];
       CustomColorHelpers::calculateCMYK(color, C, M, Y, K, cur[i + j]);
     }
 
-    auto C_i = static_cast<uint8_t>(255 - CustomColorHelpers::toUint8(C));
-    auto M_i = static_cast<uint8_t>(255 - CustomColorHelpers::toUint8(M));
-    auto Y_i = static_cast<uint8_t>(255 - CustomColorHelpers::toUint8(Y));
-    auto K_i = static_cast<uint8_t>(255 - CustomColorHelpers::toUint8(K));
+    uint8_t C_i = 255 - CustomColorHelpers::toUint8(C);
+    uint8_t M_i = 255 - CustomColorHelpers::toUint8(M);
+    uint8_t Y_i = 255 - CustomColorHelpers::toUint8(Y);
+    uint8_t K_i = 255 - CustomColorHelpers::toUint8(K);
 
-    auto R = static_cast<uint8_t>((C_i * K_i) / 255);
-    auto G = static_cast<uint8_t>((M_i * K_i) / 255);
-    auto B = static_cast<uint8_t>((Y_i * K_i) / 255);
+    uint8_t R = (C_i * K_i) / 255;
+    uint8_t G = (M_i * K_i) / 255;
+    uint8_t B = (Y_i * K_i) / 255;
 
     // Write 255 as alpha (fully opaque)
     uint32_t target = i * 4 / spp; // Scale the target to the 4 channel target

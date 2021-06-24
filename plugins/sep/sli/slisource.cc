@@ -286,11 +286,11 @@ void SliSource::drawCmyk(uint8_t *surfacePointer, uint8_t *bitmap,
 
   for (int i = bitmapStart; i < bitmapStart + bitmapOffset;
        i += layer->spp) {        // Iterate over all pixels
-    int32_t C = *surfacePointer; // Initialize the CMYK holder values to the
+    int16_t C = *surfacePointer; // Initialize the CMYK holder values to the
                                  // current values for their color
-    int32_t M = *(surfacePointer + 1);
-    int32_t Y = *(surfacePointer + 2);
-    int32_t K = *(surfacePointer + 3);
+    int16_t M = *(surfacePointer + 1);
+    int16_t Y = *(surfacePointer + 2);
+    int16_t K = *(surfacePointer + 3);
     for (uint16_t j = 0; j < layer->spp;
          j++) { // Add values to the 32bit cmyk holders
       auto &color = layer->channels.at(j);
@@ -317,7 +317,7 @@ void SliSource::drawCmykXoffset(uint8_t *surfacePointer, uint8_t *bitmap,
     std::vector<uint8_t *> addresses = {};
     addresses.push_back(
         surfacePointer); // Store the address, so it can later be written to
-    int32_t C = *surfacePointer; // Initialize the CMYK holder values to the
+    int16_t C = *surfacePointer; // Initialize the CMYK holder values to the
                                  // current values for their color
     // Advance k and the surface pointer, while keeping the the layer bounds in
     // mind
@@ -325,18 +325,18 @@ void SliSource::drawCmykXoffset(uint8_t *surfacePointer, uint8_t *bitmap,
                               surfacePointer, k);
 
     addresses.push_back(surfacePointer); // Store the m address
-    int32_t M = *surfacePointer; // Surface pointer has been advanced, so now
+    int16_t M = *surfacePointer; // Surface pointer has been advanced, so now
                                  // the M value can be loaded
     advanceIAndSurfacePointer(layerRect, intersectRect, layerBound, stride,
                               surfacePointer, k);
 
     addresses.push_back(surfacePointer);
-    int32_t Y = *surfacePointer;
+    int16_t Y = *surfacePointer;
     advanceIAndSurfacePointer(layerRect, intersectRect, layerBound, stride,
                               surfacePointer, k);
 
     addresses.push_back(surfacePointer);
-    int32_t K = *surfacePointer;
+    int16_t K = *surfacePointer;
     advanceIAndSurfacePointer(layerRect, intersectRect, layerBound, stride,
                               surfacePointer, k);
 
