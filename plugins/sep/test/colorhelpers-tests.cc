@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(colorHelpers_toUint8_inrange) {
 BOOST_AUTO_TEST_CASE(colorHelpers_calculateCMYK) {
   CustomColor::Ptr color(new CustomColor("test", 1, 1, 1, 1));
   CustomColorHelpers helpers;
-  int32_t c = 1;
+  int16_t c = 1;
   helpers.calculateCMYK(color, c, c, c, c, 1);
   BOOST_CHECK_EQUAL(c, 5);
 }
@@ -39,10 +39,10 @@ BOOST_AUTO_TEST_CASE(colorHelpers_calculateCMYK) {
 BOOST_AUTO_TEST_CASE(colorHelpers_calculateCMYKall) {
   CustomColor::Ptr color(new CustomColor("test", 1, 1, 1, 1));
   CustomColorHelpers helpers;
-  int32_t c = 1;
-  int32_t m = 2;
-  int32_t y = 3;
-  int32_t k = 4;
+  int16_t c = 1;
+  int16_t m = 2;
+  int16_t y = 3;
+  int16_t k = 4;
   helpers.calculateCMYK(color, c, m, y, k, 1);
 
   bool correct = true;

@@ -10,13 +10,13 @@
 class CustomColorHelpers {
 public:
   /**
-   * Convert int32 to uint8.
+   * Convert int16 to uint8.
    * value < 0 -> 0
    * value > 255 -> 255
    * @param value int32 to convert
    * @return capped uint8 value
    */
-  static uint8_t toUint8(int32_t value);
+  static uint8_t toUint8(int16_t value);
 
   /**
    * Execute the custom color to CMYK calculations for a single color and value
@@ -29,6 +29,6 @@ public:
    * @param K reference to the K value to alter
    * @param value intensity of the specified color
    */
-  static void calculateCMYK(CustomColor::Ptr &color, int32_t &C, int32_t &M,
-                            int32_t &Y, int32_t &K, uint8_t value);
+  static void calculateCMYK(CustomColor::Ptr &color, int16_t &C, int16_t &M,
+                            int16_t &Y, int16_t &K, uint8_t value);
 };

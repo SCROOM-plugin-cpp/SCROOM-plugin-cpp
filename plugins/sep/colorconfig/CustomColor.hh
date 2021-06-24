@@ -16,28 +16,19 @@ public:
 
   std::string name;
   std::vector<std::string> aliases;
-  double cMultiplier;
-  double mMultiplier;
-  double yMultiplier;
-  double kMultiplier;
 
-  /*
-   * Scaled values are the same as the multipliers, but ints multiplied by 512
-   */
-  int16_t cScaled;
-  int16_t mScaled;
-  int16_t yScaled;
-  int16_t kScaled;
+  // Use floats, as this is faster than using doubles, and we do not need the
+  // extra precision
+  float cMultiplier;
+  float mMultiplier;
+  float yMultiplier;
+  float kMultiplier;
 
-  CustomColor(std::string colorName, double c, double m, double y, double k) {
+  CustomColor(std::string colorName, float c, float m, float y, float k) {
     name = std::move(colorName);
     cMultiplier = c;
     mMultiplier = m;
     yMultiplier = y;
     kMultiplier = k;
-    cScaled = static_cast<int16_t>(round(c * 256));
-    mScaled = static_cast<int16_t>(round(m * 256));
-    yScaled = static_cast<int16_t>(round(y * 256));
-    kScaled = static_cast<int16_t>(round(k * 256));
   }
 };
