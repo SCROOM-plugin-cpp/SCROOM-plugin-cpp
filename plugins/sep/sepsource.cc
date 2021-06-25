@@ -90,7 +90,7 @@ SepFile SepSource::parseSep(const std::string &file_name) {
       sep_file.varnish_file = parent_dir / result[1];
     } else {
       // store the full file path to each file
-      sep_file.files[correctColor->name] = parent_dir / result[1];
+      sep_file.files[result[0]] = parent_dir / result[1];
     }
   }
 
