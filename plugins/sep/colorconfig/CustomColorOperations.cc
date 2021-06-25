@@ -39,8 +39,21 @@ PipetteCommonOperationsCustomColor::sumPixelValues(
 
   // Copy map to vector of pairs
   PipetteColor result = {};
+  // Map different aliasses of the same color to the same pipette color
+  std::unordered_map<std::string, int> colorIndex = {};
   for (int i = 0; i < spp; i++) {
-    result.push_back(std::pair<std::string, double>(colors[i]->name, sums[i]));
+    // if the color is already in the pipette colors, add the sum to that color
+    if (colorIndex.find(colors[i]->name) != colorIndex.end()) {
+      result[colorIndex[colors[i]->name]].second += sums[i];
+    }
+    // This is a pipette color that we have not seen before
+    else {
+      // The pipette color that is about to be added will have the index of the
+      // current size, as vectors are 0 indexed
+      colorIndex.insert({colors[i]->name, result.size()});
+      result.push_back(
+          std::pair<std::string, double>(colors[i]->name, sums[i]));
+    }
   }
 
   return result;
