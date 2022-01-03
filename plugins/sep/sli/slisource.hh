@@ -42,7 +42,7 @@ public:
   /** Callback to disable interaction with widgets in the sidebar */
   boost::function<void()> disableInteractions;
 
-private:
+public: // For testing
   /**
    * Contains the cached bitmaps for the different zoom levels.
    * The zoom level is the key, the pointer to the bitmap the value.
@@ -65,7 +65,7 @@ private:
    */
   std::map<SliLayer::Ptr, SepSource::Ptr> sepSources;
 
-private:
+public: // For testing
   /** Constructor */
   SliSource(boost::function<void()> &triggerRedrawFunc);
 

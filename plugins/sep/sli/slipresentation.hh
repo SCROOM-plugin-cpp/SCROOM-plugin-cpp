@@ -25,7 +25,7 @@ public:
    * presentation accordingly */
   TransformationData::Ptr transformationData;
 
-private:
+public: // For testing
   /** The properties defined for this presentation */
   std::map<std::string, std::string> properties;
 
@@ -84,7 +84,7 @@ public:
   bool parseSli(const std::string &fileName);
 
   /** Get a reference to the list of all layers in SliSource */
-  std::vector<SliLayer::Ptr> &getLayers() { return source->layers; };
+  std::vector<SliLayer::Ptr> &getLayers() override { return source->layers; };
 
   ////////////////////////////////////////////////////////////////////////
   // SliPresentationInterface

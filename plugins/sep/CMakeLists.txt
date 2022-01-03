@@ -1,4 +1,5 @@
 add_library(spsep SHARED)
+target_compile_options(spsep PRIVATE -Wno-error=deprecated-declarations)
 target_sources(
   spsep
   PRIVATE main.cc
@@ -69,8 +70,10 @@ if(ENABLE_BOOST_TEST)
     spsep_tests
     PRIVATE boosttesthelper
             # Boost::chrono
-            project_options project_warnings spsep util)
+            project_options
+            project_warnings
+            spsep
+            util)
 
-  add_test(NAME spsep_tests COMMAND spsep_tests --
-                                    ${CMAKE_CURRENT_SOURCE_DIR}/test/testfiles)
+  add_test(NAME spsep_tests COMMAND spsep_tests -- ${CMAKE_CURRENT_SOURCE_DIR}/test/testfiles)
 endif()

@@ -16,7 +16,7 @@
 namespace pt = boost::property_tree;
 class ColorConfig {
 
-private:
+public: // For testing
   ColorConfig();
 
 private:

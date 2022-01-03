@@ -2,9 +2,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/test/unit_test.hpp>
 
-// Make all private members accessible for testing
-#define private public
-
 #include "../varnish/varnish.hh"
 #include "testglobals.hh"
 #include <scroom/scroominterface.hh>
@@ -25,16 +22,16 @@ public:
     return ViewInterface::Ptr(new DummyViewInterface());
   }
 
-  void addSideWidget(std::string title, GtkWidget *w) {
+  void addSideWidget(std::string, GtkWidget *w) {
     // Add the widget to a fresh GTK box instead.
     // This won't verify UI integrity, but it should
     // at least allow the code to run once in headless CI
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_box_pack_start(GTK_BOX(box), w, true, true, 0);
   }
-  void removeSideWidget(GtkWidget *w){};
-  void addToToolbar(GtkToolItem *ti){};
-  void removeFromToolbar(GtkToolItem *ti){};
+  void removeSideWidget(GtkWidget *){};
+  void addToToolbar(GtkToolItem *){};
+  void removeFromToolbar(GtkToolItem *){};
   void registerSelectionListener(SelectionListener::Ptr){};
   void registerPostRenderer(PostRenderer::Ptr){};
   void setStatusMessage(const std::string &){};

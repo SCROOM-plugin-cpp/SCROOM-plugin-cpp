@@ -2,9 +2,6 @@
 #include <boost/test/unit_test.hpp>
 #include <cmath>
 
-// Make all private members accessible for testing
-#define private public
-
 #include "../seppresentation.hh"
 #include "testglobals.hh"
 

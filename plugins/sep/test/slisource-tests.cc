@@ -2,9 +2,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/test/unit_test.hpp>
 
-// Make all private members accessible for testing
-#define private public
-
 #include "../sli/slipresentation.hh"
 #include <scroom/scroominterface.hh>
 

@@ -5,6 +5,8 @@
 #include "slicontrolpanel.hh"
 #include "slilayer.hh"
 
+using Scroom::GtkHelpers::sync_on_ui_thread;
+
 /* Ignore scroll events on both sliders */
 gboolean scroll_event(GtkWidget *widget, GdkEvent *event, gpointer user_data) {
   UNUSED(widget);
@@ -309,42 +311,40 @@ SliControlPanel::SliControlPanel(
   gtk_widget_show_all(hbox);
 
   // Add the hbox to the sidebar
-  gdk_threads_enter();
-  view->addSideWidget("Layers", hbox);
-  gdk_threads_leave();
+  sync_on_ui_thread([&] { view->addSideWidget("Layers", hbox); });
 }
 
 void SliControlPanel::disableInteractions() {
-  gdk_threads_enter();
-  for (auto widget : widgets) {
-    gtk_widget_set_sensitive(widget.second, false);
-  }
-  gdk_threads_leave();
+  sync_on_ui_thread([&] {
+    for (auto widget : widgets) {
+      gtk_widget_set_sensitive(widget.second, false);
+    }
+  });
 }
 
 void SliControlPanel::enableInteractions() {
-  gdk_threads_enter();
-  for (auto widget : widgets) {
-    gtk_widget_set_sensitive(widget.second, true);
-  }
-  gtk_widget_grab_focus(widgets[lastFocused]);
-  gdk_threads_leave();
+  sync_on_ui_thread([&] {
+    for (auto widget : widgets) {
+      gtk_widget_set_sensitive(widget.second, true);
+    }
+    gtk_widget_grab_focus(widgets[lastFocused]);
+  });
 }
 
 void SliControlPanel::reAttach(ViewInterface::WeakPtr viewWeak_) {
   viewWeak = viewWeak_;
 
   // Re-assign all widgets to a new hbox and attach it to the sidebar
-  gdk_threads_enter();
-  GtkWidget *newHbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  for (GList *iter = gtk_container_get_children(GTK_CONTAINER(hbox));
-       iter != nullptr; iter = iter->next) {
-    gtk_container_add(GTK_CONTAINER(newHbox), GTK_WIDGET(iter->data));
-    gtk_container_remove(GTK_CONTAINER(hbox), GTK_WIDGET(iter->data));
-  }
-  hbox = newHbox;
-  viewWeak.lock()->addSideWidget("Layers", hbox);
-  gdk_threads_leave();
+  sync_on_ui_thread([&] {
+    GtkWidget *newHbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    for (GList *iter = gtk_container_get_children(GTK_CONTAINER(hbox));
+         iter != nullptr; iter = iter->next) {
+      gtk_container_add(GTK_CONTAINER(newHbox), GTK_WIDGET(iter->data));
+      gtk_container_remove(GTK_CONTAINER(hbox), GTK_WIDGET(iter->data));
+    }
+    hbox = newHbox;
+    viewWeak.lock()->addSideWidget("Layers", hbox);
+  });
 }
 
 SliControlPanel::~SliControlPanel() {
