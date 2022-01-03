@@ -4,7 +4,6 @@
 
 #include <boost/dll.hpp>
 #include <boost/test/unit_test.hpp>
-#define private public
 
 #include "../colorconfig/CustomColorConfig.hh"
 #include "testglobals.hh"

@@ -1,9 +1,6 @@
 #include <boost/dll.hpp>
 #include <boost/test/unit_test.hpp>
 
-// Make all private members accessible for testing
-#define private public
-
 #include "../sepsource.hh"
 #include "../sli/slilayer.hh"
 #include "testglobals.hh"
@@ -27,7 +24,7 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep) {
   SepFile file = SepSource::parseSep(TestFiles::getPathToFile("sep_cmyk.sep"));
   BOOST_CHECK(file.files.size() == 4);
 
-  for (const std::string &colour : {"C", "M", "Y", "K"}) {
+  for (const std::string colour : {"C", "M", "Y", "K"}) {
     BOOST_CHECK(file.files[boost::algorithm::to_upper_copy(colour)] ==
                 TestFiles::getPathToFile(colour + ".tif"));
   }
@@ -41,7 +38,7 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_extra_lines) {
       SepSource::parseSep(TestFiles::getPathToFile("sep_extra_lines.sep"));
   BOOST_CHECK(file.files.size() == 4);
 
-  for (const std::string &colour : {"C", "M", "Y", "K"}) {
+  for (const std::string colour : {"C", "M", "Y", "K"}) {
     BOOST_CHECK(file.files[boost::algorithm::to_upper_copy(colour)] ==
                 TestFiles::getPathToFile(colour + ".tif"));
   }
@@ -55,7 +52,7 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_empty_line) {
       SepSource::parseSep(TestFiles::getPathToFile("sep_empty_line_2.sep"));
   BOOST_CHECK(file.files.size() == 4);
 
-  for (const std::string &colour : {"C", "M", "Y", "K"}) {
+  for (const std::string colour : {"C", "M", "Y", "K"}) {
     BOOST_CHECK(file.files[boost::algorithm::to_upper_copy(colour)] ==
                 TestFiles::getPathToFile(colour + ".tif"));
   }
@@ -70,7 +67,7 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_missing_channel) {
       SepSource::parseSep(TestFiles::getPathToFile("sep_missing_channel.sep"));
   BOOST_CHECK(file.files.size() == 3);
 
-  for (const std::string &colour : {"C", "M", "K"}) {
+  for (const std::string colour : {"C", "M", "K"}) {
     BOOST_CHECK(file.files[boost::algorithm::to_upper_copy(colour)] ==
                 TestFiles::getPathToFile(colour + ".tif"));
   }
@@ -86,7 +83,7 @@ BOOST_AUTO_TEST_CASE(sepsource_parse_sep_missing_channel_2) {
       SepSource::parseSep(TestFiles::getPathToFile("sep_empty_line_3.sep"));
   BOOST_CHECK(file.files.size() == 3);
 
-  for (const std::string &colour : {"M", "Y", "K"}) {
+  for (const std::string colour : {"M", "Y", "K"}) {
     BOOST_CHECK(file.files[boost::algorithm::to_upper_copy(colour)] ==
                 TestFiles::getPathToFile(colour + ".tif"));
   }
@@ -147,7 +144,7 @@ BOOST_AUTO_TEST_CASE(sepsource_set_data) {
   // setData copies the passed SepFile.
   BOOST_CHECK(source->sep_file.files.size() == 4);
 
-  for (const std::string &colour : {"C", "M", "Y", "K"}) {
+  for (const std::string colour : {"C", "M", "Y", "K"}) {
     BOOST_CHECK(
         source->sep_file.files[boost::algorithm::to_upper_copy(colour)] ==
         TestFiles::getPathToFile(colour + ".tif"));
@@ -167,7 +164,7 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files) {
   source->openFiles();
 
   // Check that all the CMYK files have been opened
-  for (const std::string &colour : {"C", "M", "Y", "K"}) {
+  for (const std::string colour : {"C", "M", "Y", "K"}) {
     BOOST_CHECK(
         source->channel_files[boost::algorithm::to_upper_copy(colour)] !=
         nullptr);
@@ -186,7 +183,7 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files_twice) {
 
   // Save the TIFF pointers to make sure they don't change
   std::map<std::string, tiff *> files;
-  for (const std::string &colour : {"C", "M", "Y", "K"}) {
+  for (const std::string colour : {"C", "M", "Y", "K"}) {
     files[colour] =
         source->channel_files[boost::algorithm::to_upper_copy(colour)];
   }
@@ -195,7 +192,7 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files_twice) {
   source->openFiles();
 
   // Check that all the CMYK files have not been opened again
-  for (const std::string &colour : {"C", "M", "Y", "K"}) {
+  for (const std::string colour : {"C", "M", "Y", "K"}) {
     BOOST_CHECK(
         source->channel_files[boost::algorithm::to_upper_copy(colour)] ==
         files[colour]);
@@ -215,7 +212,7 @@ BOOST_AUTO_TEST_CASE(sepsource_open_files_extra) {
   source->openFiles();
 
   // Check that all the CMYK files have been opened
-  for (const std::string &colour : {"C", "M", "Y", "K"}) {
+  for (const std::string colour : {"C", "M", "Y", "K"}) {
     BOOST_CHECK(
         source->channel_files[boost::algorithm::to_upper_copy(colour)] !=
         nullptr);

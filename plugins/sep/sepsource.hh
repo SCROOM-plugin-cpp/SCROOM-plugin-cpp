@@ -27,7 +27,7 @@ class SepSource : public SourcePresentation {
 public:
   typedef boost::shared_ptr<SepSource> Ptr;
 
-private:
+public: // For testing
   /** Data structure to represent the opened SEP file in memory. */
   SepFile sep_file;
 
@@ -131,8 +131,8 @@ public:
    * acts expectedly/throws errors when supplied with a NULL. So,
    * this function adds a brief error handling case around it.
    */
-  static int TIFFReadScanline_(tiff *file, void *buf, uint32 row,
-                               uint16 sample = 0);
+  static int TIFFReadScanline_(tiff *file, void *buf, uint32_t row,
+                               uint16_t sample = 0);
 
   /**
    * Retrieves a scanline from all components combined.
@@ -170,7 +170,7 @@ public:
   /** Returns the name of this sep file */
   std::string getName() override;
 
-private:
+public: // For testing
   /**
    * Fills the passed parameters with the correct resolution for this sep
    * file.

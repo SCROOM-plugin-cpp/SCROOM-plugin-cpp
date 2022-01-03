@@ -4,8 +4,6 @@
 
 #include <iostream>
 
-// Make all private members accessible for testing
-#define private public
 #include "../sli/sli-helpers.hh"
 #include "../sli/slilayer.hh"
 #include <scroom/scroominterface.hh>

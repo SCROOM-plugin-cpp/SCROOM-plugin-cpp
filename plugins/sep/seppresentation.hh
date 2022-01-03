@@ -19,7 +19,7 @@ class SepPresentation : public PresentationBase,
 public:
   typedef boost::shared_ptr<SepPresentation> Ptr;
 
-private:
+public: // For testing
   SepSource::Ptr sep_source;
 
   TiledBitmapInterface::Ptr tbi;

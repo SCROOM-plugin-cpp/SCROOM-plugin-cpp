@@ -12,7 +12,7 @@ public:
 
   ViewInterface::WeakPtr viewWeak;
 
-private:
+public: // For testing
   Varnish(const SliLayer::Ptr &sliLayer);
   GtkWidget *box;
   GtkWidget *radio_enabled;

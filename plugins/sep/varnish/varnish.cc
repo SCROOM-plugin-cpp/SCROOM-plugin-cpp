@@ -30,15 +30,15 @@ void Varnish::setView(const ViewInterface::WeakPtr &viewWeakPtr) {
 void Varnish::resetView(const ViewInterface::WeakPtr &viewWeakPtr) {
   this->viewWeak = viewWeakPtr;
 
-  gdk_threads_enter();
-  GtkWidget *newBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  for (GList *iter = gtk_container_get_children(GTK_CONTAINER(box));
-       iter != nullptr; iter = iter->next) {
-    gtk_widget_reparent(GTK_WIDGET(iter->data), newBox);
-  }
-  box = newBox;
-  viewWeakPtr.lock()->addSideWidget("Varnish", box);
-  gdk_threads_leave();
+  Scroom::GtkHelpers::sync_on_ui_thread([&] {
+    GtkWidget *newBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    for (GList *iter = gtk_container_get_children(GTK_CONTAINER(box));
+         iter != nullptr; iter = iter->next) {
+      gtk_widget_reparent(GTK_WIDGET(iter->data), newBox);
+    }
+    box = newBox;
+    viewWeakPtr.lock()->addSideWidget("Varnish", box);
+  });
 }
 
 static void varnish_toggled(GtkToggleButton *, gpointer varnishP) {
@@ -112,9 +112,8 @@ void Varnish::registerUI(const ViewInterface::WeakPtr &viewWeakPtr) {
 
   // Add the box to the sidebar
   ViewInterface::Ptr view(viewWeakPtr);
-  gdk_threads_enter();
-  view->addSideWidget("Varnish", box);
-  gdk_threads_leave();
+  Scroom::GtkHelpers::sync_on_ui_thread(
+      [&] { view->addSideWidget("Varnish", box); });
 }
 
 void Varnish::invertSurface() {

@@ -1,8 +1,5 @@
 #include <boost/test/unit_test.hpp>
 
-// Make all private members accessible for testing
-#define private public
-
 #include "../sep-helpers.hh"
 
 BOOST_AUTO_TEST_SUITE(SepHelpers_Tests)

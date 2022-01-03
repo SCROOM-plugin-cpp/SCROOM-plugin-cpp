@@ -3,7 +3,6 @@
 //
 
 #include <boost/test/unit_test.hpp>
-#define private public
 
 #include "../colorconfig/CustomColorHelpers.hh"
 #include "testglobals.hh"

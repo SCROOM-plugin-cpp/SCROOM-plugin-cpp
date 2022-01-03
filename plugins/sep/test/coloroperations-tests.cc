@@ -4,7 +4,6 @@
 
 #include <boost/test/unit_test.hpp>
 #include <scroom/bitmap-helpers.hh>
-#define private public
 
 #include "../colorconfig/CustomColorOperations.hh"
 #include "testglobals.hh"

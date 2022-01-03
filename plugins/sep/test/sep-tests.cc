@@ -4,9 +4,6 @@
 #include <boost/test/unit_test.hpp>
 #include <list>
 
-// Make all private members accessible for testing
-#define private public
-
 #include "../sep.hh"
 
 /** Test cases for sep.hh */

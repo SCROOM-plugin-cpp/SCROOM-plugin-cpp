@@ -60,12 +60,11 @@ bool SepPresentation::load(const std::string &fileName) {
 TransformationData::Ptr SepPresentation::getTransform() { return transform; }
 
 void SepPresentation::triggerRedraw() {
-  for (ViewInterface::WeakPtr view : views) {
-    ViewInterface::Ptr viewPtr = view.lock();
-    gdk_threads_enter();
-    viewPtr->invalidate();
-    gdk_threads_leave();
-  }
+  Scroom::GtkHelpers::sync_on_ui_thread([&] {
+    for (const ViewInterface::WeakPtr &view : views) {
+      view.lock()->invalidate();
+    }
+  });
 }
 
 ////////////////////////////////////////////////////////////////////////

@@ -157,12 +157,11 @@ bool SliPresentation::parseSli(const std::string &sliFileName) {
 void SliPresentation::wipeCacheAndRedraw() { source->wipeCacheAndRedraw(); }
 
 void SliPresentation::triggerRedraw() {
-  for (ViewInterface::WeakPtr view : views) {
-    ViewInterface::Ptr viewPtr = view.lock();
-    gdk_threads_enter();
-    viewPtr->invalidate();
-    gdk_threads_leave();
-  }
+  Scroom::GtkHelpers::sync_on_ui_thread([&] {
+    for (const ViewInterface::WeakPtr &view : views) {
+      view.lock()->invalidate();
+    }
+  });
 }
 
 boost::dynamic_bitset<> SliPresentation::getVisible() {
