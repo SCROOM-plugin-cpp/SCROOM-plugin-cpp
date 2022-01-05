@@ -1,17 +1,20 @@
-ATB="@abs_top_builddir@"
-
-if which cygpath > /dev/null 2>&1
-then
-  ATB=$(cygpath "${ATB}")
-fi
+ATB=@abs_top_builddir@
+CONAN_LIBS="@CONAN_LIB_DIRS@"
+CONAN_BINS="@CONAN_BIN_DIRS@"
 
 export SCROOM_DEV_MODE="yes"
-export SCROOM_PLUGIN_DIRS="${ATB}/scroom/lib:${ATB}/lib"
 
-if [ "${WINDIR}x" != "x" ]
+if [ -z "${SCROOM_PATHS_SAVED+x}" ]
 then
-  # We're probably on windows
+  export SCROOM_PATHS_SAVED="yes"
+  export SCROOM_SAVED_LIBRARY_PATH="${LD_LIBRARY_PATH-}"
+  export SCROOM_SAVED_PATH="$PATH"
+fi
 
-  # On Windows, the path is searched for libraries
-  export PATH="${PATH}:${ATB}/scroom/bin:${ATB}/bin"
+if [ -n "${MINGW_PREFIX+x}" ]
+then
+    export PATH=${SCROOM_SAVED_PATH}:$(cygpath -p "${CONAN_BINS}")
+    export SCROOM_PLUGIN_DIRS="${ATB}/bin;${ATB}/scroom/bin"
+else
+    export SCROOM_PLUGIN_DIRS="${ATB}/lib:${ATB}/scroom/lib"
 fi
