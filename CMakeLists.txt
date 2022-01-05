@@ -14,7 +14,11 @@ if(ENABLE_BOOST_TEST OR ENABLE_GOOGLE_TEST)
   enable_testing()
 endif()
 
-add_subdirectory(scroom)
+set(SCROOM_SRC_DIR
+    "scroom"
+    CACHE PATH "Location of the Scroom sources")
+
+add_subdirectory(${SCROOM_SRC_DIR} ${SCROOMBINDIR})
 add_subdirectory(plugins)
 
 # Generate the ENVIRONMENT file
