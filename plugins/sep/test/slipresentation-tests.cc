@@ -35,13 +35,13 @@ void dummyRedraw(SliPresentation::Ptr presentation) {
   // redraw() for all zoom levels from 5 to -2 and check whether cache has been
   // computed
 
+  BOOST_REQUIRE(presentation);
   for (int zoom = 5; zoom > -3; zoom--) {
     presentation->redraw(nullptr, cr, rect, zoom);
     boost::this_thread::sleep(boost::posix_time::millisec(
         1000)); // Very liberal, shouldn't fail beause of time
-    BOOST_REQUIRE(presentation->source->rgbCache[std::min(0, zoom)]);
+    BOOST_CHECK(presentation->source->rgbCache[std::min(0, zoom)]);
   }
-  BOOST_REQUIRE(presentation);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

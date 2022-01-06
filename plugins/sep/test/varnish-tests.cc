@@ -23,120 +23,37 @@ public:
   }
 
   void addSideWidget(std::string, GtkWidget *w) {
+    require(Scroom::GtkHelpers::on_ui_thread());
+
     // Add the widget to a fresh GTK box instead.
     // This won't verify UI integrity, but it should
     // at least allow the code to run once in headless CI
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_box_pack_start(GTK_BOX(box), w, true, true, 0);
   }
-  void removeSideWidget(GtkWidget *){};
-  void addToToolbar(GtkToolItem *){};
-  void removeFromToolbar(GtkToolItem *){};
+  void removeSideWidget(GtkWidget *) {
+    require(Scroom::GtkHelpers::on_ui_thread());
+  };
+  void addToToolbar(GtkToolItem *) {
+    require(Scroom::GtkHelpers::on_ui_thread());
+  };
+  void removeFromToolbar(GtkToolItem *) {
+    require(Scroom::GtkHelpers::on_ui_thread());
+  };
   void registerSelectionListener(SelectionListener::Ptr){};
   void registerPostRenderer(PostRenderer::Ptr){};
-  void setStatusMessage(const std::string &){};
+  void setStatusMessage(const std::string &) {
+    require(Scroom::GtkHelpers::on_ui_thread());
+  };
   boost::shared_ptr<PresentationInterface> getCurrentPresentation() {
     return nullptr;
   };
-  void addToolButton(GtkToggleButton *, ToolStateListener::Ptr){};
+  void addToolButton(GtkToggleButton *, ToolStateListener::Ptr) {
+    require(Scroom::GtkHelpers::on_ui_thread());
+  };
 };
 
 void dummyFunction() {}
-
-///////////////////////////////////////////////////////////////////////////////
-// Tests for varnish ui construction
-// DISABLED as the test are not able to work without initializing GTK, which
-// breaks other tests
-/*
-BOOST_AUTO_TEST_SUITE(varnish_ui_tests)
-BOOST_AUTO_TEST_CASE(varnish_load_ui) {
-  ViewInterface::Ptr dvi = DummyViewInterface::create();
-  SliLayer::Ptr test_varnishLayer = SliLayer::create(
-      TestFiles::getPathToFile("v_valid.tif"), "SomeCoolTitle", 0, 0);
-  test_varnishLayer->fillMetaFromTiff(8, 1);
-  test_varnishLayer->fillBitmapFromTiff();
-  Varnish::Ptr test_varnish = Varnish::create(test_varnishLayer);
-  test_varnish->triggerRedraw = boost::bind(dummyFunction);
-  test_varnish->setView(dvi);
-  test_varnish->invertSurface();
-
-  // Inverting twice should return the same thing.
-  // Inverting once shouldn't, because the sample image isn't gray
-  int surface_data_before =
-      cairo_image_surface_get_data(test_varnish->surface)[0];
-  test_varnish->invertSurface();
-  int surface_data_after =
-      cairo_image_surface_get_data(test_varnish->surface)[0];
-  BOOST_REQUIRE((surface_data_before == surface_data_after) ^ 255);
-  BOOST_REQUIRE(surface_data_before != surface_data_after);
-
-  test_varnish->invertSurface();
-  int surface_data_twice =
-      cairo_image_surface_get_data(test_varnish->surface)[0];
-  BOOST_REQUIRE((surface_data_after == surface_data_twice) ^ 255);
-  BOOST_REQUIRE(surface_data_after != surface_data_twice);
-  BOOST_REQUIRE(surface_data_before == surface_data_twice);
-
-  BOOST_REQUIRE(!test_varnish->inverted);
-  // trigger a button callback
-  gtk_toggle_button_set_active(
-      GTK_TOGGLE_BUTTON(test_varnish->check_show_background), true);
-  // drawoverlay
-  cairo_surface_t *surface =
-      cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 100, 100);
-  cairo_t *cr = cairo_create(surface);
-  Scroom::Utils::Rectangle<double> rect(5.0, 5.0, 100.0, 100.0);
-  // call the draw function at several zoom levels
-  test_varnish->drawOverlay(nullptr, cr, rect, -1);
-  test_varnish->drawOverlay(nullptr, cr, rect, 1);
-  test_varnish->drawOverlay(nullptr, cr, rect, 2);
-  // Disable transparency and redraw
-  gtk_toggle_button_set_active(
-      GTK_TOGGLE_BUTTON(test_varnish->check_show_background), false);
-  test_varnish->drawOverlay(nullptr, cr, rect, -1);
-  test_varnish->drawOverlay(nullptr, cr, rect, 1);
-  test_varnish->drawOverlay(nullptr, cr, rect, 2);
-  // Enable varnish and redraw
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->radio_enabled),
-                               true);
-  BOOST_REQUIRE(!test_varnish->inverted);
-  gtk_toggle_button_set_active(
-      GTK_TOGGLE_BUTTON(test_varnish->check_show_background), true);
-  test_varnish->drawOverlay(nullptr, cr, rect, -1);
-  test_varnish->drawOverlay(nullptr, cr, rect, 1);
-  test_varnish->drawOverlay(nullptr, cr, rect, 2);
-  // Disable transparency and redraw
-  gtk_toggle_button_set_active(
-      GTK_TOGGLE_BUTTON(test_varnish->check_show_background), false);
-  test_varnish->drawOverlay(nullptr, cr, rect, -1);
-  test_varnish->drawOverlay(nullptr, cr, rect, 1);
-  test_varnish->drawOverlay(nullptr, cr, rect, 2);
-  // Invert varnish and redraw
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->radio_inverted),
-                               true);
-  BOOST_REQUIRE(test_varnish->inverted);
-  gtk_toggle_button_set_active(
-      GTK_TOGGLE_BUTTON(test_varnish->check_show_background), true);
-  test_varnish->drawOverlay(nullptr, cr, rect, -1);
-  test_varnish->drawOverlay(nullptr, cr, rect, 1);
-  test_varnish->drawOverlay(nullptr, cr, rect, 2);
-  // Disable transparency and redraw
-  gtk_toggle_button_set_active(
-      GTK_TOGGLE_BUTTON(test_varnish->check_show_background), false);
-  test_varnish->drawOverlay(nullptr, cr, rect, -1);
-  test_varnish->drawOverlay(nullptr, cr, rect, 1);
-  test_varnish->drawOverlay(nullptr, cr, rect, 2);
-  // Move from inverted to normal and redraw
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test_varnish->radio_enabled),
-                               true);
-  BOOST_REQUIRE(!test_varnish->inverted);
-  gtk_toggle_button_set_active(
-      GTK_TOGGLE_BUTTON(test_varnish->check_show_background), true);
-  test_varnish->drawOverlay(nullptr, cr, rect, -1);
-  test_varnish->drawOverlay(nullptr, cr, rect, 1);
-  test_varnish->drawOverlay(nullptr, cr, rect, 2);
-}
-BOOST_AUTO_TEST_SUITE_END()*/
 
 ///////////////////////////////////////////////////////////////////////////////
 // Tests for varnish loading

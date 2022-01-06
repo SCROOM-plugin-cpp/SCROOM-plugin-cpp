@@ -28,6 +28,8 @@ void Varnish::setView(const ViewInterface::WeakPtr &viewWeakPtr) {
 }
 
 void Varnish::resetView(const ViewInterface::WeakPtr &viewWeakPtr) {
+  require(Scroom::GtkHelpers::on_ui_thread());
+
   this->viewWeak = viewWeakPtr;
 
   Scroom::GtkHelpers::sync_on_ui_thread([&] {
@@ -49,6 +51,8 @@ static void varnish_toggled(GtkToggleButton *, gpointer varnishP) {
 }
 
 void Varnish::fixVarnishState() {
+  require(Scroom::GtkHelpers::on_ui_thread());
+
   if (inverted) {
     // If we're currently inverted and moving to normal,
     // We need to invert back
@@ -67,6 +71,8 @@ void Varnish::fixVarnishState() {
 }
 
 void Varnish::registerUI(const ViewInterface::WeakPtr &viewWeakPtr) {
+  require(Scroom::GtkHelpers::on_ui_thread());
+
   box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *expander = gtk_expander_new("Overlay properties");
   GtkWidget *expander_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -131,6 +137,8 @@ void Varnish::invertSurface() {
 void Varnish::drawOverlay(ViewInterface::Ptr const &, cairo_t *cr,
                           Scroom::Utils::Rectangle<double> presentationArea,
                           int zoom) {
+  require(Scroom::GtkHelpers::on_ui_thread());
+
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(radio_disabled))) {
     // if the varnish overlay is disabled, return without drawing anything.
     return;
