@@ -18,6 +18,8 @@ gboolean scroll_event(GtkWidget *widget, GdkEvent *event, gpointer user_data) {
 /* Remove focus from the widget when the ESC key is pressed */
 gboolean escape_key_pressed(GtkWidget *widget, GdkEventKey *event,
                             gpointer user_data) {
+  require(Scroom::GtkHelpers::on_ui_thread());
+
   UNUSED(user_data);
 
   if (event->keyval == GDK_KEY_Escape) {
@@ -83,6 +85,8 @@ void toggle_and_redraw(double old_value, double new_value, double other_value,
 /* Update the Tree Model according to the new sliders' bounds */
 void update_tree_model(GtkTreeView *treeview, int min, int max, int low,
                        int high) {
+  require(Scroom::GtkHelpers::on_ui_thread());
+
   GtkTreeIter iter;
   gchar *path;
   GtkTreeModel *model = gtk_tree_view_get_model(treeview);
@@ -104,6 +108,8 @@ void update_tree_model(GtkTreeView *treeview, int min, int max, int low,
 /* Takes care of all focus-out, button-press, and key-release events */
 gboolean slider_event_handler(GtkWidget *widget, GdkEvent *event,
                               SliControlPanel *cPanel) {
+  require(Scroom::GtkHelpers::on_ui_thread());
+
   UNUSED(event);
 
   if (widget == cPanel->widgets[SLIDER_LOW]) {
@@ -151,6 +157,8 @@ gboolean slider_event_handler(GtkWidget *widget, GdkEvent *event,
 /* Makes sure a slider can't go above or below the other slider's value */
 gboolean change_value(GtkRange *range, GtkScrollType scroll, gdouble this_value,
                       SliControlPanel *cPanel) {
+  require(Scroom::GtkHelpers::on_ui_thread());
+
   UNUSED(range);
   UNUSED(scroll);
 
@@ -173,6 +181,8 @@ gboolean change_value(GtkRange *range, GtkScrollType scroll, gdouble this_value,
 /* Updates the Tree Model and triggers a redraw when a checkmark is toggled */
 void on_toggle(GtkCellRendererToggle *renderer, gchar *path,
                SliControlPanel *cPanel) {
+  require(Scroom::GtkHelpers::on_ui_thread());
+
   UNUSED(renderer);
   GtkTreeModel *model;
   GtkTreeIter iter;
@@ -196,6 +206,8 @@ void on_toggle(GtkCellRendererToggle *renderer, gchar *path,
 }
 
 void SliControlPanel::create_view_and_model() {
+  require(Scroom::GtkHelpers::on_ui_thread());
+
   // Create the view ----------------------------------------
   GtkCellRenderer *renderer;
 
@@ -241,6 +253,8 @@ SliControlPanel::SliControlPanel(
     ViewInterface::WeakPtr viewWeak_,
     SliPresentationInterface::WeakPtr presentation_)
     : presentation(presentation_), viewWeak(viewWeak_) {
+  require(Scroom::GtkHelpers::on_ui_thread());
+
   printf("Multilayer control panel has been created\n");
   SliPresentationInterface::Ptr presPtr = presentation.lock();
   std::vector<SliLayer::Ptr> layers = presPtr->getLayers();
@@ -332,6 +346,8 @@ void SliControlPanel::enableInteractions() {
 }
 
 void SliControlPanel::reAttach(ViewInterface::WeakPtr viewWeak_) {
+  require(Scroom::GtkHelpers::on_ui_thread());
+
   viewWeak = viewWeak_;
 
   // Re-assign all widgets to a new hbox and attach it to the sidebar
