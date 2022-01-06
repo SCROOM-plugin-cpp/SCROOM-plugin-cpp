@@ -6,15 +6,14 @@ set -u
 
 export PATH=${PATH}:~/.local/bin:/c/Users/$(whoami)/.local/bin
 
-
 mkdir -p ../build
 cd ../build
 cmake ../SCROOM-plugin-cpp -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_INSTALL_PREFIX="../scroom-installed/scroom" -DENABLE_CACHE=OFF
 
-cmake --build . -j2
-( . ENVIRONMENT && ctest -j2 )
+cmake --build . -j $(nproc)
+( . ENVIRONMENT && ctest -j $(nproc) --output-on-failure )
 
-cmake --build . --target package_source -j2
+cmake --build . --target package_source -j $(nproc)
 mv ScroomCPPPlugins-*Source.tar.gz ../SCROOM-plugin-cpp
 
 cmake --install .
