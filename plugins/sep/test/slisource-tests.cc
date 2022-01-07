@@ -38,7 +38,7 @@ void dummyRedraw1(SliPresentation::Ptr presentation) {
     presentation->redraw(nullptr, cr, rect, zoom);
     boost::this_thread::sleep(boost::posix_time::millisec(
         1000)); // Very liberal, shouldn't fail beause of time
-    BOOST_REQUIRE(presentation->source->rgbCache[std::min(0, zoom)]);
+    BOOST_REQUIRE(presentation->source->rgbCache.at(std::min(0, zoom)));
   }
   BOOST_REQUIRE(presentation);
 }
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(slisource_clearbottomsurface_all_toggled) {
   int total_height = presentation->source->total_height;
   int total_width = presentation->source->total_width;
   bool allZero = true;
-  auto surface = presentation->source->rgbCache[0]->getBitmap();
+  auto surface = presentation->source->rgbCache.at(0)->getBitmap();
   for (int i = 0; i < total_height * total_width * 4; i++) {
     if (surface[i] != 0) {
       allZero = false;
@@ -80,8 +80,8 @@ BOOST_AUTO_TEST_CASE(slisource_clearbottomsurface_none_toggled) {
   presentation1->source->clearBottomSurface();
   int total_height = presentation1->source->total_height;
   int total_width = presentation1->source->total_width;
-  auto surface1 = presentation1->source->rgbCache[0]->getBitmap();
-  auto surface2 = presentation2->source->rgbCache[0]->getBitmap();
+  auto surface1 = presentation1->source->rgbCache.at(0)->getBitmap();
+  auto surface2 = presentation2->source->rgbCache.at(0)->getBitmap();
   bool bothEqual = true;
   for (int i = 0; i < total_height * total_width * 4; i++) {
     if (surface1[i] != surface2[i]) {
@@ -107,8 +107,8 @@ BOOST_AUTO_TEST_CASE(slisource_clearbottomsurface_some_toggled) {
   int width = presentation1->source->layers[0]->width;
   int total_height = presentation1->source->total_height;
   int total_width = presentation1->source->total_width;
-  auto surface1 = presentation1->source->rgbCache[0]->getBitmap();
-  auto surface2 = presentation2->source->rgbCache[0]->getBitmap();
+  auto surface1 = presentation1->source->rgbCache.at(0)->getBitmap();
+  auto surface2 = presentation2->source->rgbCache.at(0)->getBitmap();
 
   bool someZero = true;
   for (int i = 0; i < height * width * 4; i++) {
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(slisource_computergb_xoffset) {
   SliPresentation::Ptr presentation = createPresentation1();
   presentation->load(TestFiles::getPathToFile("sli_tinycmyk_xoffset.sli"));
   dummyRedraw1(presentation);
-  auto surface = presentation->source->rgbCache[0]->getBitmap();
+  auto surface = presentation->source->rgbCache.at(0)->getBitmap();
   presentation->source->computeRgb();
   // bgra conversion of tinycmyk.tif
   uint8_t tinycmyk[] = {0, 0, 0, 0, 255, 255, 0,   255, 255, 0, 255, 255,

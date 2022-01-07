@@ -38,9 +38,14 @@ void dummyRedraw(SliPresentation::Ptr presentation) {
   BOOST_REQUIRE(presentation);
   for (int zoom = 5; zoom > -3; zoom--) {
     presentation->redraw(nullptr, cr, rect, zoom);
-    boost::this_thread::sleep(boost::posix_time::millisec(
-        1000)); // Very liberal, shouldn't fail beause of time
-    BOOST_CHECK(presentation->source->rgbCache[std::min(0, zoom)]);
+    for (int retries = 100;
+         retries > 0 &&
+         (!presentation->source ||
+          !presentation->source->rgbCache.count(std::min(0, zoom)));
+         retries--) {
+      boost::this_thread::sleep(boost::posix_time::millisec(100));
+    }
+    BOOST_CHECK(presentation->source->rgbCache.at(std::min(0, zoom)));
   }
 }
 

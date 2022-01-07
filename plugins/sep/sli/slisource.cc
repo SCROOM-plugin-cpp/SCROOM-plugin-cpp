@@ -88,16 +88,16 @@ void SliSource::wipeCacheAndRedraw() {
 SurfaceWrapper::Ptr SliSource::getSurface(int zoom) {
   if (!bitmapsImported) {
     return nullptr;
-  } else if (!rgbCache.count(std::min(0, zoom)) || rgbCache[0]->clear) {
+  } else if (!rgbCache.count(std::min(0, zoom)) || rgbCache.at(0)->clear) {
     CpuBound()->schedule(
         boost::bind(&SliSource::fillCache, shared_from_this<SliSource>()),
         PRIO_HIGHER, threadQueue);
     if (rgbCache.count(std::min(0, zoom))) {
-      return rgbCache[std::min(0, zoom)];
+      return rgbCache.at(std::min(0, zoom));
     }
     return nullptr;
   } else {
-    return rgbCache[std::min(0, zoom)];
+    return rgbCache.at(std::min(0, zoom));
   }
 }
 void SliSource::fillCache() {
@@ -105,7 +105,7 @@ void SliSource::fillCache() {
   disableInteractions();
   visible ^= toggled;
 
-  if (!rgbCache.count(0) || rgbCache[0]->clear) {
+  if (!rgbCache.count(0) || rgbCache.at(0)->clear) {
     computeRgb();
 
     for (int i = -1; i >= -30; i--) {
@@ -114,7 +114,7 @@ void SliSource::fillCache() {
     }
   }
 
-  rgbCache[0]->clear = false;
+  rgbCache.at(0)->clear = false;
   toggled.reset();
   enableInteractions();
   mtx.unlock();
@@ -130,7 +130,7 @@ void SliSource::reduceSegments(SurfaceWrapper::Ptr targetSurface,
 
     const int sourceWidth = total_width / pow(2, -zoom - 1);
     const int sourceOffset = (baseSegHeight / pow(2, -zoom - 1)) * i;
-    const int sourceStride = rgbCache[zoom + 1]->getStride();
+    const int sourceStride = rgbCache.at(zoom + 1)->getStride();
 
     int targetSegHeight;
     if (i == static_cast<int>(toggledSegments.size()) - 1) {
@@ -148,7 +148,7 @@ void SliSource::reduceSegments(SurfaceWrapper::Ptr targetSurface,
         targetSurface->getBitmap() + targetOffset * targetStride;
 
     for (int y = 0; y < targetSegHeight; y++) {
-      auto sourceBitmap1 = rgbCache[zoom + 1]->getBitmap() +
+      auto sourceBitmap1 = rgbCache.at(zoom + 1)->getBitmap() +
                            2 * y * sourceStride + sourceOffset * sourceStride;
       auto sourceBitmap2 = sourceBitmap1 + sourceStride;
 
@@ -183,7 +183,7 @@ void SliSource::reduceRgb(int zoom, bool multithreading) {
   // create a new surface for this zoom level, unless it already exists
   SurfaceWrapper::Ptr targetSurface = SurfaceWrapper::create();
   if (rgbCache.count(zoom)) {
-    targetSurface = rgbCache[zoom];
+    targetSurface = rgbCache.at(zoom);
   } else {
     targetSurface = SurfaceWrapper::create(totalTargetWidth, totalTargetHeight,
                                            CAIRO_FORMAT_ARGB32);
@@ -374,7 +374,7 @@ void SliSource::computeRgb() {
 
   // Check if cache surface exists first
   if (rgbCache.count(0)) {
-    surface = rgbCache[0];
+    surface = rgbCache.at(0);
   } else {
     surface =
         SurfaceWrapper::create(total_width, total_height, CAIRO_FORMAT_ARGB32);
@@ -448,16 +448,16 @@ void SliSource::clearBottomSurface() {
     return;
 
   if (toggled.all() && rgbCache.count(0)) {
-    rgbCache[0]->clearSurface();
+    rgbCache.at(0)->clearSurface();
     // printf("Complete redraw! Area: %d pixels.\n",
-    // getArea(rgbCache[0]->toRectangle()));
+    // getArea(rgbCache.at(0)->toRectangle()));
     return;
   }
 
   Scroom::Utils::Rectangle<int> spannedRect = spannedRectangle(toggled, layers);
 
   if (rgbCache.count(0)) {
-    rgbCache[0]->clearSurface(spannedRect);
+    rgbCache.at(0)->clearSurface(spannedRect);
     // printf("Partial redraw! Area: %d pixels.\n", getArea(spannedRect));
   }
 }
