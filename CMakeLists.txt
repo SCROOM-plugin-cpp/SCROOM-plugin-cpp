@@ -19,6 +19,8 @@ set(SCROOM_SRC_DIR
     CACHE PATH "Location of the Scroom sources")
 
 add_subdirectory(${SCROOM_SRC_DIR} ${SCROOMBINDIR})
+include(${CMAKE_CURRENT_BINARY_DIR}/${SCROOMBINDIR}/conanbuildinfo.cmake)
+conan_define_targets()
 add_subdirectory(plugins)
 
 # Generate the ENVIRONMENT file
