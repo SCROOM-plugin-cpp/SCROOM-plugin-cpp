@@ -26,3 +26,4 @@ add_subdirectory(plugins)
 # Generate the ENVIRONMENT file
 set(abs_top_builddir "${ScroomCPPPlugins_BINARY_DIR}")
 configure_file(ENVIRONMENT.in ${ScroomCPPPlugins_BINARY_DIR}/ENVIRONMENT @ONLY)
+configure_file(ENVIRONMENT.cmd.in ${ScroomCPPPlugins_BINARY_DIR}/ENVIRONMENT.cmd @ONLY)
