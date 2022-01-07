@@ -37,9 +37,9 @@ jobs:
         uses: actions/cache@v1.1.0
         with:
           path: .ccache
-          key: ${{ runner.os }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          key: ${{ matrix.os }}-${{ matrix.type }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
           restore-keys: |
-            ${{ runner.os }}-ccache-
+            ${{ matrix.os }}-${{ matrix.type }}-ccache-
 
       - name: Update Ubuntu package repos
         run: sudo apt-get update
