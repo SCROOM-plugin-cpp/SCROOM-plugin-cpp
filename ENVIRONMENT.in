@@ -1,4 +1,5 @@
 ATB=@abs_top_builddir@
+SCROOMBINDIR=@SCROOMBINDIR@
 CONAN_LIBS="@CONAN_LIB_DIRS@"
 CONAN_BINS="@CONAN_BIN_DIRS@"
 
@@ -13,7 +14,8 @@ fi
 
 if [ -n "${MINGW_PREFIX+x}" ]
 then
-    export PATH=${SCROOM_SAVED_PATH}:$(cygpath -p "${CONAN_BINS}")
+    SANE_ATB=$(cygpath ${ATB})
+    export PATH=${SCROOM_SAVED_PATH}:$(cygpath -p "${CONAN_BINS}"):${SANE_ATB}/bin:${SANE_ATB}/${SCROOMBINDIR}bin
     export SCROOM_PLUGIN_DIRS="${ATB}/bin;${ATB}/scroom/bin"
 else
     export SCROOM_PLUGIN_DIRS="${ATB}/lib:${ATB}/scroom/lib"

@@ -1,0 +1,16 @@
+set ATB=@abs_top_builddir@
+set SCROOMBINDIR=@SCROOMBINDIR@
+set CONAN_LIBS=@CONAN_LIB_DIRS@
+set CONAN_BINS=@CONAN_BIN_DIRS@
+
+set SCROOM_DEV_MODE=yes
+set SCROOM_PLUGIN_DIRS=%ATB%/bin;%ATB%/scroom/bin
+
+if "%SCROOM_PATHS_SAVED%"=="yes" goto saved
+
+set SCROOM_PATHS_SAVED=yes
+set SCROOM_SAVED_PATH="%PATH%"
+
+:saved
+
+set PATH=%SCROOM_SAVED_PATH%;%CONAN_BINS%;%ATB%\bin;%ATB%\%SCROOMBINDIR%\bin;C:\msys64\mingw64\bin;
