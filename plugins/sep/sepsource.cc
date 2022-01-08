@@ -296,8 +296,8 @@ void SepSource::checkFiles() {
   }
 }
 
-int SepSource::TIFFReadScanline_(tiff *file, void *buf, uint32 row,
-                                 uint16 sample) {
+int SepSource::TIFFReadScanline_(tiff *file, void *buf, uint32_t row,
+                                 uint16_t sample) {
   return file == nullptr ? -1 : TIFFReadScanline(file, buf, row, sample);
 }
 

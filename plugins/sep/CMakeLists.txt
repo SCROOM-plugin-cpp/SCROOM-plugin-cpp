@@ -1,5 +1,4 @@
 add_library(spsep SHARED)
-target_compile_options(spsep PRIVATE -Wno-error=deprecated-declarations)
 target_sources(
   spsep
   PRIVATE main.cc

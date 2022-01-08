@@ -355,8 +355,10 @@ void SliControlPanel::reAttach(ViewInterface::WeakPtr viewWeak_) {
     GtkWidget *newHbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     for (GList *iter = gtk_container_get_children(GTK_CONTAINER(hbox));
          iter != nullptr; iter = iter->next) {
-      gtk_container_add(GTK_CONTAINER(newHbox), GTK_WIDGET(iter->data));
+      g_object_ref(iter->data);
       gtk_container_remove(GTK_CONTAINER(hbox), GTK_WIDGET(iter->data));
+      gtk_container_add(GTK_CONTAINER(newHbox), GTK_WIDGET(iter->data));
+      g_object_unref(iter->data);
     }
     hbox = newHbox;
     viewWeak.lock()->addSideWidget("Layers", hbox);

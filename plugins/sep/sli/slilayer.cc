@@ -63,7 +63,7 @@ bool SliLayer::fillMetaFromTiff(unsigned int allowedBps,
 
     float resolutionX;
     float resolutionY;
-    uint16 resolutionUnit;
+    uint16_t resolutionUnit;
 
     if (TIFFGetField(tif, TIFFTAG_XRESOLUTION, &resolutionX) &&
         TIFFGetField(tif, TIFFTAG_YRESOLUTION, &resolutionY) &&
