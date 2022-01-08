@@ -36,7 +36,11 @@ void Varnish::resetView(const ViewInterface::WeakPtr &viewWeakPtr) {
     GtkWidget *newBox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     for (GList *iter = gtk_container_get_children(GTK_CONTAINER(box));
          iter != nullptr; iter = iter->next) {
-      gtk_widget_reparent(GTK_WIDGET(iter->data), newBox);
+
+      g_object_ref(iter->data);
+      gtk_container_remove(GTK_CONTAINER(box), GTK_WIDGET(iter->data));
+      gtk_container_add(GTK_CONTAINER(newBox), GTK_WIDGET(iter->data));
+      g_object_unref(iter->data);
     }
     box = newBox;
     viewWeakPtr.lock()->addSideWidget("Varnish", box);
@@ -48,6 +52,10 @@ static void varnish_toggled(GtkToggleButton *, gpointer varnishP) {
   static_cast<Varnish *>(varnishP)->fixVarnishState();
   // Force a redraw when varnish is toggled.
   static_cast<Varnish *>(varnishP)->triggerRedraw();
+}
+
+void color_changed(GObject *, GParamSpec *, gpointer varnishP) {
+  varnish_toggled(nullptr, varnishP);
 }
 
 void Varnish::fixVarnishState() {
@@ -76,15 +84,15 @@ void Varnish::registerUI(const ViewInterface::WeakPtr &viewWeakPtr) {
   box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *expander = gtk_expander_new("Overlay properties");
   GtkWidget *expander_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  colorpicker = gtk_color_selection_new();
+  colorpicker = gtk_color_chooser_widget_new();
+  g_object_set(G_OBJECT(colorpicker), "show-editor", true, NULL);
   check_show_background = gtk_check_button_new_with_label("Show background");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_show_background), true);
-  gtk_color_selection_set_has_palette(GTK_COLOR_SELECTION(colorpicker), false);
   // Set a default color for the overlay
-  GdkColor color;
-  gdk_color_parse("#000000", &color);
-  gtk_color_selection_set_current_color(GTK_COLOR_SELECTION(colorpicker),
-                                        &color);
+  GdkRGBA color;
+  gdk_rgba_parse(&color, "#000000");
+  gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(colorpicker), true);
+  gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(colorpicker), &color);
   // Add radio buttons for each display mode
   radio_disabled = gtk_radio_button_new_with_label(nullptr, "Disabled");
   radio_enabled = gtk_radio_button_new_with_label_from_widget(
@@ -98,9 +106,8 @@ void Varnish::registerUI(const ViewInterface::WeakPtr &viewWeakPtr) {
                    G_CALLBACK(varnish_toggled), this);
   g_signal_connect(static_cast<gpointer>(radio_disabled), "toggled",
                    G_CALLBACK(varnish_toggled), this);
-  // We can use the same callback to force a redraw when the color is changed
-  g_signal_connect(static_cast<gpointer>(colorpicker), "color-changed",
-                   G_CALLBACK(varnish_toggled), this);
+  g_signal_connect(static_cast<gpointer>(colorpicker), "notify::rgba",
+                   G_CALLBACK(color_changed), this);
   g_signal_connect(static_cast<gpointer>(check_show_background), "toggled",
                    G_CALLBACK(varnish_toggled), this);
 
@@ -157,19 +164,8 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &, cairo_t *cr,
   }
 
   // Read the overlay color and alpha
-  GdkColor color;
-  gint alpha;
-  // This method is deprecated, but the alternative doesn't work
-  gtk_color_selection_get_current_color(GTK_COLOR_SELECTION(colorpicker),
-                                        &color);
-  alpha =
-      gtk_color_selection_get_current_alpha(GTK_COLOR_SELECTION(colorpicker));
-  // Cairo is expecting doubles as color values, so we have to convert them.
-  double r, g, b, a;
-  r = color.red / 65535.0;
-  g = color.green / 65535.0;
-  b = color.blue / 65535.0;
-  a = alpha / 65535.0;
+  GdkRGBA color;
+  gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(colorpicker), &color);
 
   if (!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check_show_background))) {
     // Clear the background
@@ -178,7 +174,7 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &, cairo_t *cr,
     cairo_fill(cr);
   }
 
-  cairo_set_source_rgba(cr, r, g, b, a);
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
   cairo_mask_surface(cr, surface, 0, 0);
 
   cairo_restore(cr);
