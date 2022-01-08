@@ -22,7 +22,8 @@ jobs:
 
       - name: Run clang-format
         run: |
-          find . \( -name \*.cc -o -name \*.hh \) -exec clang-format -i \{\} \+
+          find . \( -name scroom \) -type d -prune \
+            -o  \( -name \*.cc -o -name \*.hh \) -exec clang-format -i \{\} \+
 
       - name: Report results
         run: |
