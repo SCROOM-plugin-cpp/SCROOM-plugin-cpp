@@ -27,6 +27,7 @@ endif()
 add_subdirectory(${SCROOM_SRC_DIR} ${SCROOMBINDIR})
 include(${CMAKE_CURRENT_BINARY_DIR}/${SCROOMBINDIR}/conanbuildinfo.cmake)
 conan_define_targets()
+target_include_directories(project_options INTERFACE inc ${PROJECT_BINARY_DIR})
 add_subdirectory(plugins)
 
 # Generate the ENVIRONMENT file

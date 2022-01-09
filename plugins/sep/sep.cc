@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "cpp-version.h"
 #include "seppresentation.hh"
 #include "sli/slipresentation.hh"
 
@@ -21,7 +22,7 @@ Sep::Ptr Sep::create() { return Ptr(new Sep()); }
 
 std::string Sep::getPluginName() { return "SEP and SLI"; }
 
-std::string Sep::getPluginVersion() { return "0.0"; }
+std::string Sep::getPluginVersion() { return PACKAGE_VERSION; }
 
 ////////////////////////////////////////////////////////////////////////
 // PluginInformationInterface
