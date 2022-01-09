@@ -5,7 +5,7 @@
 
 #include <scroom/bitmap-helpers.hh>
 
-#include <boost/format.hpp>
+#include <fmt/format.h>
 
 SliSource::SliSource(boost::function<void()> &triggerRedrawFunc)
     : triggerRedraw(triggerRedrawFunc) {
@@ -48,11 +48,10 @@ bool SliSource::addLayer(std::string imagePath, std::string filename,
       return false;
     }
   } else {
-    boost::format errorFormat =
-        boost::format("Error: File extension of %s is not supported") %
-        filename.c_str();
-    printf("%s\n", errorFormat.str().c_str());
-    Show(errorFormat.str(), GTK_MESSAGE_ERROR);
+    auto error =
+        fmt::format("Error: File extension of {} is not supported", filename);
+    printf("%s\n", error.c_str());
+    Show(error, GTK_MESSAGE_ERROR);
     return false;
   }
   layers.push_back(layer);

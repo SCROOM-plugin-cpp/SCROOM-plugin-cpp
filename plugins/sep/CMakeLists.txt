@@ -42,7 +42,8 @@ target_link_libraries(
          TIFF::TIFF
          m
          util
-         dl)
+         dl
+         CONAN_PKG::fmt)
 
 install(TARGETS spsep DESTINATION ${PLUGIN_INSTALL_LOCATION_RELATIVE})
 install_plugin_dependencies(spsep)

@@ -1,7 +1,7 @@
 #include "slilayer.hh"
 #include "../colorconfig/CustomColorConfig.hh"
 #include "../sep-helpers.hh"
-#include <boost/format.hpp>
+#include <fmt/format.h>
 #include <tiffio.h>
 
 #define TIFFGetFieldChecked(file, field, ...)                                  \
@@ -32,32 +32,30 @@ bool SliLayer::fillMetaFromTiff(unsigned int allowedBps,
   try {
     TIFF *tif = TIFFOpen(filepath.c_str(), "r");
     if (!tif) {
-      boost::format errorFormat =
-          boost::format("Error: Failed to open file %s") % filepath.c_str();
-      printf("%s\n", errorFormat.str().c_str());
-      Show(errorFormat.str(), GTK_MESSAGE_ERROR);
+      auto error = fmt::format("Error: Failed to open file {}", filepath);
+      printf("%s\n", error.c_str());
+      Show(error, GTK_MESSAGE_ERROR);
       return false;
     }
 
     if (1 != TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &spp))
       spp = 1; // Default value, according to tiff spec
     if (spp != allowedSpp) {
-      boost::format errorFormat =
-          boost::format(
-              "Error: Samples per pixel of file %s is not %d, but %d") %
-          filepath.c_str() % allowedSpp % spp;
-      printf("%s\n", errorFormat.str().c_str());
-      Show(errorFormat.str(), GTK_MESSAGE_ERROR);
+      auto error =
+          fmt::format("Error: Samples per pixel of file {} is not {}, but {}",
+                      filepath, allowedSpp, spp);
+      printf("%s\n", error.c_str());
+      Show(error, GTK_MESSAGE_ERROR);
       return false;
     }
 
     TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bps);
     if (bps != allowedBps) {
-      boost::format errorFormat =
-          boost::format("Error: Bits per sample of file %s is not %d, but %d") %
-          filepath.c_str() % allowedBps % bps;
-      printf("%s\n", errorFormat.str().c_str());
-      Show(errorFormat.str(), GTK_MESSAGE_ERROR);
+      auto error =
+          fmt::format("Error: Bits per sample of file {} is not {}, but {}",
+                      filepath, allowedBps, bps);
+      printf("%s\n", error.c_str());
+      Show(error, GTK_MESSAGE_ERROR);
       return false;
     }
 
@@ -92,9 +90,9 @@ bool SliLayer::fillMetaFromTiff(unsigned int allowedBps,
     return true;
 
   } catch (const std::exception &ex) {
-    boost::format errorFormat = boost::format("Error: %s") % ex.what();
-    printf("%s\n", errorFormat.str().c_str());
-    Show(errorFormat.str(), GTK_MESSAGE_ERROR);
+    auto error = fmt::format("Error: {}", ex.what());
+    printf("%s\n", error.c_str());
+    Show(error, GTK_MESSAGE_ERROR);
     return false;
   }
 }
@@ -103,10 +101,9 @@ void SliLayer::fillBitmapFromTiff() {
   try {
     TIFF *tif = TIFFOpen(filepath.c_str(), "r");
     if (!tif) {
-      boost::format errorFormat =
-          boost::format("Error: Failed to open file %s") % filepath.c_str();
-      printf("%s\n", errorFormat.str().c_str());
-      Show(errorFormat.str(), GTK_MESSAGE_ERROR);
+      auto error = fmt::format("Error: Failed to open file {}", filepath);
+      printf("%s\n", error.c_str());
+      Show(error, GTK_MESSAGE_ERROR);
       return;
     }
 
@@ -126,8 +123,8 @@ void SliLayer::fillBitmapFromTiff() {
     TIFFClose(tif);
 
   } catch (const std::exception &ex) {
-    boost::format errorFormat = boost::format("Error: %s") % ex.what();
-    printf("%s\n", errorFormat.str().c_str());
-    Show(errorFormat.str(), GTK_MESSAGE_ERROR);
+    auto error = fmt::format("Error: {}", ex.what());
+    printf("%s\n", error.c_str());
+    Show(error, GTK_MESSAGE_ERROR);
   }
 }

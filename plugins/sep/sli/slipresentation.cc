@@ -6,7 +6,7 @@
 #include "../varnish/varnish.hh"
 
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
+#include <fmt/format.h>
 #include <regex>
 
 #include <scroom/cairo-helpers.hh>
@@ -54,15 +54,14 @@ bool SliPresentation::load(const std::string &fileName) {
   for (SliLayer::Ptr layer : source->layers) {
     if (std::abs((layer->xAspect / layer->yAspect) - (xAspect / yAspect)) >
         1e-3) {
-      boost::format warningFormat =
-          boost::format("Warning: Aspect ratio mismatch - SLI file defines "
-                        "xAspect=%.3f and yAspect=%.3f "
-                        "but layer %s has xAspect=%.3f and yAspect=%.3f") %
-          xAspect % yAspect % layer->name.c_str() % layer->xAspect %
-          layer->yAspect;
+      auto warning = fmt::format(
+          "Warning: Aspect ratio mismatch - SLI file defines "
+          "xAspect={:.3f} and yAspect={:.3f} "
+          "but layer {} has xAspect={:.3f} and yAspect={:.3f}",
+          xAspect, yAspect, layer->name, layer->xAspect, layer->yAspect);
 
-      printf("%s\n", warningFormat.str().c_str());
-      ShowWarning(warningFormat.str());
+      printf("%s\n", warning.c_str());
+      ShowWarning(warning);
     }
   }
   return true;
@@ -107,11 +106,10 @@ bool SliPresentation::parseSli(const std::string &sliFileName) {
           return false;
         }
       } else {
-        boost::format errorFormat =
-            boost::format("Error: Varnish file not found: %s") %
-            imagePath.c_str();
-        printf("%s\n", errorFormat.str().c_str());
-        Show(errorFormat.str(), GTK_MESSAGE_ERROR);
+        auto error = fmt::format("Error: Varnish file not found: {}",
+                                 imagePath.string());
+        printf("%s\n", error.c_str());
+        Show(error, GTK_MESSAGE_ERROR);
         return false;
       }
     } else if (fs::exists(fs::path(dirPath) /= firstToken)) {
@@ -132,12 +130,10 @@ bool SliPresentation::parseSli(const std::string &sliFileName) {
         return false;
       }
     } else {
-      boost::format errorFormat =
-          boost::format(
-              "Error: Token '%s' in SLI file is not an existing file") %
-          firstToken.c_str();
-      printf("%s\n", errorFormat.str().c_str());
-      Show(errorFormat.str(), GTK_MESSAGE_ERROR);
+      auto error = fmt::format(
+          "Error: Token '{}' in SLI file is not an existing file", firstToken);
+      printf("%s\n", error.c_str());
+      Show(error, GTK_MESSAGE_ERROR);
       return false;
     }
   }
