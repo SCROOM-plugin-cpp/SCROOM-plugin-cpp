@@ -111,7 +111,6 @@ jobs:
           mingw-w64-x86_64-glade
           mingw-w64-x86_64-gtk3
           mingw-w64-x86_64-toolchain
-          pkg-config
           zip
           mingw64/mingw-w64-x86_64-cmake
           mingw64/mingw-w64-x86_64-python
