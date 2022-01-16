@@ -100,6 +100,12 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
+      - name: Log version numbers
+        run: >
+          echo CPP: && git describe --tags && echo Tags: && git tag -l &&
+          echo "" &&
+          cd scroom && echo Scroom: && git describe && echo Tags: && git tag -l
+
       - name: Install Pacman packages
         run: >
           build_scripts\github\msysdo pacman --sync --noconfirm --needed
