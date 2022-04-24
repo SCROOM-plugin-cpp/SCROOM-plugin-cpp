@@ -68,7 +68,7 @@ OperationsCustomColors::create(int spp) {
       new OperationsCustomColors(spp));
 }
 
-Scroom::Utils::Stuff OperationsCustomColors::cache(const ConstTile::Ptr tile) {
+Scroom::Utils::Stuff OperationsCustomColors::cache(const ConstTile::Ptr &tile) {
   // Allocate the space for the cache - stride is the height of one row
   const int stride =
       cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, tile->width);

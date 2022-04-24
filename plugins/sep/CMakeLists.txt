@@ -43,7 +43,7 @@ target_link_libraries(
          m
          util
          dl
-         CONAN_PKG::fmt)
+         fmt)
 
 install(TARGETS spsep DESTINATION ${PLUGIN_INSTALL_LOCATION_RELATIVE})
 install_plugin_dependencies(spsep)

@@ -36,7 +36,7 @@ public:
   OperationsCustomColors(int spp_);
 
   int getBpp() override;
-  Scroom::Utils::Stuff cache(const ConstTile::Ptr tile) override;
+  Scroom::Utils::Stuff cache(const ConstTile::Ptr &tile) override;
   void reduce(Tile::Ptr target, const ConstTile::Ptr source, int x,
               int y) override;
 };
