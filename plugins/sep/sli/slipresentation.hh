@@ -132,5 +132,5 @@ public:
   ////////////////////////////////////////////////////////////////////////
 
   PipetteLayerOperations::PipetteColor
-  getPixelAverages(Scroom::Utils::Rectangle<int> area) override;
+  getPixelAverages(Scroom::Utils::Rectangle<double> area) override;
 };

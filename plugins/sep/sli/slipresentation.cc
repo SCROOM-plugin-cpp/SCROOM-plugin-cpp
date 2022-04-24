@@ -172,24 +172,19 @@ void SliPresentation::setToggled(boost::dynamic_bitset<> bitmap) {
 // PresentationInterface
 
 Scroom::Utils::Rectangle<double> SliPresentation::getRect() {
-  GdkRectangle rect;
-  rect.x = 0;
-  rect.y = 0;
-  rect.width = source->total_width;
-  rect.height = source->total_height;
 
-  return rect;
+  return Scroom::Utils::Rectangle<double>(0, 0, source->total_width,
+                                          source->total_height);
 }
 
 void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
                              Scroom::Utils::Rectangle<double> presentationArea,
                              int zoom) {
   UNUSED(vi);
-  GdkRectangle presentArea = presentationArea.toGdkRectangle();
   Scroom::Utils::Rectangle<double> actualPresentationArea = getRect();
   double pixelSize = pixelSizeFromZoom(zoom);
 
-  drawOutOfBoundsWithBackground(cr, presentArea, actualPresentationArea,
+  drawOutOfBoundsWithBackground(cr, presentationArea, actualPresentationArea,
                                 pixelSize);
 
   SurfaceWrapper::Ptr surfaceWrap = source->getSurface(zoom);
@@ -204,10 +199,11 @@ void SliPresentation::redraw(ViewInterface::Ptr const &vi, cairo_t *cr,
 
   // The level that we need is in the cache, so draw it!
   cairo_save(cr);
-  cairo_translate(cr, -presentArea.x * pixelSize, -presentArea.y * pixelSize);
+  cairo_translate(cr, -presentationArea.getLeft() * pixelSize,
+                  -presentationArea.getTop() * pixelSize);
   if (zoom >= 0) {
     // We're using the bottom bitmap, hence we have to scale
-    cairo_scale(cr, 1 << zoom, 1 << zoom);
+    cairo_scale(cr, pixelSize, pixelSize);
     cairo_set_source_surface(cr, surfaceWrap->surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
   } else {
@@ -286,15 +282,15 @@ std::set<ViewInterface::WeakPtr> SliPresentation::getViews() { return views; }
 // // PipetteViewInterface
 // ////////////////////////////////////////////////////////////////////////
 
-PipetteLayerOperations::PipetteColor
-SliPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area) {
-  if (getArea(area) <= 0)
+PipetteLayerOperations::PipetteColor SliPresentation::getPixelAverages(
+    Scroom::Utils::Rectangle<double> requestedArea) {
+  auto area = roundOutward(requestedArea).to<int>();
+  if (area.isEmpty())
     return {};
 
   auto surfaceWrapper = source->getSurface(0);
   int stride = surfaceWrapper->getStride();
-  uint8_t *surfaceBegin =
-      cairo_image_surface_get_data(source->getSurface(0)->surface);
+  uint8_t *surfaceBegin = cairo_image_surface_get_data(surfaceWrapper->surface);
   Scroom::Utils::Rectangle<int> intersectionPixels =
       area.intersection(surfaceWrapper->toRectangle());
   Scroom::Utils::Rectangle<int> intersectionBytes =

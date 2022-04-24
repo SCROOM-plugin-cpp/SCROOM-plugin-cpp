@@ -151,17 +151,13 @@ void Varnish::drawOverlay(ViewInterface::Ptr const &, cairo_t *cr,
     return;
   }
   double pixelSize = pixelSizeFromZoom(zoom);
-  GdkRectangle GTKPresArea = presentationArea.toGdkRectangle();
   cairo_save(cr);
-  // Disable blurring/anti-ailiasing
+  // Disable blurring/anti-aliasing
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
   cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
-  cairo_translate(cr, -GTKPresArea.x * pixelSize, -GTKPresArea.y * pixelSize);
-  if (zoom >= 0) {
-    cairo_scale(cr, 1 << zoom, 1 << zoom);
-  } else {
-    cairo_scale(cr, pow(2.0, zoom), pow(2.0, zoom));
-  }
+  cairo_translate(cr, -presentationArea.getLeft() * pixelSize,
+                  -presentationArea.getTop() * pixelSize);
+  cairo_scale(cr, pixelSize, pixelSize);
 
   // Read the overlay color and alpha
   GdkRGBA color;

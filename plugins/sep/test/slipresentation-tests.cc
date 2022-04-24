@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE(slipresentation_pipette_tool_multiple_colors) {
   BOOST_REQUIRE(presentation->getLayers().size() == 1);
   dummyRedraw(presentation);
   // Testing 4 CMYK pixels + rectangle larger than the canvas
-  Scroom::Utils::Rectangle<int> rect1{0, 0, 3, 4};
+  Scroom::Utils::Rectangle<double> rect1{0, 0, 3, 4};
   auto result = presentation->getPixelAverages(rect1);
   for (auto r : result)
     BOOST_REQUIRE(abs(r.second - 63.75) < 0.0001);
@@ -144,19 +144,19 @@ BOOST_AUTO_TEST_CASE(slipresentation_pipette_tool_one_color) {
   BOOST_REQUIRE(presentation->getLayers().size() == 1);
   dummyRedraw(presentation);
   // C
-  Scroom::Utils::Rectangle<int> rect1{0, 0, 1, 1};
+  Scroom::Utils::Rectangle<double> rect1{0, 0, 1, 1};
   auto result = presentation->getPixelAverages(rect1);
   BOOST_REQUIRE(abs(result[0].second - 255) < 0.0001);
   // M
-  Scroom::Utils::Rectangle<int> rect2{1, 0, 1, 1};
+  Scroom::Utils::Rectangle<double> rect2{1, 0, 1, 1};
   result = presentation->getPixelAverages(rect2);
   BOOST_REQUIRE(abs(result[1].second - 255) < 0.0001);
   // Y
-  Scroom::Utils::Rectangle<int> rect3{0, 1, 1, 1};
+  Scroom::Utils::Rectangle<double> rect3{0, 1, 1, 1};
   result = presentation->getPixelAverages(rect3);
   BOOST_REQUIRE(abs(result[2].second - 255) < 0.0001);
   // K
-  Scroom::Utils::Rectangle<int> rect4{1, 1, 1, 1};
+  Scroom::Utils::Rectangle<double> rect4{1, 1, 1, 1};
   result = presentation->getPixelAverages(rect4);
   BOOST_REQUIRE(abs(result[3].second - 255) < 0.0001);
 }
@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE(slipresentation_pipette_tool_zero_area) {
   BOOST_REQUIRE(presentation->getLayers().size() == 1);
   dummyRedraw(presentation);
 
-  Scroom::Utils::Rectangle<int> rect1{0, 0, 0, 0};
+  Scroom::Utils::Rectangle<double> rect1{0, 0, 0, 0};
   auto result = presentation->getPixelAverages(rect1);
   BOOST_REQUIRE(result.empty());
 }

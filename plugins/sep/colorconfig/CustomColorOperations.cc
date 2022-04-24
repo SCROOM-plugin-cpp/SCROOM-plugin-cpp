@@ -15,7 +15,7 @@ boost::shared_ptr<unsigned char> shared_malloc(size_t size) {
 
 PipetteLayerOperations::PipetteColor
 PipetteCommonOperationsCustomColor::sumPixelValues(
-    Scroom::Utils::Rectangle<int> area, const ConstTile::Ptr tile) {
+    Scroom::Utils::Rectangle<int> area, const ConstTile::Ptr &tile) {
   int offset = spp * (area.getTop() * tile->width + area.getLeft());
   int stride = spp * (tile->width - area.getWidth());
   Scroom::Bitmap::SampleIterator<const uint8_t> si(tile->data.get(), 0, bps);

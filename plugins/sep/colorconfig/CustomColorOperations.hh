@@ -27,7 +27,7 @@ public:
   void setColors(std::vector<CustomColor::Ptr> colors_);
   PipetteLayerOperations::PipetteColor
   sumPixelValues(Scroom::Utils::Rectangle<int> area,
-                 const ConstTile::Ptr tile) override;
+                 const ConstTile::Ptr &tile) override;
 };
 
 class OperationsCustomColors : public PipetteCommonOperationsCustomColor {

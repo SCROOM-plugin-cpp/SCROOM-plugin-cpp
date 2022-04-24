@@ -151,10 +151,11 @@ std::set<ViewInterface::WeakPtr> SepPresentation::getViews() { return views; }
 ////////////////////////////////////////////////////////////////////////
 // PipetteViewInterface
 
-PipetteLayerOperations::PipetteColor
-SepPresentation::getPixelAverages(Scroom::Utils::Rectangle<int> area) {
-  Scroom::Utils::Rectangle<int> presentationArea = getRect().toIntRectangle();
-  area = area.intersection(presentationArea);
+PipetteLayerOperations::PipetteColor SepPresentation::getPixelAverages(
+    Scroom::Utils::Rectangle<double> requestedArea) {
+  Scroom::Utils::Rectangle<double> presentationArea = getRect();
+  auto area =
+      roundOutward(requestedArea.intersection(presentationArea)).to<int>();
 
   Layer::Ptr bottomLayer = tbi->getBottomLayer();
   PipetteLayerOperations::PipetteColor pipetteColors;

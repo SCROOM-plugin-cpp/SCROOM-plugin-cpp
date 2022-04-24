@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(seppresentation_pipette) {
     BOOST_CHECK(presentation->sep_source->channel_files[c] != nullptr);
   }
 
-  auto averages = presentation->getPixelAverages(rect.toIntRectangle());
+  auto averages = presentation->getPixelAverages(rect);
 
   for (auto &avg : averages) {
     BOOST_CHECK(!avg.first.empty());
