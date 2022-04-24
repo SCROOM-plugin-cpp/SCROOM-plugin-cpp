@@ -5,6 +5,12 @@ on: [ push, pull_request ]
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: RelWithDebInfo
+
+  # Conan cache environment variables
+  CONAN_SYSREQUIRES_MODE: enabled
+  CONAN_USER_HOME: "${{ github.workspace }}/conan-cache"
+  CONAN_USER_HOME_SHORT: "${{ github.workspace }}/conan-cache/short"
+
   CCACHE_BASEDIR: ${{github.workspace}}
   CCACHE_DIR: ${{github.workspace}}/.ccache
   CCACHE_COMPRESS: true
@@ -26,6 +32,16 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
+
+      - name: Conan Cache
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-conan-modules
+        with:
+          path: |
+            ${{ env.CONAN_USER_HOME }}
+            ~/.cache/pip
+          key: ${{ matrix.os }}-${{ env.BUILD_TYPE }}-${{ hashFiles('scroom/CMakeLists.txt') }}-${{ hashFiles('scroom/cmake/Conan.cmake') }}
 
       - name: Prepare ccache timestamp
         id: ccache_cache_timestamp
@@ -79,12 +95,12 @@ jobs:
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
         run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_CXX_COMPILER=g++-10 -DCMAKE_C_COMPILER=gcc-10
 
-      - name: Load enviroment
-        run: source ${{github.workspace}}/build/ENVIRONMENT
-
       - name: Build
         # Build your program with the given configuration
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+
+      - name: Load enviroment
+        run: source ${{github.workspace}}/build/ENVIRONMENT
 
       - name: Test
         working-directory: ${{github.workspace}}/build
